@@ -1,9 +1,9 @@
 const PROFILE_ITEMS = [
   'Escuta ativa e empatia',
-  'Analise critica de comportamentos',
-  'Equilibrio emocional',
-  'Respeito a confidencialidade',
-  'Comunicacao clara e assertiva',
+  'Análise crítica de comportamentos',
+  'Equilíbrio emocional',
+  'Respeito à confidencialidade',
+  'Comunicação clara e assertiva',
   'Interesse por aprofundamento na Psicologia',
 ]
 
@@ -14,9 +14,9 @@ export function FooterSection() {
         <div className="lp-about-course__content">
           <h2 className="lp-about-course__title">SOBRE O CURSO DE PSICOLOGIA</h2>
           <p className="lp-about-course__description">
-            Analise os processos mentais e o comportamento humano e desenvolva competencias para
-            identificar, prevenir e intervir em transtornos mentais, desequilibrios emocionais e
-            alteracoes de personalidade.
+            Analise os processos mentais e o comportamento humano e desenvolva competências para
+            identificar, prevenir e intervir em transtornos mentais, desequilíbrios emocionais e
+            alterações de personalidade.
           </p>
 
           <h3 className="lp-about-course__profile-title">Perfil do profissional:</h3>

@@ -1,11 +1,11 @@
 export function FaqSection() {
   return (
-    <section id="graduacao" className="lp-graduation" aria-label="Sobre o curso de graduacao em psicologia">
+    <section id="graduacao" className="lp-graduation" aria-label="Sobre o curso de graduação em psicologia">
       <div className="lp-graduation__inner">
         <div className="lp-graduation__media">
           <img
             src="/landing/graduacao-presencial-psicologia-sessao-com-estudante.webp"
-            alt="Estudante de psicologia em sessao com paciente"
+            alt="Estudante de psicologia em sessão com paciente"
             loading="lazy"
           />
         </div>
@@ -19,13 +19,13 @@ export function FaqSection() {
               aria-hidden="true"
             />
             <span className="lp-graduation__location-text">
-              <strong>Presencial:</strong> Local: 200m do Metro Belem | SP
+              <strong>Presencial:</strong> Local: 200m do Metrô Belém | SP
             </span>
           </div>
 
           <div className="lp-graduation__heading">
-            <h2 className="lp-graduation__title">GRADUACAO PRESENCIAL EM PSICOLOGIA</h2>
-            <p className="lp-graduation__subtitle">Cuidando de voce com atencao e excelencia.</p>
+            <h2 className="lp-graduation__title">GRADUAÇÃO PRESENCIAL EM PSICOLOGIA</h2>
+            <p className="lp-graduation__subtitle">Cuidando de você com atenção e excelência.</p>
           </div>
 
           <div className="lp-graduation__meta">
@@ -38,13 +38,13 @@ export function FaqSection() {
               />
             </div>
             <div className="lp-graduation__meta-text">
-              <strong>Data de inicio:</strong>
+              <strong>Data de início:</strong>
               <span>01/07/26</span>
             </div>
           </div>
 
           <div className="lp-graduation__knowledge">
-            <strong>Area de conhecimento:</strong>
+            <strong>Área de conhecimento:</strong>
             <div className="lp-graduation__tags">
               <span className="lp-graduation__tag lp-graduation__tag--one">Destaque</span>
               <span className="lp-graduation__tag lp-graduation__tag--two">Destaque</span>

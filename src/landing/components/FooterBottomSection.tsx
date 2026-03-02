@@ -13,7 +13,7 @@ export function FooterBottomSection() {
             </div>
 
             <p className="lp-footer-brand__description">
-              Excelencia no ensino superior com foco na inovacao e na empregabilidade dos nossos alunos.
+              Excelência no ensino superior com foco na inovação e na empregabilidade dos nossos alunos.
             </p>
 
             <div className="lp-footer-brand__social">
@@ -33,9 +33,9 @@ export function FooterBottomSection() {
               <li>
                 <img src="/landing/footer-icon-location.svg" alt="" aria-hidden="true" />
                 <span>
-                  Av. Alvaro Ramos, 1200
+                  Av. Álvaro Ramos, 1200
                   <br />
-                  Belem - Sao Paulo, SP
+                  Belém - São Paulo, SP
                 </span>
               </li>
               <li>
@@ -52,10 +52,10 @@ export function FooterBottomSection() {
           </section>
 
           <section className="lp-footer-map-block">
-            <h3>Localizacao</h3>
+            <h3>Localização</h3>
 
             <div className="lp-footer-map-block__card">
-              <img src="/landing/footer-map.png" alt="Mapa de localizacao em Sao Paulo" />
+              <img src="/landing/footer-map.png" alt="Mapa de localização em São Paulo" />
               <a
                 href="https://maps.google.com/?q=Av.+Alvaro+Ramos,+1200+Belem+-+Sao+Paulo,+SP"
                 target="_blank"
@@ -72,7 +72,7 @@ export function FooterBottomSection() {
           <small>(c) 2026 Faculdade de Psicologia UNICESP. Todos os direitos reservados.</small>
 
           <div className="lp-footer-bottom__links">
-            <a href="/politica-de-privacidade">Politica de Privacidade</a>
+            <a href="/politica-de-privacidade">Política de Privacidade</a>
             <a href="/termos-de-uso">Termos de Uso</a>
           </div>
         </div>

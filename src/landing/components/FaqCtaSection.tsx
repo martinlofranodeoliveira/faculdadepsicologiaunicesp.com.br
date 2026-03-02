@@ -11,25 +11,25 @@ const FAQ_ITEMS: FaqItem[] = [
     id: 'vestibular',
     question: 'Como funciona o vestibular online?',
     answer:
-      'Voce faz a prova online, envia os dados solicitados e acompanha o resultado no portal do candidato.',
+      'Você faz a prova online, envia os dados solicitados e acompanha o resultado no portal do candidato.',
   },
   {
     id: 'pagamento',
-    question: 'Quais sao as formas de pagamento?',
+    question: 'Quais são as formas de pagamento?',
     answer:
-      'Aceitamos boleto, cartao de credito e outras opcoes disponiveis no momento da matricula.',
+      'Aceitamos boleto, cartão de crédito e outras opções disponíveis no momento da matrícula.',
   },
   {
     id: 'diploma',
     question: 'O diploma EAD tem a mesma validade?',
     answer:
-      'Sim. O diploma EAD reconhecido pelo MEC tem a mesma validade do presencial em todo o territorio nacional.',
+      'Sim. O diploma EAD reconhecido pelo MEC tem a mesma validade do presencial em todo o território nacional.',
   },
   {
     id: 'suporte',
-    question: 'Como funciona o suporte academico?',
+    question: 'Como funciona o suporte acadêmico?',
     answer:
-      'Voce conta com tutoria e atendimento por canais digitais para tirar duvidas sobre conteudo e rotina do curso.',
+      'Você conta com tutoria e atendimento por canais digitais para tirar dúvidas sobre conteúdo e rotina do curso.',
   },
 ]
 
@@ -77,7 +77,7 @@ export function FaqCtaSection() {
           <img className="lp-faq-contact__icon" src="/landing/faq-whatsapp.png" alt="" aria-hidden="true" />
 
           <div className="lp-faq-contact__text">
-            <strong>AINDA TEM DUVIDAS?</strong>
+            <strong>AINDA TEM DÚVIDAS?</strong>
             <p>O diploma EAD tem a mesma validade?</p>
           </div>
 
