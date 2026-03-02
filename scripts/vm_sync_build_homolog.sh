@@ -6,11 +6,11 @@ set -euo pipefail
 #   ./scripts/vm_sync_build_homolog.sh
 #
 # Optional overrides:
-#   REPO_URL=git@github.com:martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git
+#   REPO_URL=https://github.com/martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git
 #   TARGET_DIR=/www/wwwroot/faculdadepsicologiaunicesp.com.br
 #   BRANCH=main
 
-REPO_URL="${REPO_URL:-git@github.com:martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git}"
+REPO_URL="${REPO_URL:-https://github.com/martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git}"
 TARGET_DIR="${TARGET_DIR:-/www/wwwroot/faculdadepsicologiaunicesp.com.br}"
 BRANCH="${BRANCH:-main}"
 
