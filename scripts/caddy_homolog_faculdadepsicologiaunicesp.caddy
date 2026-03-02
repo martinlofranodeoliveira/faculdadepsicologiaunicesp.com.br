@@ -2,7 +2,7 @@
 # Requires the (static_landing) snippet in the main Caddyfile.
 
 homolog.faculdadepsicologiaunicesp.com.br {
-  root * /www/wwwroot/homolog.faculdadepsicologiaunicesp.com.br/dist
+  root * /www/wwwroot/faculdadepsicologiaunicesp.com.br/dist
 
   header {
     X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex"
