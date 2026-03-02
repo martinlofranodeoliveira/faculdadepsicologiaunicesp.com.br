@@ -38,7 +38,7 @@ export function LandingPage() {
 
   return (
     <main className="lp-page">
-      <Header />
+      <Header onOpenPopup={openHeroPopup} />
       <HeroSection onOpenPopup={openHeroPopup} />
       <CourseSection />
       <ProfileBannerSection />

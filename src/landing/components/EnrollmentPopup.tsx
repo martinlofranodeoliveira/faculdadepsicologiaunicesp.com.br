@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 
 import {
   formatPhoneMask,
@@ -31,7 +31,6 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
   const [errors, setErrors] = useState<FieldErrors>({})
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>('idle')
   const [submitMessage, setSubmitMessage] = useState('')
-  const closeTimer = useRef<number | null>(null)
 
   const firstErrorMessage = useMemo(() => {
     return errors.fullName ?? errors.email ?? errors.phone ?? ''
@@ -57,14 +56,6 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [isOpen, onClose])
-
-  useEffect(() => {
-    return () => {
-      if (closeTimer.current) {
-        window.clearTimeout(closeTimer.current)
-      }
-    }
-  }, [])
 
   if (!isOpen || !selection) {
     return null
@@ -99,10 +90,7 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
 
       setSubmitStatus('success')
       setSubmitMessage('Cadastro enviado com sucesso.')
-
-      closeTimer.current = window.setTimeout(() => {
-        onClose()
-      }, 900)
+      window.location.assign('/obrigado')
     } catch (error) {
       console.error('Erro ao enviar lead para o CRM:', error)
       setSubmitStatus('error')

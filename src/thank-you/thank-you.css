@@ -1,0 +1,160 @@
+.ty-page {
+  min-height: 100vh;
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.ty-container {
+  width: min(565px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.ty-logo {
+  width: 203px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ty-card {
+  width: 100%;
+  min-height: 246px;
+  border-radius: 30px;
+  padding: 34px 24px;
+  background:
+    radial-gradient(circle at 90% 70%, rgba(75, 131, 255, 0.14) 0, rgba(75, 131, 255, 0) 46%),
+    radial-gradient(circle at 12% 8%, rgba(62, 122, 250, 0.16) 0, rgba(62, 122, 250, 0) 42%),
+    linear-gradient(159deg, #08235c 12%, #041a48 55%, #03133a 94%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ty-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) 1.1px, transparent 1.1px);
+  background-size: 19px 19px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.ty-card::after {
+  content: '';
+  position: absolute;
+  width: 315px;
+  height: 315px;
+  right: -130px;
+  top: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(152, 187, 255, 0.28);
+  pointer-events: none;
+}
+
+.ty-card__title {
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: clamp(54px, 10vw, 74px);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: -1.4px;
+  position: relative;
+  z-index: 1;
+}
+
+.ty-card__text {
+  margin: 16px 0 0;
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  max-width: 445px;
+  position: relative;
+  z-index: 1;
+}
+
+.ty-button-frame {
+  border: 1.5px solid rgba(30, 94, 200, 0.46);
+  border-radius: 14.439px;
+  padding: 7px 9px;
+  text-decoration: none;
+}
+
+.ty-button {
+  min-width: 304px;
+  min-height: 50px;
+  border-radius: 12px;
+  background: #1e5ec8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 31px;
+  text-align: center;
+}
+
+.ty-button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .ty-page {
+    padding: 16px;
+  }
+
+  .ty-container {
+    gap: 14px;
+  }
+
+  .ty-logo {
+    width: 184px;
+  }
+
+  .ty-card {
+    min-height: 186px;
+    border-radius: 22px;
+    padding: 24px 16px;
+  }
+
+  .ty-card__title {
+    font-size: clamp(42px, 12vw, 56px);
+    letter-spacing: -1px;
+  }
+
+  .ty-card__text {
+    margin-top: 10px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .ty-button-frame {
+    width: 100%;
+    padding: 6px;
+  }
+
+  .ty-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    font-size: 17px;
+    line-height: 1.2;
+  }
+}

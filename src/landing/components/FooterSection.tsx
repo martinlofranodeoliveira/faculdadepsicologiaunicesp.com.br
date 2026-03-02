@@ -1,10 +1,10 @@
 const PROFILE_ITEMS = [
-  'Este curso é perfeito para você',
-  'Este curso é perfeito para você',
-  'Este curso é perfeito para você',
-  'Este curso é perfeito para você',
-  'Este curso é perfeito para você',
-  'Este curso é perfeito para você',
+  'Escuta ativa e empatia',
+  'Analise critica de comportamentos',
+  'Equilibrio emocional',
+  'Respeito a confidencialidade',
+  'Comunicacao clara e assertiva',
+  'Interesse por aprofundamento na Psicologia',
 ]
 
 export function FooterSection() {
@@ -14,16 +14,16 @@ export function FooterSection() {
         <div className="lp-about-course__content">
           <h2 className="lp-about-course__title">SOBRE O CURSO DE PSICOLOGIA</h2>
           <p className="lp-about-course__description">
-            A cada disciplina, você contará com leituras digitais, slides, videoaulas e podcasts
-            preparados por professores de destaque na área, que aliam conhecimentos teóricos e
-            discussões sobre a prática profissional, como aprendizagem em foco.
+            Analise os processos mentais e o comportamento humano e desenvolva competencias para
+            identificar, prevenir e intervir em transtornos mentais, desequilibrios emocionais e
+            alteracoes de personalidade.
           </p>
 
-          <h3 className="lp-about-course__profile-title">Perfil do profissional</h3>
+          <h3 className="lp-about-course__profile-title">Perfil do profissional:</h3>
           <ul className="lp-about-course__profile-list">
             {PROFILE_ITEMS.map((item, index) => (
               <li key={`${item}-${index}`} className="lp-about-course__profile-item">
-                <img src="/landing/course-check.svg" alt="" aria-hidden="true" />
+                <img src="/landing/sobre-curso-check.svg" alt="" aria-hidden="true" />
                 <span>{item}</span>
               </li>
             ))}

@@ -1,4 +1,8 @@
-export function Header() {
+type HeaderProps = {
+  onOpenPopup?: () => void
+}
+
+export function Header({ onOpenPopup }: HeaderProps) {
   return (
     <header className="lp-header" id="inicio">
       <div className="lp-header__inner">
@@ -9,9 +13,9 @@ export function Header() {
             alt="Faculdade de Psicologia UNICESP"
           />
         </a>
-        <a className="lp-header__cta" href="#contato">
+        <button type="button" className="lp-header__cta" onClick={onOpenPopup}>
           QUERO ME MATRICULAR
-        </a>
+        </button>
       </div>
     </header>
   )
