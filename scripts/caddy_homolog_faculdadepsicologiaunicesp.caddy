@@ -1,0 +1,31 @@
+# Homolog block for faculdadepsicologiaunicesp.com.br.
+# Requires the (static_landing) snippet in the main Caddyfile.
+
+homolog.faculdadepsicologiaunicesp.com.br {
+  root * /www/wwwroot/homolog.faculdadepsicologiaunicesp.com.br/dist
+
+  header {
+    X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex"
+  }
+
+  route {
+    @robots path /robots.txt /robots.txt/*
+    rewrite @robots /robots-homolog.txt
+
+    handle_path /crm-api/* {
+      rewrite * /api{path}
+      reverse_proxy https://crmfasul.com.br {
+        header_up Host crmfasul.com.br
+        header_up Authorization "Bearer {$CRMFASUL_BEARER_TOKEN}"
+      }
+    }
+
+    handle_path /fasul-courses-api/* {
+      reverse_proxy https://www.fasuleducacional.edu.br {
+        header_up Host www.fasuleducacional.edu.br
+      }
+    }
+
+    import static_landing
+  }
+}
