@@ -102,7 +102,9 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
     <div className="lp-enrollment-modal" role="dialog" aria-modal="true" aria-labelledby="lp-enrollment-modal-title" onClick={onClose}>
       <div className="lp-enrollment-modal__panel" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="lp-enrollment-modal__close" aria-label="Fechar" onClick={onClose}>
-          ×
+          <span className="lp-enrollment-modal__close-icon" aria-hidden="true">
+            ×
+          </span>
         </button>
 
         <header className="lp-enrollment-modal__top">
