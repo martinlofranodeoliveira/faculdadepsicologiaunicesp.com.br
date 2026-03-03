@@ -11,25 +11,25 @@ const FAQ_ITEMS: FaqItem[] = [
     id: 'vestibular',
     question: 'Como funciona o vestibular online?',
     answer:
-      'Você faz a prova online, envia os dados solicitados e acompanha o resultado no portal do candidato.',
+      'O vestibular é realizado de forma digital, com foco em facilitar o seu acesso ao Ensino Superior. Além da prova online, você pode ingressar utilizando sua nota do ENEM, como Segunda Graduação (aproveitando disciplinas já cursadas) ou via transferência externa de outra Instituição.',
   },
   {
     id: 'pagamento',
     question: 'Quais são as formas de pagamento?',
     answer:
-      'Aceitamos boleto, cartão de crédito e outras opções disponíveis no momento da matrícula.',
+      'Buscamos facilitar o seu acesso ao Ensino Superior com opções flexíveis. Você pode realizar o pagamento das mensalidades via PIX, garantindo a baixa imediata no sistema, ou através de cartão de crédito, com a possibilidade de parcelamento. Nosso objetivo é que a questão financeira não seja um obstáculo para a sua Formação Profissional.',
   },
   {
     id: 'inscricao-psicologia',
     question: 'Quem pode se inscrever no curso de Psicologia?',
     answer:
-      'Podem se inscrever candidatos que concluíram o ensino médio e desejam seguir carreira em Psicologia.',
+      'Qualquer pessoa que tenha concluído o Ensino Médio. Este curso é ideal para quem possui vocação para o cuidado humano, responsabilidade ética e o desejo de liderar equipes de Saúde em ambientes de alta tecnologia.',
   },
   {
     id: 'transferencia-retorno',
     question: 'Como funciona a transferência ou retorno?',
     answer:
-      'Você pode solicitar análise de histórico para transferência ou retorno, conforme as regras acadêmicas vigentes.',
+      'Para quem vem de outra Instituição, o processo de transferência é focado no aproveitamento de créditos: basta apresentar seu Histórico e as Ementas das Disciplinas cursadas para que nossa Coordenação analise as equivalências. Já para ex-alunos que desejam retomar o sonho da Graduação, o processo é simplificado através de um requerimento de retorno junto à nossa secretaria Acadêmica (sujeito à disponibilidade de vaga na turma correspondente).',
   },
   {
     id: 'atuacao-psicologo',
