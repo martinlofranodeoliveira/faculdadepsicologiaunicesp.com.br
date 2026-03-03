@@ -165,7 +165,6 @@ export function GradeSection() {
                 <div className="lp-grade-curriculum__row">
                   <div className="lp-grade-curriculum__summary">
                     <span className="lp-grade-curriculum__semester">{`${term.label}\u00BA Semestre`}</span>
-                    <span className="lp-grade-curriculum__name">{term.name}</span>
                   </div>
 
                   <span className="lp-grade-curriculum__hours">{`${term.totalHours}h`}</span>
