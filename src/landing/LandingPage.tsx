@@ -45,7 +45,7 @@ export function LandingPage() {
       <FaqSection onOpenPopup={openHeroPopup} />
       <FooterSection />
       <MarketSection />
-      <GradeSection />
+      <GradeSection onOpenPopup={openHeroPopup} />
       <HealthCoursesSection onOpenCoursePopup={openCoursePopup} />
       <FaqCtaSection />
       <FooterBottomSection />

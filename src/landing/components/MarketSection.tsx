@@ -5,29 +5,27 @@ type MarketArea = {
   salary: string
 }
 
-const DEFAULT_SALARY = 'MÉDIA SALARIAL: R$ 4.000,00 A R$ 6.500,00'
-
 const MARKET_AREAS: MarketArea[] = [
   {
     image: '/landing/areas-atuacao-1.png',
-    title: 'Psicólogo de saúde',
+    title: 'Psicólogo de Saúde',
     description:
       'Contribui para o cuidado com a saúde integrando equipes formadas por diferentes profissionais.',
-    salary: DEFAULT_SALARY,
+    salary: 'MÉDIA SALARIAL: R$ 3.800,00 A R$ 5.200,00',
   },
   {
     image: '/landing/areas-atuacao-2.png',
-    title: 'Psicólogo esportivo',
+    title: 'Psicólogo Esportivo',
     description:
       'Oferece acompanhamento psicológico a esportistas, auxiliando na melhoria do rendimento em treinos e competições.',
-    salary: DEFAULT_SALARY,
+    salary: 'MÉDIA SALARIAL: R$ 4.500,00 A R$ 8.500,00',
   },
   {
     image: '/landing/areas-atuacao-3.png',
-    title: 'Psicólogo social',
+    title: 'Psicólogo Social',
     description:
       'Exerce atividades em presídios, instituições de longa permanência para idosos e unidades de atendimento voltadas a crianças e adolescentes.',
-    salary: DEFAULT_SALARY,
+    salary: 'MÉDIA SALARIAL: R$ 3.200,00 A R$ 4.800,00',
   },
 ]
 

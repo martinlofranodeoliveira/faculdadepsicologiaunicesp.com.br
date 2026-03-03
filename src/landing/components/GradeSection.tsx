@@ -143,7 +143,11 @@ const CURRICULUM_TERMS: CurriculumTerm[] = [
   },
 ]
 
-export function GradeSection() {
+type GradeSectionProps = {
+  onOpenPopup?: () => void
+}
+
+export function GradeSection({ onOpenPopup }: GradeSectionProps) {
   const [openTermId, setOpenTermId] = useState<string | null>(null)
 
   const handleToggle = (termId: string) => {
@@ -195,6 +199,10 @@ export function GradeSection() {
             )
           })}
         </ul>
+
+        <button type="button" className="lp-grade-curriculum__cta" onClick={onOpenPopup}>
+          Saiba mais
+        </button>
       </div>
     </section>
   )

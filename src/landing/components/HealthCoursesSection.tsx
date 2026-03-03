@@ -149,6 +149,9 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
   const [cardsPerView, setCardsPerView] = useState(3)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [healthCourses, setHealthCourses] = useState<HealthCourse[]>(fallbackHealthCourses)
+  const [isMobileCarousel, setIsMobileCarousel] = useState(false)
+  const [mobileCanPrev, setMobileCanPrev] = useState(false)
+  const [mobileCanNext, setMobileCanNext] = useState(true)
 
   useEffect(() => {
     const viewport = viewportRef.current
@@ -157,6 +160,7 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
     const updateVisibleCards = () => {
       const viewportWidth = viewport.clientWidth
       const visibleCards = Math.max(1, Math.floor((viewportWidth + CARD_GAP) / (CARD_WIDTH + CARD_GAP)))
+      setIsMobileCarousel(viewportWidth <= 1300)
       setCardsPerView(visibleCards)
     }
 
@@ -227,18 +231,71 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
     }
   }, [])
 
+  useEffect(() => {
+    const viewport = viewportRef.current
+
+    if (!viewport || !isMobileCarousel) {
+      setMobileCanPrev(false)
+      setMobileCanNext(healthCourses.length > 1)
+      return
+    }
+
+    const updateMobileScrollState = () => {
+      const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth)
+      setMobileCanPrev(viewport.scrollLeft > 2)
+      setMobileCanNext(viewport.scrollLeft < maxScrollLeft - 2)
+    }
+
+    updateMobileScrollState()
+    viewport.addEventListener('scroll', updateMobileScrollState, { passive: true })
+    window.addEventListener('resize', updateMobileScrollState)
+
+    return () => {
+      viewport.removeEventListener('scroll', updateMobileScrollState)
+      window.removeEventListener('resize', updateMobileScrollState)
+    }
+  }, [healthCourses.length, isMobileCarousel])
+
   const maxIndex = useMemo(
     () => Math.max(0, healthCourses.length - cardsPerView),
     [cardsPerView, healthCourses.length],
   )
   const clampedIndex = Math.min(currentIndex, maxIndex)
-  const canNavigate = cardsPerView > 1 && maxIndex > 0
+  const canNavigateDesktop = cardsPerView > 1 && maxIndex > 0
+  const canPrev = isMobileCarousel ? mobileCanPrev : canNavigateDesktop && clampedIndex > 0
+  const canNext = isMobileCarousel ? mobileCanNext : canNavigateDesktop && clampedIndex < maxIndex
+
+  const getMobileStep = () => {
+    const viewport = viewportRef.current
+    if (!viewport) return CARD_WIDTH + CARD_GAP
+
+    const track = viewport.querySelector('.lp-health-ead__track') as HTMLElement | null
+    const firstCard = track?.querySelector('.lp-health-ead-card') as HTMLElement | null
+
+    if (!track || !firstCard) return CARD_WIDTH + CARD_GAP
+
+    const trackStyles = window.getComputedStyle(track)
+    const parsedGap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || '0')
+    const gap = Number.isFinite(parsedGap) ? parsedGap : 0
+
+    return firstCard.getBoundingClientRect().width + gap
+  }
 
   const handlePrev = () => {
+    if (isMobileCarousel) {
+      viewportRef.current?.scrollBy({ left: -getMobileStep(), behavior: 'smooth' })
+      return
+    }
+
     setCurrentIndex((current) => Math.max(0, Math.min(current, maxIndex) - 1))
   }
 
   const handleNext = () => {
+    if (isMobileCarousel) {
+      viewportRef.current?.scrollBy({ left: getMobileStep(), behavior: 'smooth' })
+      return
+    }
+
     setCurrentIndex((current) => Math.min(maxIndex, Math.min(current, maxIndex) + 1))
   }
 
@@ -258,7 +315,10 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
         <div className="lp-health-ead__carousel">
           <div className="lp-health-ead__carousel-shell">
             <div ref={viewportRef} className="lp-health-ead__viewport">
-              <div className="lp-health-ead__track" style={{ transform: `translateX(-${offset}px)` }}>
+              <div
+                className="lp-health-ead__track"
+                style={isMobileCarousel ? undefined : { transform: `translateX(-${offset}px)` }}
+              >
                 {healthCourses.map((course) => (
                   <article key={course.id} className="lp-health-ead-card">
                     <div className="lp-health-ead-card__image-wrap">
@@ -303,7 +363,7 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
               className="lp-health-ead__nav lp-health-ead__nav--prev"
               aria-label="Cursos anteriores"
               onClick={handlePrev}
-              disabled={!canNavigate || clampedIndex === 0}
+              disabled={!canPrev}
             >
               <img src="/landing/pos-carousel-prev.svg" alt="" aria-hidden="true" />
             </button>
@@ -313,7 +373,7 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
               className="lp-health-ead__nav lp-health-ead__nav--next"
               aria-label="Próximos cursos"
               onClick={handleNext}
-              disabled={!canNavigate || clampedIndex === maxIndex}
+              disabled={!canNext}
             >
               <img src="/landing/pos-carousel-next.svg" alt="" aria-hidden="true" />
             </button>

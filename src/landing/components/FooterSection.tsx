@@ -1,10 +1,10 @@
-const PROFILE_ITEMS = [
-  'Escuta ativa e empatia',
-  'Análise crítica de comportamentos',
-  'Equilíbrio emocional',
-  'Respeito à confidencialidade',
-  'Comunicação clara e assertiva',
+﻿const PROFILE_ITEMS = [
+  'Clínica-Escola própria para atendimentos supervisionados à comunidade',
+  'Práticas supervisionadas e estágios em diversos contextos',
   'Interesse por aprofundamento na Psicologia',
+  'Desenvolvimento de competências em avaliação e intervenção',
+  'Atuação em saúde, educação, organizações e políticas públicas',
+  'Formação ética alinhada às diretrizes profissionais',
 ]
 
 export function FooterSection() {
@@ -14,9 +14,11 @@ export function FooterSection() {
         <div className="lp-about-course__content">
           <h2 className="lp-about-course__title">SOBRE O CURSO DE PSICOLOGIA</h2>
           <p className="lp-about-course__description">
-            Analise os processos mentais e o comportamento humano e desenvolva competências para
-            identificar, prevenir e intervir em transtornos mentais, desequilíbrios emocionais e
-            alterações de personalidade.
+            A matriz curricular articula fundamentos teóricos, práticas supervisionadas e estágios
+            obrigatórios, possibilitando ao estudante vivenciar experiências na clínica, na área
+            organizacional, escolar, hospitalar e comunitária. A formação também contempla pesquisa
+            científica e atividades de extensão, fortalecendo o compromisso ético e social do futuro
+            psicólogo.
           </p>
 
           <h3 className="lp-about-course__profile-title">Perfil do profissional:</h3>

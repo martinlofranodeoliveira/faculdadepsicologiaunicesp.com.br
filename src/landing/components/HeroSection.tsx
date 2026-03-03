@@ -11,13 +11,19 @@ export function HeroSection({ onOpenPopup }: HeroSectionProps) {
         onClick={onOpenPopup}
         aria-label="Abrir formulário de inscrição da Graduação em Psicologia Presencial"
       >
-        <img
-          className="lp-hero__image"
-          src="/landing/graduacao-presencial-psicologia.webp"
-          alt="Graduação presencial em Psicologia"
-          loading="eager"
-          fetchPriority="high"
-        />
+        <picture>
+          <source
+            media="(max-width: 768px)"
+            srcSet="/landing/graduacao-presencial-psicologia-mobile.webp"
+          />
+          <img
+            className="lp-hero__image"
+            src="/landing/graduacao-presencial-psicologia.webp"
+            alt="Graduação presencial em Psicologia"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </picture>
       </button>
     </section>
   )

@@ -211,6 +211,11 @@
   text-decoration: none;
 }
 
+.lp-post-banner__picture {
+  display: block;
+  width: 100%;
+}
+
 .lp-post-banner__image {
   width: 100%;
   height: auto;
@@ -484,7 +489,7 @@
 .lp-about-course__profile-title {
   margin: 29px 0 0;
   font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 500;
   line-height: 30px;
   color: #6eb9f0;
@@ -498,6 +503,8 @@
   background: #e8f0fd;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, auto));
+  grid-auto-flow: column;
   column-gap: 25px;
   row-gap: 12px;
 }
@@ -509,7 +516,7 @@
   gap: 8px;
   color: #000000;
   font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 1.28;
 }
@@ -523,7 +530,7 @@
 
 .lp-about-course__media {
   width: 537px;
-  height: 416px;
+  height: 465px;
   border-radius: 65px 65px 65px 0;
   overflow: hidden;
   flex-shrink: 0;
@@ -758,6 +765,25 @@
   line-height: 1.35;
 }
 
+.lp-grade-curriculum__cta {
+  width: 175px;
+  min-height: 50px;
+  margin: 24px auto 0;
+  border: 0;
+  border-radius: 12px;
+  background: #6EC9F0;
+  color: #011D2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 31.115px;
+  cursor: pointer;
+  text-transform: none;
+}
+
 .lp-health-ead {
   background: #00163b;
   padding: 41px 0 32px;
@@ -820,6 +846,7 @@
   max-width: 100%;
   margin: 0 auto;
   position: relative;
+  box-sizing: border-box;
 }
 
 .lp-health-ead__nav {
@@ -865,6 +892,7 @@
   width: 1234px;
   max-width: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .lp-health-ead__track {
@@ -885,6 +913,7 @@
   gap: 16px;
   flex-shrink: 0;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .lp-health-ead-card__image-wrap {
@@ -998,6 +1027,7 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  box-sizing: border-box;
 }
 
 .lp-health-ead__notice-icon {
@@ -1050,7 +1080,7 @@
 }
 
 .lp-faq-cta__title-accent {
-  color: #001c4c;
+  color: #ffffff;
 }
 
 .lp-faq-cta__list {
@@ -1178,14 +1208,19 @@
   padding: 1.5rem;
   display: grid;
   place-items: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .lp-enrollment-modal__panel {
   width: min(513px, 100%);
+  max-height: calc(100dvh - 3rem);
   border-radius: 30px;
   background: #e8e9ea;
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 18px 54px rgba(0, 0, 0, 0.4);
 }
 
@@ -1230,6 +1265,8 @@
 
 .lp-enrollment-modal__content {
   padding: 21px 25px 27px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .lp-enrollment-modal__title {
@@ -1240,6 +1277,7 @@
   font-weight: 800;
   line-height: 40px;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .lp-enrollment-modal__subtitle {
@@ -1521,28 +1559,296 @@
   line-height: 16px;
 }
 
-@media (max-width: 768px) {
-  .lp-header__inner {
-    min-height: 68px;
+@media (max-width: 1300px) {
+  .lp-lead {
+    overflow-x: clip;
   }
 
-  .lp-logo__image {
-    width: clamp(136px, 44vw, 176px);
+  .lp-lead__inner {
+    width: calc(100% - 28px);
+    max-width: 720px;
+    padding: 18px 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
   }
 
-  .lp-header__cta {
-    min-height: 36px;
-    padding: 0.45rem 0.72rem;
-    border-radius: 8px;
-    font-size: 11px;
+  .lp-lead__title-wrap {
+    justify-content: center;
+  }
+
+  .lp-lead__title {
+    font-size: 22px;
     line-height: 1.2;
   }
 
+  .lp-lead__form,
+  .lp-lead__form--step-1,
+  .lp-lead__form--step-2 {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .lp-lead__row--step-1,
+  .lp-lead__row--step-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-lead__field--select {
+    width: 100%;
+  }
+
+  .lp-lead__field-wrap--modality {
+    max-width: 100%;
+  }
+
+  .lp-lead__button,
+  .lp-lead__back {
+    width: 100%;
+  }
+
+  .lp-lead__status {
+    text-align: center;
+  }
+
+  .lp-graduation {
+    overflow-x: clip;
+  }
+
+  .lp-graduation__inner {
+    width: calc(100% - 28px);
+    max-width: 720px;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .lp-graduation__media {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 736 / 403;
+    border-radius: 36px 36px 0 36px;
+  }
+
+  .lp-graduation__content {
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    gap: 18px;
+  }
+
+  .lp-graduation__location {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 14px;
+    gap: 8px;
+  }
+
+  .lp-graduation__location-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .lp-graduation__title {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .lp-graduation__meta {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .lp-graduation__meta-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .lp-about-course {
+    overflow-x: clip;
+  }
+
+  .lp-about-course__inner {
+    width: calc(100% - 30px);
+    max-width: 720px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+
+  .lp-about-course__content {
+    width: 100%;
+    max-width: 100%;
+    order: 2;
+  }
+
+  .lp-about-course__media {
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 537 / 416;
+    border-radius: 34px 34px 34px 0;
+  }
+
+  .lp-about-course__description {
+    max-width: 100%;
+  }
+
+  .lp-about-course__profile-list {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+    column-gap: 0;
+    row-gap: 10px;
+    padding: 15px;
+  }
+
+  .lp-about-course__profile-item {
+    min-height: 34px;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .lp-health-ead {
+    overflow-x: clip;
+  }
+
+  .lp-health-ead__inner {
+    width: calc(100% - 28px);
+    max-width: 720px;
+    overflow: visible;
+  }
+
+  .lp-health-ead__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .lp-health-ead__highlight {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .lp-health-ead__highlight strong {
+    display: block;
+  }
+
+  .lp-health-ead__carousel-shell {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .lp-health-ead__viewport {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .lp-health-ead__viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lp-health-ead__track {
+    width: max-content;
+    display: flex;
+    gap: 16px;
+    padding-bottom: 8px;
+    transform: none !important;
+  }
+
+  .lp-health-ead-card {
+    width: min(306px, calc(100vw - 64px));
+    min-width: min(306px, calc(100vw - 64px));
+    scroll-snap-align: start;
+  }
+
+  .lp-health-ead__notice {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .lp-market-areas__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .lp-grade-curriculum__row {
+    padding: 16px 20px;
+    gap: 12px;
+  }
+
+  .lp-grade-curriculum__semester,
+  .lp-grade-curriculum__hours {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .lp-footer-bottom__top {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  .lp-footer-brand__description {
+    max-width: 100%;
+  }
+
+  .lp-footer-bottom__bar {
+    margin-top: 26px;
+    padding-top: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .lp-footer-bottom__links {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .lp-header {
+    backdrop-filter: blur(3.896px);
+  }
+
+  .lp-header__inner {
+    width: min(364px, calc(100% - 26px));
+    min-height: 48px;
+  }
+
+  .lp-logo__image {
+    width: clamp(110px, 32vw, 118px);
+  }
+
+  .lp-header__cta {
+    min-height: 28px;
+    padding: 6.493px 12.985px;
+    border-radius: 6px;
+    font-size: 10.388px;
+    line-height: 15.582px;
+    font-weight: 800;
+  }
+
   .lp-enrollment-modal {
-    padding: 0.9rem;
+    padding: 0.75rem;
   }
 
   .lp-enrollment-modal__panel {
+    max-height: calc(100dvh - 1.5rem);
     border-radius: 22px;
   }
 
@@ -1564,13 +1870,13 @@
   }
 
   .lp-enrollment-modal__title {
-    font-size: 27px;
+    font-size: 22px;
     line-height: 1.2;
   }
 
   .lp-enrollment-modal__subtitle {
     margin-top: 2px;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.35;
   }
 
@@ -1632,15 +1938,19 @@
 
   .lp-graduation {
     padding: 42px 0;
+    overflow-x: clip;
   }
 
   .lp-graduation__inner {
+    width: calc(100% - 28px);
+    max-width: 620px;
     flex-direction: column;
     gap: 24px;
   }
 
   .lp-graduation__media {
     width: 100%;
+    max-width: 100%;
     height: auto;
     aspect-ratio: 736 / 403;
     border-radius: 36px 36px 0 36px;
@@ -1648,6 +1958,7 @@
 
   .lp-graduation__content {
     width: 100%;
+    max-width: 100%;
     min-height: 0;
     gap: 18px;
   }
@@ -1656,6 +1967,8 @@
     width: 100%;
     padding: 6px 12px;
     gap: 8px;
+    display: flex;
+    align-items: flex-start;
   }
 
   .lp-graduation__location-icon {
@@ -1664,8 +1977,10 @@
   }
 
   .lp-graduation__location-text {
+    min-width: 0;
     font-size: 14px;
     line-height: 1.35;
+    overflow-wrap: anywhere;
   }
 
   .lp-graduation__heading {
@@ -1673,8 +1988,10 @@
   }
 
   .lp-graduation__title {
+    max-width: 100%;
     font-size: 30px;
     line-height: 1.2;
+    overflow-wrap: anywhere;
   }
 
   .lp-graduation__subtitle {
@@ -1684,6 +2001,16 @@
 
   .lp-graduation__meta {
     margin-top: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .lp-graduation__meta-text {
+    min-width: 0;
+    font-size: 18px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
   }
 
   .lp-graduation__cta {
@@ -1708,59 +2035,71 @@
   }
 
   .lp-about-course {
-    padding: 34px 0 26px;
+    padding: 34px 0 32px;
   }
 
   .lp-about-course__inner {
+    width: min(361px, calc(100% - 30px));
     flex-direction: column;
     align-items: stretch;
-    gap: 20px;
+    gap: 26px;
   }
 
   .lp-about-course__content {
     width: 100%;
+    max-width: 361px;
+    order: 2;
+  }
+
+  .lp-about-course__media {
+    order: 1;
+    width: 100%;
+    max-width: 361px;
+    height: auto;
+    aspect-ratio: 361 / 297;
+    border-radius: 15px 15px 15px 0;
   }
 
   .lp-about-course__title {
-    font-size: 30px;
-    line-height: 1.2;
+    font-size: 25px;
+    line-height: 30px;
+    letter-spacing: 0;
   }
 
   .lp-about-course__description {
     margin-top: 12px;
-    font-size: 16px;
-    line-height: 1.55;
+    max-width: 356px;
+    font-size: 14px;
+    line-height: 18px;
   }
 
   .lp-about-course__profile-title {
     margin-top: 22px;
-    font-size: 24px;
-    line-height: 1.25;
+    font-size: 20px;
+    line-height: 30px;
   }
 
   .lp-about-course__profile-list {
-    margin-top: 12px;
-    padding: 12px 14px;
+    margin-top: 10px;
+    padding: 15px;
     grid-template-columns: 1fr;
-    row-gap: 8px;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+    column-gap: 0;
+    row-gap: 10px;
+    border-radius: 15px;
   }
 
   .lp-about-course__profile-item {
-    min-height: 30px;
-    font-size: 16px;
-    line-height: 1.35;
+    min-height: 36px;
+    align-items: center;
+    font-size: 14px;
+    line-height: 15px;
   }
 
   .lp-about-course__profile-item img {
-    width: 30px;
-    height: 30px;
-  }
-
-  .lp-about-course__media {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 537 / 416;
-    border-radius: 34px 34px 34px 0;
+    width: 36px;
+    height: 36px;
   }
 
   .lp-market-areas {
@@ -1893,100 +2232,168 @@
     line-height: 1.35;
   }
 
+  .lp-grade-curriculum__cta {
+    width: 100%;
+    max-width: 220px;
+    min-height: 44px;
+    margin-top: 18px;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
   .lp-health-ead {
-    padding: 42px 0 24px;
+    padding: 24px 0 24px;
+    overflow-x: clip;
+  }
+
+  .lp-health-ead__inner {
+    width: calc(100% - 28px);
+    max-width: 362px;
+    overflow: visible;
   }
 
   .lp-health-ead__header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
 
   .lp-health-ead__title {
-    font-size: 30px;
-    line-height: 1.2;
-    letter-spacing: -0.4px;
+    max-width: 362px;
+    font-size: 24.651px;
+    line-height: 29px;
+    letter-spacing: 0;
   }
 
   .lp-health-ead__highlight {
-    width: 100%;
-    font-size: 16px;
-    line-height: 1.35;
+    width: 278px;
+    max-width: 100%;
+    font-size: 14px;
+    line-height: 20px;
   }
 
   .lp-health-ead__highlight strong {
-    display: inline;
+    display: block;
   }
 
   .lp-health-ead__carousel {
-    margin-top: 20px;
+    margin-top: 14px;
     gap: 12px;
   }
 
   .lp-health-ead__carousel-shell {
     width: 100%;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   .lp-health-ead__nav {
-    display: none;
+    width: 49.301px;
+    display: inline-flex;
+    z-index: 4;
+  }
+
+  .lp-health-ead__nav img {
+    width: 20px;
+    height: 20px;
   }
 
   .lp-health-ead__viewport {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
   }
 
   .lp-health-ead__viewport::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .lp-health-ead__viewport::-webkit-scrollbar-thumb {
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.5);
+    display: none;
   }
 
   .lp-health-ead__track {
+    width: max-content;
+    display: flex;
+    gap: 16.434px;
     padding-bottom: 8px;
+    transform: none !important;
   }
 
   .lp-health-ead-card {
-    width: min(306px, calc(100vw - 3.5rem));
-    gap: 12px;
+    width: min(251.437px, calc(100vw - 56px));
+    min-width: min(251.437px, calc(100vw - 56px));
+    border-radius: 13.147px;
+    padding: 9.86px;
+    gap: 13.147px;
+    scroll-snap-align: start;
+  }
+
+  .lp-health-ead-card__image-wrap {
+    height: 108.463px;
+    border-radius: 9.86px;
+  }
+
+  .lp-health-ead-card__tag {
+    min-height: 14.79px;
+    border-width: 0.822px;
+    border-radius: 3.547px;
+    padding: 0 6px;
+    font-size: 8.315px;
+    line-height: 1.13;
+    letter-spacing: -0.1663px;
   }
 
   .lp-health-ead-card__title {
-    font-size: 17px;
+    font-size: 14.79px;
+    line-height: 1.2;
+  }
+
+  .lp-health-ead-card__prices {
+    gap: 5.752px;
   }
 
   .lp-health-ead-card__old-price,
   .lp-health-ead-card__price {
-    font-size: 15px;
+    font-size: 13.147px;
+    line-height: 1.1;
+  }
+
+  .lp-health-ead-card__badge {
+    min-height: 15.612px;
+    border-width: 0.822px;
+    border-radius: 3.547px;
+    padding: 0 6px;
+    font-size: 8.315px;
+    line-height: 1.13;
   }
 
   .lp-health-ead-card__cta {
-    min-height: 44px;
-    font-size: 14px;
-    line-height: 1.2;
+    min-height: 38.619px;
+    border-radius: 9.86px;
+    font-size: 13.147px;
+    line-height: 19.721px;
   }
 
   .lp-health-ead__notice {
+    width: 100%;
+    max-width: 100%;
     padding: 12px 14px;
-    border-radius: 14px;
-    gap: 10px;
+    border-radius: 12px;
+    gap: 12px;
   }
 
   .lp-health-ead__notice-icon {
-    width: 24px;
-    height: 24px;
-    font-size: 15px;
+    width: 27.937px;
+    height: 27.937px;
+    font-size: 16px;
   }
 
   .lp-health-ead__notice p {
-    font-size: 14px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 400;
   }
 
   .lp-faq-cta {
