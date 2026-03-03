@@ -144,7 +144,7 @@ const CURRICULUM_TERMS: CurriculumTerm[] = [
 ]
 
 export function GradeSection() {
-  const [openTermId, setOpenTermId] = useState<string | null>(CURRICULUM_TERMS[0]?.id ?? null)
+  const [openTermId, setOpenTermId] = useState<string | null>(null)
 
   const handleToggle = (termId: string) => {
     setOpenTermId((current) => (current === termId ? null : termId))
