@@ -1042,11 +1042,15 @@
   margin: 0;
   text-align: center;
   color: #ffffff;
-  font-family: 'Liberation Sans', Arial, sans-serif;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
   font-size: 36px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 40px;
   text-transform: uppercase;
+}
+
+.lp-faq-cta__title-accent {
+  color: #001c4c;
 }
 
 .lp-faq-cta__list {
@@ -1075,7 +1079,7 @@
   color: #ffffff;
   text-align: left;
   font-family: 'Liberation Sans', Arial, sans-serif;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 400;
   line-height: 24px;
   cursor: pointer;
@@ -1986,6 +1990,10 @@
   .lp-faq-cta__title {
     font-size: 32px;
     line-height: 1.2;
+  }
+
+  .lp-faq-cta__item {
+    font-size: 16px;
   }
 
   .lp-faq-cta__item {

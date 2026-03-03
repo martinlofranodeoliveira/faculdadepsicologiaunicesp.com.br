@@ -20,16 +20,40 @@ const FAQ_ITEMS: FaqItem[] = [
       'Aceitamos boleto, cartão de crédito e outras opções disponíveis no momento da matrícula.',
   },
   {
-    id: 'diploma',
-    question: 'O diploma EAD tem a mesma validade?',
+    id: 'inscricao-psicologia',
+    question: 'Quem pode se inscrever no curso de Psicologia?',
     answer:
-      'Sim. O diploma EAD reconhecido pelo MEC tem a mesma validade do presencial em todo o território nacional.',
+      'Podem se inscrever candidatos que concluíram o ensino médio e desejam seguir carreira em Psicologia.',
   },
   {
-    id: 'suporte',
-    question: 'Como funciona o suporte acadêmico?',
+    id: 'transferencia-retorno',
+    question: 'Como funciona a transferência ou retorno?',
     answer:
-      'Você conta com tutoria e atendimento por canais digitais para tirar dúvidas sobre conteúdo e rotina do curso.',
+      'Você pode solicitar análise de histórico para transferência ou retorno, conforme as regras acadêmicas vigentes.',
+  },
+  {
+    id: 'atuacao-psicologo',
+    question: 'O que faz um Psicólogo e quais são suas áreas de atuação?',
+    answer:
+      'O Psicólogo atua em clínicas, hospitais, escolas, empresas e no setor público, promovendo saúde mental e desenvolvimento humano.',
+  },
+  {
+    id: 'disciplinas-principais',
+    question: 'Quais são as principais disciplinas do curso de Psicologia?',
+    answer:
+      'A grade inclui fundamentos da Psicologia, desenvolvimento humano, avaliação psicológica, psicopatologia, práticas e estágios supervisionados.',
+  },
+  {
+    id: 'preparo-mercado',
+    question: 'Como o curso de Psicologia prepara os alunos para o mercado de trabalho?',
+    answer:
+      'A formação combina base teórica, prática supervisionada e desenvolvimento de competências para atuação profissional em diferentes contextos.',
+  },
+  {
+    id: 'carreira-psicologos',
+    question: 'Quais são as oportunidades de carreira para Psicólogos formados?',
+    answer:
+      'Há oportunidades em consultório, saúde, educação, organizações, assistência social, perícia, esporte e outras áreas da Psicologia.',
   },
 ]
 
@@ -43,7 +67,9 @@ export function FaqCtaSection() {
   return (
     <section id="faq-cta" className="lp-faq-cta" aria-label="Perguntas frequentes">
       <div className="lp-faq-cta__inner">
-        <h2 className="lp-faq-cta__title">PERGUNTAS FREQUENTES</h2>
+        <h2 className="lp-faq-cta__title">
+          PERGUNTAS <span className="lp-faq-cta__title-accent">FREQUENTES</span>
+        </h2>
 
         <div className="lp-faq-cta__list">
           {FAQ_ITEMS.map((item) => {
