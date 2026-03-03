@@ -248,71 +248,86 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
     <section id="pos-graduacao" className="lp-health-ead" aria-label="Pós EAD em Psicologia">
       <div className="lp-health-ead__inner">
         <header className="lp-health-ead__header">
-          <h2 className="lp-health-ead__title">PÓS EAD EM PSICOLOGIA</h2>
-          <p className="lp-health-ead__subtitle">Explore nossos cursos de pós-graduação em Psicologia</p>
+          <h2 className="lp-health-ead__title">PÓS EAD NA ÁREA DA PSICOLOGIA</h2>
+          <p className="lp-health-ead__highlight">
+            <span>PSICÓLOGOS PÓS-GRADUADOS</span>
+            <strong>RECEBEM SALÁRIOS ATÉ 2X MAIORES</strong>
+          </p>
         </header>
 
         <div className="lp-health-ead__carousel">
-          <button
-            type="button"
-            className="lp-health-ead__nav lp-health-ead__nav--prev"
-            aria-label="Cursos anteriores"
-            onClick={handlePrev}
-            disabled={!canNavigate || clampedIndex === 0}
-          >
-            <img src="/landing/pos-carousel-prev.svg" alt="" aria-hidden="true" />
-          </button>
-
-          <div ref={viewportRef} className="lp-health-ead__viewport">
-            <div className="lp-health-ead__track" style={{ transform: `translateX(-${offset}px)` }}>
-              {healthCourses.map((course) => (
-                <article key={course.id} className="lp-health-ead-card">
-                  <div className="lp-health-ead-card__image-wrap">
-                    <img
-                      className="lp-health-ead-card__image"
-                      src="/landing/pos-ead-health-card.png"
-                      alt="Professor em sala de aula"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  <span className="lp-health-ead-card__tag">{course.tag}</span>
-                  <h3 className="lp-health-ead-card__title">{course.title}</h3>
-
-                  <div className="lp-health-ead-card__prices">
-                    {course.oldPrice ? (
-                      <p className="lp-health-ead-card__old-price">
-                        De: <span>{course.oldPrice}</span>
-                      </p>
-                    ) : null}
-
-                    <div className="lp-health-ead-card__price-row">
-                      <p className="lp-health-ead-card__price">Por: {course.price}</p>
-                      <span className="lp-health-ead-card__badge">FIXOS</span>
+          <div className="lp-health-ead__carousel-shell">
+            <div ref={viewportRef} className="lp-health-ead__viewport">
+              <div className="lp-health-ead__track" style={{ transform: `translateX(-${offset}px)` }}>
+                {healthCourses.map((course) => (
+                  <article key={course.id} className="lp-health-ead-card">
+                    <div className="lp-health-ead-card__image-wrap">
+                      <img
+                        className="lp-health-ead-card__image"
+                        src="/landing/pos-ead-health-card.png"
+                        alt="Professor em sala de aula"
+                        loading="lazy"
+                      />
                     </div>
-                  </div>
 
-                  <button
-                    type="button"
-                    className="lp-health-ead-card__cta"
-                    onClick={() => onOpenCoursePopup(course.selection)}
-                  >
-                    INSCREVA-SE
-                  </button>
-                </article>
-              ))}
+                    <span className="lp-health-ead-card__tag">{course.tag}</span>
+                    <h3 className="lp-health-ead-card__title">{course.title}</h3>
+
+                    <div className="lp-health-ead-card__prices">
+                      {course.oldPrice ? (
+                        <p className="lp-health-ead-card__old-price">
+                          De: <span>{course.oldPrice}</span>
+                        </p>
+                      ) : null}
+
+                      <div className="lp-health-ead-card__price-row">
+                        <p className="lp-health-ead-card__price">Por: {course.price}</p>
+                        <span className="lp-health-ead-card__badge">FIXOS</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="lp-health-ead-card__cta"
+                      onClick={() => onOpenCoursePopup(course.selection)}
+                    >
+                      INSCREVA-SE
+                    </button>
+                  </article>
+                ))}
+              </div>
             </div>
+
+            <button
+              type="button"
+              className="lp-health-ead__nav lp-health-ead__nav--prev"
+              aria-label="Cursos anteriores"
+              onClick={handlePrev}
+              disabled={!canNavigate || clampedIndex === 0}
+            >
+              <img src="/landing/pos-carousel-prev.svg" alt="" aria-hidden="true" />
+            </button>
+
+            <button
+              type="button"
+              className="lp-health-ead__nav lp-health-ead__nav--next"
+              aria-label="Próximos cursos"
+              onClick={handleNext}
+              disabled={!canNavigate || clampedIndex === maxIndex}
+            >
+              <img src="/landing/pos-carousel-next.svg" alt="" aria-hidden="true" />
+            </button>
           </div>
 
-          <button
-            type="button"
-            className="lp-health-ead__nav lp-health-ead__nav--next"
-            aria-label="Próximos cursos"
-            onClick={handleNext}
-            disabled={!canNavigate || clampedIndex === maxIndex}
-          >
-            <img src="/landing/pos-carousel-next.svg" alt="" aria-hidden="true" />
-          </button>
+          <div className="lp-health-ead__notice" role="note">
+            <span className="lp-health-ead__notice-icon" aria-hidden="true">
+              !
+            </span>
+            <p>
+              Os cursos atendem às normativas e exigências estabelecidas pelo CFP e CRP, assegurando
+              conformidade com a legislação profissional vigente.
+            </p>
+          </div>
         </div>
       </div>
     </section>

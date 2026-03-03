@@ -1,4 +1,8 @@
-export function FaqSection() {
+type FaqSectionProps = {
+  onOpenPopup?: () => void
+}
+
+export function FaqSection({ onOpenPopup }: FaqSectionProps) {
   return (
     <section id="graduacao" className="lp-graduation" aria-label="Sobre o curso de graduação em psicologia">
       <div className="lp-graduation__inner">
@@ -19,7 +23,9 @@ export function FaqSection() {
               aria-hidden="true"
             />
             <span className="lp-graduation__location-text">
-              <strong>Presencial:</strong> Local: 200m do Metrô Belém | SP
+              <strong>Local:</strong> R. Júlio de Castilhos, 777 - Metrô Belém,
+              <br />
+              São Paulo - SP, 03059-005
             </span>
           </div>
 
@@ -43,14 +49,9 @@ export function FaqSection() {
             </div>
           </div>
 
-          <div className="lp-graduation__knowledge">
-            <strong>Área de conhecimento:</strong>
-            <div className="lp-graduation__tags">
-              <span className="lp-graduation__tag lp-graduation__tag--one">Destaque</span>
-              <span className="lp-graduation__tag lp-graduation__tag--two">Destaque</span>
-              <span className="lp-graduation__tag lp-graduation__tag--three">Destaque</span>
-            </div>
-          </div>
+          <button type="button" className="lp-graduation__cta" onClick={onOpenPopup}>
+            Saiba mais
+          </button>
         </div>
       </div>
     </section>

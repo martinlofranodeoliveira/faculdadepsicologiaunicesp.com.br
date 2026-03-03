@@ -42,7 +42,7 @@ export function LandingPage() {
       <HeroSection onOpenPopup={openHeroPopup} />
       <CourseSection />
       <ProfileBannerSection />
-      <FaqSection />
+      <FaqSection onOpenPopup={openHeroPopup} />
       <FooterSection />
       <MarketSection />
       <GradeSection />

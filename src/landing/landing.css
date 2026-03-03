@@ -101,15 +101,17 @@
   color: #ffffff;
 }
 
-.lp-lead__title-icon {
-  width: 24px;
-  height: 24px;
-  display: block;
-}
-
 .lp-lead__form {
   width: 644px;
   max-width: 100%;
+}
+
+.lp-lead__form--step-1 {
+  width: 650px;
+}
+
+.lp-lead__form--step-2 {
+  width: 780px;
 }
 
 .lp-lead__row {
@@ -257,11 +259,14 @@
 }
 
 .lp-graduation__location {
+  width: 452px;
+  max-width: 100%;
+  min-height: 62px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   justify-content: flex-start;
-  border-radius: 15px;
+  border-radius: 38px;
   border: 1px solid rgba(30, 94, 200, 0.46);
   padding: 7px 15px;
   color: #06090d;
@@ -275,16 +280,16 @@
 }
 
 .lp-graduation__location-text {
-  display: inline;
+  display: block;
   font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
   font-size: 18px;
-  font-weight: 400;
-  line-height: 30px;
+  font-weight: 300;
+  line-height: 24px;
   color: #06090d;
 }
 
 .lp-graduation__location-text strong {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .lp-graduation__heading {
@@ -315,6 +320,20 @@
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.lp-graduation__cta {
+  width: 175px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  background: #0b66fd;
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 31.115px;
+  cursor: pointer;
 }
 
 .lp-graduation__meta-icon-wrap {
@@ -740,8 +759,8 @@
 }
 
 .lp-health-ead {
-  background: #031f4e;
-  padding: 56px 0 32px;
+  background: #00163b;
+  padding: 41px 0 32px;
 }
 
 .lp-health-ead__inner {
@@ -750,54 +769,91 @@
 }
 
 .lp-health-ead__header {
-  max-width: 672px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
 }
 
 .lp-health-ead__title {
   margin: 0;
+  max-width: 672px;
   color: #ffffff;
   font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 42px;
+  font-size: 30px;
   font-weight: 800;
   line-height: 40px;
   letter-spacing: -0.9px;
   text-transform: uppercase;
 }
 
-.lp-health-ead__subtitle {
-  margin: 8px 0 0;
-  color: #ffffff;
-  font-family: 'Liberation Sans', Arial, sans-serif;
-  font-size: 18px;
+.lp-health-ead__highlight {
+  margin: 0;
+  width: 422px;
+  max-width: 100%;
+  text-transform: uppercase;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 22px;
+  line-height: 30px;
   font-weight: 400;
-  line-height: 28px;
+  color: #ffffff;
+}
+
+.lp-health-ead__highlight span {
+  color: #6eb9f0;
+}
+
+.lp-health-ead__highlight strong {
+  display: block;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 .lp-health-ead__carousel {
   margin-top: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
   gap: 16px;
 }
 
+.lp-health-ead__carousel-shell {
+  width: 1237px;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
 .lp-health-ead__nav {
-  width: 40px;
-  height: 40px;
+  width: 60px;
   border: 0;
   padding: 0;
-  background: transparent;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  background: linear-gradient(90deg, #00163b 0%, rgba(0, 22, 59, 0) 100%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   cursor: pointer;
 }
 
 .lp-health-ead__nav img {
-  width: 40px;
-  height: 40px;
+  width: 26px;
+  height: 26px;
   display: block;
+}
+
+.lp-health-ead__nav--prev {
+  left: 0;
+}
+
+.lp-health-ead__nav--next {
+  right: 0;
+  background: linear-gradient(270deg, #00163b 0%, rgba(0, 22, 59, 0) 100%);
+}
+
+.lp-health-ead__nav--next img {
+  transform: rotate(180deg);
 }
 
 .lp-health-ead__nav:disabled {
@@ -805,12 +861,8 @@
   cursor: not-allowed;
 }
 
-.lp-health-ead__nav--next img {
-  transform: rotate(180deg);
-}
-
 .lp-health-ead__viewport {
-  width: 1121px;
+  width: 1234px;
   max-width: 100%;
   overflow: hidden;
 }
@@ -925,7 +977,7 @@
   min-height: 47px;
   border: 0;
   border-radius: 12px;
-  background: #1e5ec8;
+  background: linear-gradient(90deg, #2556a9 0%, #2d67c5 100%);
   color: #ffffff;
   font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
   font-size: 16px;
@@ -933,6 +985,44 @@
   line-height: 24px;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.lp-health-ead__notice {
+  width: 1237px;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 70px;
+  border-radius: 18px;
+  background: rgba(110, 185, 240, 0.21);
+  padding: 15px 25px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.lp-health-ead__notice-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #6eb5f0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #6eb5f0;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lp-health-ead__notice p {
+  margin: 0;
+  color: #6eb5f0;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
 }
 
 .lp-faq-cta {
@@ -1582,6 +1672,13 @@
     margin-top: 0;
   }
 
+  .lp-graduation__cta {
+    width: 100%;
+    min-height: 46px;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
   .lp-graduation__knowledge {
     margin-top: 0;
   }
@@ -1786,21 +1883,35 @@
     padding: 42px 0 24px;
   }
 
+  .lp-health-ead__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
   .lp-health-ead__title {
     font-size: 30px;
     line-height: 1.2;
     letter-spacing: -0.4px;
   }
 
-  .lp-health-ead__subtitle {
-    margin-top: 6px;
+  .lp-health-ead__highlight {
+    width: 100%;
     font-size: 16px;
-    line-height: 1.45;
+    line-height: 1.35;
+  }
+
+  .lp-health-ead__highlight strong {
+    display: inline;
   }
 
   .lp-health-ead__carousel {
     margin-top: 20px;
-    gap: 8px;
+    gap: 12px;
+  }
+
+  .lp-health-ead__carousel-shell {
+    width: 100%;
   }
 
   .lp-health-ead__nav {
@@ -1845,6 +1956,23 @@
     min-height: 44px;
     font-size: 14px;
     line-height: 1.2;
+  }
+
+  .lp-health-ead__notice {
+    padding: 12px 14px;
+    border-radius: 14px;
+    gap: 10px;
+  }
+
+  .lp-health-ead__notice-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 15px;
+  }
+
+  .lp-health-ead__notice p {
+    font-size: 14px;
+    line-height: 1.4;
   }
 
   .lp-faq-cta {
@@ -1971,6 +2099,52 @@
 
 .lp-lead__row {
   align-items: flex-start;
+  transition:
+    opacity 240ms ease,
+    transform 240ms ease;
+  will-change: opacity, transform;
+}
+
+.lp-lead__row.is-leaving.to-next {
+  opacity: 0;
+  transform: translateX(-28px);
+}
+
+.lp-lead__row.is-entering.to-next {
+  animation: lp-lead-step-enter-from-right 240ms ease both;
+}
+
+.lp-lead__row.is-leaving.to-prev {
+  opacity: 0;
+  transform: translateX(28px);
+}
+
+.lp-lead__row.is-entering.to-prev {
+  animation: lp-lead-step-enter-from-left 240ms ease both;
+}
+
+@keyframes lp-lead-step-enter-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes lp-lead-step-enter-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .lp-lead__row--step-1 {
@@ -2176,6 +2350,10 @@
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
   font-size: 14px;
   font-weight: 700;
@@ -2183,6 +2361,19 @@
   padding: 0 18px;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.lp-lead__back:disabled {
+  opacity: 0.74;
+  cursor: not-allowed;
+}
+
+.lp-lead__back-icon {
+  width: 9px;
+  height: 5px;
+  transform: rotate(360deg);
+  display: block;
+  flex-shrink: 0;
 }
 
 .lp-lead__error {

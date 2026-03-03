@@ -17,6 +17,8 @@ import { POS_COURSES_ENDPOINT, parsePostGraduationCourses } from '../postCourses
 type FormStep = 1 | 2
 type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error'
 type PostCourseStatus = 'idle' | 'loading' | 'success' | 'error'
+type StepTransitionPhase = 'idle' | 'exit' | 'enter'
+type StepTransitionDirection = 'forward' | 'backward'
 
 type CourseOption = {
   value: string
@@ -57,6 +59,7 @@ const EMPTY_TOUCHED: Touched = {
 }
 
 const COURSE_SCROLL_PAGE_SIZE = 24
+const STEP_TRANSITION_DURATION_MS = 240
 const TARGET_PSYCHOLOGY_POST_COURSES: TargetPsychologyPostCourse[] = [
   {
     title: 'NEUROPSICOLOGIA',
@@ -160,6 +163,10 @@ export function CourseSection() {
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>('idle')
   const [submitMessage, setSubmitMessage] = useState('')
   const [visibleCourseCount, setVisibleCourseCount] = useState(COURSE_SCROLL_PAGE_SIZE)
+  const [stepTransitionPhase, setStepTransitionPhase] = useState<StepTransitionPhase>('idle')
+  const [stepTransitionDirection, setStepTransitionDirection] =
+    useState<StepTransitionDirection>('forward')
+  const [queuedStep, setQueuedStep] = useState<FormStep | null>(null)
 
   const loadPostCourses = useCallback(async () => {
     setPostCourseStatus('loading')
@@ -218,6 +225,36 @@ export function CourseSection() {
   useEffect(() => {
     void loadPostCourses()
   }, [loadPostCourses])
+
+  useEffect(() => {
+    if (stepTransitionPhase !== 'exit' || queuedStep === null) {
+      return
+    }
+
+    const timerId = window.setTimeout(() => {
+      setStep(queuedStep)
+      setStepTransitionPhase('enter')
+    }, STEP_TRANSITION_DURATION_MS)
+
+    return () => {
+      window.clearTimeout(timerId)
+    }
+  }, [queuedStep, stepTransitionPhase])
+
+  useEffect(() => {
+    if (stepTransitionPhase !== 'enter') {
+      return
+    }
+
+    const timerId = window.setTimeout(() => {
+      setStepTransitionPhase('idle')
+      setQueuedStep(null)
+    }, STEP_TRANSITION_DURATION_MS)
+
+    return () => {
+      window.clearTimeout(timerId)
+    }
+  }, [stepTransitionPhase])
 
   const allCourseOptions = useMemo<CourseOption[]>(() => {
     return formCourseGroups.flatMap((group) => group.options)
@@ -286,7 +323,14 @@ export function CourseSection() {
   const emailInvalid = Boolean(touched.email && fieldErrors.email)
   const phoneInvalid = Boolean(touched.phone && fieldErrors.phone)
 
+  const isStepTransitioning = stepTransitionPhase !== 'idle'
   const formLeadTitle = step === 1 ? 'Encontre seu Curso' : 'Informe os dados'
+  const rowTransitionClass =
+    stepTransitionPhase === 'idle'
+      ? ''
+      : `is-${stepTransitionPhase === 'exit' ? 'leaving' : 'entering'} ${
+          stepTransitionDirection === 'forward' ? 'to-next' : 'to-prev'
+        }`
 
   const applyFieldValidation = (field: FieldName, value: string) => {
     const error = validateField(field, value)
@@ -324,7 +368,17 @@ export function CourseSection() {
     return fields.every((field) => !nextErrors[field])
   }
 
+  const startStepTransition = (targetStep: FormStep) => {
+    if (targetStep === step || isStepTransitioning) return
+
+    setStepTransitionDirection(targetStep > step ? 'forward' : 'backward')
+    setQueuedStep(targetStep)
+    setStepTransitionPhase('exit')
+  }
+
   const handleStepAdvance = (from: FormStep) => {
+    if (isStepTransitioning) return
+
     const isValid = validateFields(STEP_FIELDS[from])
     if (!isValid) {
       setSubmitStatus('error')
@@ -336,13 +390,15 @@ export function CourseSection() {
       setIsCourseSearchOpen(false)
     }
 
-    setStep(Math.min(from + 1, 2) as FormStep)
+    startStepTransition(Math.min(from + 1, 2) as FormStep)
     setSubmitStatus('idle')
     setSubmitMessage('')
   }
 
   const handleStepBack = () => {
-    setStep(Math.max(step - 1, 1) as FormStep)
+    if (isStepTransitioning) return
+
+    startStepTransition(Math.max(step - 1, 1) as FormStep)
     setSubmitStatus('idle')
     setSubmitMessage('')
   }
@@ -372,6 +428,7 @@ export function CourseSection() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (isStepTransitioning) return
 
     if (step === 1) {
       handleStepAdvance(1)
@@ -430,17 +487,11 @@ export function CourseSection() {
       <div className="lp-lead__inner">
         <div className="lp-lead__title-wrap">
           <h2 className="lp-lead__title">{formLeadTitle}</h2>
-          <img
-            className="lp-lead__title-icon"
-            src="/landing/lead-arrow-forward.svg"
-            alt=""
-            aria-hidden="true"
-          />
         </div>
 
-        <form className="lp-lead__form" onSubmit={handleSubmit} noValidate>
+        <form className={`lp-lead__form lp-lead__form--step-${step}`} onSubmit={handleSubmit} noValidate>
           {step === 1 ? (
-            <div className="lp-lead__row lp-lead__row--step-1">
+            <div className={`lp-lead__row lp-lead__row--step-1 ${rowTransitionClass}`}>
               <div className="lp-lead__field-wrap lp-lead__field-wrap--modality">
                 <label
                   className={`lp-lead__field lp-lead__field--select ${
@@ -665,15 +716,26 @@ export function CourseSection() {
                 ) : null}
               </div>
 
-              <button type="submit" className="lp-lead__button">
+              <button type="submit" className="lp-lead__button" disabled={isStepTransitioning}>
                 CONTINUAR
               </button>
             </div>
           ) : null}
 
           {step === 2 ? (
-            <div className="lp-lead__row lp-lead__row--step-2">
-              <button type="button" className="lp-lead__back" onClick={handleStepBack}>
+            <div className={`lp-lead__row lp-lead__row--step-2 ${rowTransitionClass}`}>
+              <button
+                type="button"
+                className="lp-lead__back"
+                onClick={handleStepBack}
+                disabled={isStepTransitioning}
+              >
+                <img
+                  className="lp-lead__back-icon"
+                  src="/landing/grade-chevron.svg"
+                  alt=""
+                  aria-hidden="true"
+                />
                 Voltar
               </button>
 
@@ -768,7 +830,11 @@ export function CourseSection() {
                 ) : null}
               </div>
 
-              <button type="submit" className="lp-lead__button" disabled={submitStatus === 'submitting'}>
+              <button
+                type="submit"
+                className="lp-lead__button"
+                disabled={submitStatus === 'submitting' || isStepTransitioning}
+              >
                 {submitStatus === 'submitting' ? 'ENVIANDO...' : 'ENVIAR'}
               </button>
             </div>
