@@ -204,6 +204,11 @@
   margin: 0 auto;
 }
 
+.lp-post-banner__link {
+  display: block;
+  text-decoration: none;
+}
+
 .lp-post-banner__image {
   width: 100%;
   height: auto;
@@ -1130,6 +1135,7 @@
   font-size: 25px;
   font-weight: 800;
   line-height: 40px;
+  text-transform: uppercase;
 }
 
 .lp-enrollment-modal__subtitle {
