@@ -214,13 +214,16 @@
 .lp-post-banner__picture {
   display: block;
   width: 100%;
+  aspect-ratio: 1237 / 188;
+  border-radius: 30px;
+  overflow: hidden;
 }
 
 .lp-post-banner__image {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  border-radius: 30px;
+  object-fit: cover;
 }
 
 .lp-graduation {
@@ -1560,6 +1563,11 @@
 }
 
 @media (max-width: 1300px) {
+  .lp-post-banner__inner {
+    width: calc(100% - 28px);
+    max-width: 100%;
+  }
+
   .lp-lead {
     overflow-x: clip;
   }
@@ -1932,8 +1940,13 @@
     padding-bottom: 24px;
   }
 
-  .lp-post-banner__image {
+  .lp-post-banner__picture {
+    aspect-ratio: 543 / 257;
     border-radius: 20px;
+  }
+
+  .lp-post-banner__image {
+    border-radius: 0;
   }
 
   .lp-graduation {
