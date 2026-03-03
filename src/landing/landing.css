@@ -1978,11 +1978,7 @@
 }
 
 .lp-lead__row--step-2 {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-}
-
-.lp-lead__row--step-3 {
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
 }
 
 .lp-lead__field-wrap {
@@ -2231,8 +2227,7 @@
 
 @media (max-width: 768px) {
   .lp-lead__row--step-1,
-  .lp-lead__row--step-2,
-  .lp-lead__row--step-3 {
+  .lp-lead__row--step-2 {
     grid-template-columns: 1fr;
   }
 

@@ -14,7 +14,7 @@ import {
 import { formCourseGroups } from '../data'
 import { POS_COURSES_ENDPOINT, parsePostGraduationCourses } from '../postCourses'
 
-type FormStep = 1 | 2 | 3
+type FormStep = 1 | 2
 type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error'
 type PostCourseStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -45,8 +45,7 @@ const DEFAULT_GRADUATION_OPTION: CourseOption = {
 
 const STEP_FIELDS: Record<FormStep, FieldName[]> = {
   1: ['courseType', 'course'],
-  2: ['fullName'],
-  3: ['email', 'phone'],
+  2: ['fullName', 'email', 'phone'],
 }
 
 const EMPTY_TOUCHED: Touched = {
@@ -337,7 +336,7 @@ export function CourseSection() {
       setIsCourseSearchOpen(false)
     }
 
-    setStep(Math.min(from + 1, 3) as FormStep)
+    setStep(Math.min(from + 1, 2) as FormStep)
     setSubmitStatus('idle')
     setSubmitMessage('')
   }
@@ -376,11 +375,6 @@ export function CourseSection() {
 
     if (step === 1) {
       handleStepAdvance(1)
-      return
-    }
-
-    if (step === 2) {
-      handleStepAdvance(2)
       return
     }
 
@@ -687,7 +681,7 @@ export function CourseSection() {
                 <label className={`lp-lead__field lp-lead__field--plain ${fullNameInvalid ? 'is-invalid' : ''}`}>
                   <input
                     type="text"
-                    placeholder="Digite o nome"
+                    placeholder="Digite seu nome"
                     value={fullName}
                     autoComplete="name"
                     maxLength={120}
@@ -712,18 +706,6 @@ export function CourseSection() {
                   </span>
                 ) : null}
               </div>
-
-              <button type="submit" className="lp-lead__button">
-                SALVAR
-              </button>
-            </div>
-          ) : null}
-
-          {step === 3 ? (
-            <div className="lp-lead__row lp-lead__row--step-3">
-              <button type="button" className="lp-lead__back" onClick={handleStepBack}>
-                Voltar
-              </button>
 
               <div className="lp-lead__field-wrap">
                 <label className={`lp-lead__field lp-lead__field--plain ${emailInvalid ? 'is-invalid' : ''}`}>
