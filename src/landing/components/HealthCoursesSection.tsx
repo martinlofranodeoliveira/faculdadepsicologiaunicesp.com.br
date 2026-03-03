@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { CourseLeadSelection } from '../crmLead'
 import { POS_COURSES_ENDPOINT, parsePostGraduationCourses, type PostCourse } from '../postCourses'
@@ -14,6 +14,7 @@ type HealthCourse = {
   title: string
   oldPrice: string
   price: string
+  imageSrc: string
   selection: CourseLeadSelection
 }
 
@@ -21,6 +22,7 @@ type TargetPsychologyCourse = {
   title: string
   fallbackValue: string
   aliases: string[]
+  imageSrc: string
 }
 
 type HealthCoursesSectionProps = {
@@ -32,31 +34,37 @@ const TARGET_PSYCHOLOGY_COURSES: TargetPsychologyCourse[] = [
     title: 'NEUROPSICOLOGIA',
     fallbackValue: 'pos-neuropsicologia',
     aliases: ['NEUROPSICOLOGIA'],
+    imageSrc: '/landing/neuropsicologia.webp',
   },
   {
     title: 'PSICOLOGIA ESCOLAR E EDUCACIONAL',
     fallbackValue: 'pos-psicologia-escolar-e-educacional',
     aliases: ['PSICOLOGIA ESCOLAR E EDUCACIONAL'],
+    imageSrc: '/landing/psicologia-escolar-e-educacional.webp',
   },
   {
     title: 'PSICOLOGIA FORENSE E JURÍDICA',
     fallbackValue: 'pos-psicologia-forense-e-juridica',
     aliases: ['PSICOLOGIA FORENSE E JURIDICA', 'PSICOLOGIA FORENSE E JURÍDICA'],
+    imageSrc: '/landing/psicologia-forense-e-juridica.webp',
   },
   {
     title: 'PSICOLOGIA INFANTIL',
     fallbackValue: 'pos-psicologia-infantil',
     aliases: ['PSICOLOGIA INFANTIL'],
+    imageSrc: '/landing/psicologia-infantil.webp',
   },
   {
     title: 'PSICOLOGIA PASTORAL',
     fallbackValue: 'pos-psicologia-pastoral',
     aliases: ['PSICOLOGIA PASTORAL'],
+    imageSrc: '/landing/psicologia-pastoral.webp',
   },
   {
     title: 'PSICOLOGIA SOCIAL',
     fallbackValue: 'pos-psicologia-social',
     aliases: ['PSICOLOGIA SOCIAL', 'PSICOLOGIA SOCIAL E'],
+    imageSrc: '/landing/psicologia-social.webp',
   },
 ]
 
@@ -115,6 +123,7 @@ function buildFallbackCourse(target: TargetPsychologyCourse): HealthCourse {
     title: target.title,
     oldPrice: DEFAULT_OLD_PRICE,
     price: DEFAULT_CURRENT_PRICE,
+    imageSrc: target.imageSrc,
     selection: {
       courseType: 'pos',
       courseValue: target.fallbackValue,
@@ -133,6 +142,7 @@ function mapPostCourseToHealthCard(course: PostCourse, target: TargetPsychologyC
     title: target.title,
     oldPrice,
     price,
+    imageSrc: target.imageSrc,
     selection: {
       courseType: 'pos',
       courseValue: course.value,
@@ -324,8 +334,8 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
                     <div className="lp-health-ead-card__image-wrap">
                       <img
                         className="lp-health-ead-card__image"
-                        src="/landing/pos-ead-health-card.png"
-                        alt="Professor em sala de aula"
+                        src={course.imageSrc}
+                        alt={`Imagem do curso ${course.title}`}
                         loading="lazy"
                       />
                     </div>
