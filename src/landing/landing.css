@@ -198,7 +198,7 @@
 
 .lp-post-banner {
   background: #ffffff;
-  padding: 32px 0 32px;
+  padding: 30px 0 30px;
 }
 
 .lp-post-banner__inner {
@@ -228,7 +228,7 @@
 
 .lp-graduation {
   background: #ffffff;
-  padding: 60px 0;
+  padding: 20px 0;
 }
 
 .lp-graduation__inner {
@@ -1950,7 +1950,7 @@
   }
 
   .lp-post-banner {
-    padding-bottom: 24px;
+    padding-bottom: 20px;
   }
 
   .lp-post-banner__picture {
@@ -1963,7 +1963,7 @@
   }
 
   .lp-graduation {
-    padding: 42px 0;
+    padding: 20px 0;
     overflow-x: clip;
   }
 
