@@ -31,7 +31,7 @@ export function FaqSection({ onOpenPopup }: FaqSectionProps) {
 
           <div className="lp-graduation__heading">
             <h2 className="lp-graduation__title">GRADUAÇÃO PRESENCIAL EM PSICOLOGIA</h2>
-            <p className="lp-graduation__subtitle">Cuidando de você com atenção e excelência.</p>
+            <p className="lp-graduation__subtitle">Prepare-se para o Mercado com vivências práticas e domínio das principais abordagens.</p>
           </div>
 
           <div className="lp-graduation__meta">
