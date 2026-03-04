@@ -1,10 +1,8 @@
 ﻿const PROFILE_ITEMS = [
-  'Clínica-Escola própria para atendimentos supervisionados à comunidade',
-  'Práticas supervisionadas e estágios em diversos contextos',
-  'Interesse por aprofundamento na Psicologia',
-  'Desenvolvimento de competências em avaliação e intervenção',
-  'Atuação em saúde, educação, organizações e políticas públicas',
-  'Formação ética alinhada às diretrizes profissionais',
+  'Dominar a prática através da vivência em nossa Clínica-Escola',
+  'Desenvolver raciocínio técnico para tomar decisões em casos de alta complexidade',
+  'Ser referência no Mercado unindo Ciência à Prática ética e humana',
+  'Conquistar versatilidade para atuar em escolas, hospitais, empresas e órgãos públicos',
 ]
 
 export function FooterSection() {
