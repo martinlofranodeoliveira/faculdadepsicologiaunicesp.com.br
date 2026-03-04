@@ -340,7 +340,10 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
                       />
                     </div>
 
-                    <span className="lp-health-ead-card__tag">{course.tag}</span>
+                    <div className="lp-health-ead-card__badges">
+                      <span className="lp-health-ead-card__tag">{course.tag}</span>
+                      <span className="lp-health-ead-card__mec">RECONHECIDO MEC</span>
+                    </div>
                     <h3 className="lp-health-ead-card__title">{course.title}</h3>
 
                     <div className="lp-health-ead-card__prices">
@@ -352,7 +355,6 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
 
                       <div className="lp-health-ead-card__price-row">
                         <p className="lp-health-ead-card__price">Por: {course.price}</p>
-                        <span className="lp-health-ead-card__badge">FIXOS</span>
                       </div>
                     </div>
 

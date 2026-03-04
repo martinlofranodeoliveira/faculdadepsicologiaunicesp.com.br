@@ -933,13 +933,34 @@
   display: block;
 }
 
+.lp-health-ead-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .lp-health-ead-card__tag {
-  align-self: flex-start;
   min-height: 18px;
   border-radius: 4.317px;
   border: 1px solid #1e5ec8;
   padding: 0 8px;
   color: #1e5ec8;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 10.119px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: -0.2024px;
+  text-transform: uppercase;
+}
+
+.lp-health-ead-card__mec {
+  min-height: 18px;
+  border-radius: 4.317px;
+  border: 1px solid #29a870;
+  background: #eaf8f1;
+  padding: 0 8px;
+  color: #1a7f55;
   font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
   font-size: 10.119px;
   font-weight: 700;
@@ -989,19 +1010,6 @@
   font-size: 16px;
   font-weight: 700;
   line-height: 1.1;
-}
-
-.lp-health-ead-card__badge {
-  min-height: 19px;
-  border-radius: 4.317px;
-  border: 1px solid #007bff;
-  padding: 0 8px;
-  color: #007bff;
-  font-family: 'Rubik', 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 10.119px;
-  font-weight: 500;
-  line-height: 17px;
-  text-transform: uppercase;
 }
 
 .lp-health-ead-card__cta {
@@ -2371,6 +2379,16 @@
     letter-spacing: -0.1663px;
   }
 
+  .lp-health-ead-card__mec {
+    min-height: 14.79px;
+    border-width: 0.822px;
+    border-radius: 3.547px;
+    padding: 0 6px;
+    font-size: 8.315px;
+    line-height: 1.13;
+    letter-spacing: -0.1663px;
+  }
+
   .lp-health-ead-card__title {
     font-size: 14.79px;
     line-height: 1.2;
@@ -2384,15 +2402,6 @@
   .lp-health-ead-card__price {
     font-size: 13.147px;
     line-height: 1.1;
-  }
-
-  .lp-health-ead-card__badge {
-    min-height: 15.612px;
-    border-width: 0.822px;
-    border-radius: 3.547px;
-    padding: 0 6px;
-    font-size: 8.315px;
-    line-height: 1.13;
   }
 
   .lp-health-ead-card__cta {
