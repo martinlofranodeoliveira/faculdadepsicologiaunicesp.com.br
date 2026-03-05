@@ -33,9 +33,9 @@
               <li>
                 <img src="/landing/footer-icon-location.svg" alt="" aria-hidden="true" />
                 <span>
-                  R. Júlio de Castilhos, 777 - Metrô Belém
+                  Rua Dr. Diogo de Faria, 66 - Vila Mariana
                   <br />
-                  São Paulo - SP, 03059-005
+                  São Paulo - SP, CEP: 04037-000
                 </span>
               </li>
               <li>
@@ -57,7 +57,7 @@
             <div className="lp-footer-map-block__card">
               <img src="/landing/footer-map.png" alt="Mapa de localização em São Paulo" />
               <a
-                href="https://maps.google.com/?q=R.+J%C3%BAlio+de+Castilhos,+777+-+Metr%C3%B4+Bel%C3%A9m,+S%C3%A3o+Paulo+-+SP,+03059-005"
+                href="https://maps.google.com/?q=Rua+Dr.+Diogo+de+Faria,+66+-+Vila+Mariana,+S%C3%A3o+Paulo+-+SP,+04037-000"
                 target="_blank"
                 rel="noreferrer"
               >
