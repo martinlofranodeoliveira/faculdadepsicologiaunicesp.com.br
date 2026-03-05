@@ -81,9 +81,10 @@
   margin: 0 auto;
   padding: 24px 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 8px 1.5rem;
 }
 
 .lp-lead__title-wrap {
@@ -2844,6 +2845,7 @@
 }
 
 .lp-lead__status {
+  flex: 0 0 100%;
   width: 100%;
   color: #d5e6ff;
   font-size: 13px;
