@@ -13,7 +13,7 @@
             </div>
 
             <p className="lp-footer-brand__description">
-              ExcelÃªncia no ensino superior com foco na inovaÃ§Ã£o e na empregabilidade dos nossos alunos.
+              Excelência no ensino superior com foco na inovação e na empregabilidade dos nossos alunos.
             </p>
 
             <div className="lp-footer-brand__social">
@@ -52,10 +52,10 @@
           </section>
 
           <section className="lp-footer-map-block">
-            <h3>LocalizaÃ§Ã£o</h3>
+            <h3>Localização</h3>
 
             <div className="lp-footer-map-block__card">
-              <img src="/landing/footer-map.png" alt="Mapa de localizaÃ§Ã£o em SÃ£o Paulo" />
+              <img src="/landing/footer-map.png" alt="Mapa de localização em São Paulo" />
               <a
                 href="https://maps.google.com/?q=R.+J%C3%BAlio+de+Castilhos,+777+-+Metr%C3%B4+Bel%C3%A9m,+S%C3%A3o+Paulo+-+SP,+03059-005"
                 target="_blank"
@@ -72,7 +72,7 @@
           <small>(c) 2026 Faculdade de Psicologia UNICESP. Todos os direitos reservados.</small>
 
           <div className="lp-footer-bottom__links">
-            <a href="/politica-de-privacidade">PolÃ­tica de Privacidade</a>
+            <a href="/politica-de-privacidade">Política de Privacidade</a>
             <a href="/termos-de-uso">Termos de Uso</a>
           </div>
         </div>
