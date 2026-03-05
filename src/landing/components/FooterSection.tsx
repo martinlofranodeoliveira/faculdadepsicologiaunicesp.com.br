@@ -31,11 +31,14 @@ export function FooterSection() {
         </div>
 
         <div className="lp-about-course__media">
-          <img
-            src="/landing/sobre-curso-psicologia.png"
-            alt="Estudante de psicologia em atendimento supervisionado"
-            loading="lazy"
-          />
+          <picture>
+            <source media="(max-width: 768px)" srcSet="/landing/sobre-o-curso-psicologia-mobile.webp" />
+            <img
+              src="/landing/sobre-o-curso-psicologia.webp"
+              alt="Estudante de psicologia em atendimento supervisionado"
+              loading="lazy"
+            />
+          </picture>
         </div>
       </div>
     </section>

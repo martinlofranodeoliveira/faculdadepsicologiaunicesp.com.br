@@ -7,21 +7,21 @@ type MarketArea = {
 
 const MARKET_AREAS: MarketArea[] = [
   {
-    image: '/landing/areas-atuacao-1.png',
+    image: '/landing/areas-atuacao-1.webp',
     title: 'Psicólogo de Saúde',
     description:
       'Integre equipes multidisciplinares em hospitais e Unidades de Saúde, focando no cuidado integral do paciente através da psicologia.',
     salary: 'MÉDIA SALARIAL: R$ 3.800,00 A R$ 5.200,00',
   },
   {
-    image: '/landing/areas-atuacao-2.png',
+    image: '/landing/areas-atuacao-2.webp',
     title: 'Psicólogo Esportivo',
     description:
       'Potencialize o rendimento de atletas e equipes através do acompanhamento psicológico e controle emocional em treinos e competições.',
     salary: 'MÉDIA SALARIAL: R$ 4.500,00 A R$ 8.500,00',
   },
   {
-    image: '/landing/areas-atuacao-3.png',
+    image: '/landing/areas-atuacao-3.webp',
     title: 'Psicólogo Social',
     description:
       'Atue em Instituições de longa permanência, Unidades de acolhimento voltadas a crianças e adolescentes, e no Sistema prisional.',
