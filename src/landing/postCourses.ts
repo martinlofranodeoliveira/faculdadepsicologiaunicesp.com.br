@@ -48,7 +48,7 @@ function fallbackOldInstallmentPrice(): string {
 }
 
 function fallbackCurrentInstallmentPrice(): string {
-  return '18X R$ 66,00'
+  return '18X R$ 86,00'
 }
 
 function extractIntegerFromBlock(block: string, patterns: RegExp[]): number | undefined {

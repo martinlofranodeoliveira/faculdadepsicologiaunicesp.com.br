@@ -3,108 +3,57 @@
 import type { MouseEvent } from 'react'
 
 import type { CourseLeadSelection } from '../crmLead'
+import {
+  FEATURED_PSYCHOLOGY_POST_COURSES,
+  buildPostCourseHoursLabel,
+  psychologyPostCourseMatches,
+  type PsychologyPostCourseCatalogItem,
+} from '../psychologyPostCourses'
 import { POS_COURSES_ENDPOINT, parsePostGraduationCourses, type PostCourse } from '../postCourses'
 
 const CARD_WIDTH = 306
 const CARD_GAP = 20
 const DEFAULT_OLD_PRICE = '18X R$ 132,00'
-const DEFAULT_CURRENT_PRICE = '18X R$ 66,00/MÊS'
+const DEFAULT_CURRENT_PRICE = '18X R$ 86,00/MÊS'
 
 type HealthCourse = {
   id: string
   title: string
   oldPrice: string
   price: string
+  hoursLabel: string
   imageSrc: string
+  featureLabel: string
   selection: CourseLeadSelection
-}
-
-type TargetPsychologyCourse = {
-  title: string
-  fallbackValue: string
-  aliases: string[]
-  imageSrc: string
 }
 
 type HealthCoursesSectionProps = {
   onOpenCoursePopup: (selection: CourseLeadSelection) => void
 }
 
-const TARGET_PSYCHOLOGY_COURSES: TargetPsychologyCourse[] = [
-  {
-    title: 'NEUROPSICOLOGIA',
-    fallbackValue: 'pos-neuropsicologia',
-    aliases: ['NEUROPSICOLOGIA'],
-    imageSrc: '/landing/neuropsicologia.webp',
-  },
-  {
-    title: 'PSICOLOGIA ESCOLAR E EDUCACIONAL',
-    fallbackValue: 'pos-psicologia-escolar-e-educacional',
-    aliases: ['PSICOLOGIA ESCOLAR E EDUCACIONAL'],
-    imageSrc: '/landing/psicologia-escolar-e-educacional.webp',
-  },
-  {
-    title: 'PSICOLOGIA FORENSE E JURÍDICA',
-    fallbackValue: 'pos-psicologia-forense-e-juridica',
-    aliases: ['PSICOLOGIA FORENSE E JURIDICA', 'PSICOLOGIA FORENSE E JURÍDICA'],
-    imageSrc: '/landing/psicologia-forense-e-juridica.webp',
-  },
-  {
-    title: 'PSICOLOGIA INFANTIL',
-    fallbackValue: 'pos-psicologia-infantil',
-    aliases: ['PSICOLOGIA INFANTIL'],
-    imageSrc: '/landing/psicologia-infantil.webp',
-  },
-  {
-    title: 'PSICOLOGIA PASTORAL',
-    fallbackValue: 'pos-psicologia-pastoral',
-    aliases: ['PSICOLOGIA PASTORAL'],
-    imageSrc: '/landing/psicologia-pastoral.webp',
-  },
-  {
-    title: 'PSICOLOGIA SOCIAL',
-    fallbackValue: 'pos-psicologia-social',
-    aliases: ['PSICOLOGIA SOCIAL', 'PSICOLOGIA SOCIAL E'],
-    imageSrc: '/landing/psicologia-social.webp',
-  },
-]
-
 function normalizeText(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
-}
-
-function normalizeComparableText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
-}
-
-function courseMatchesTarget(courseLabel: string, target: TargetPsychologyCourse): boolean {
-  const normalizedLabel = normalizeComparableText(courseLabel)
-
-  return target.aliases.some((alias) => {
-    const normalizedAlias = normalizeComparableText(alias)
-
-    return (
-      normalizedLabel === normalizedAlias ||
-      normalizedLabel.includes(normalizedAlias) ||
-      normalizedAlias.includes(normalizedLabel)
-    )
-  })
 }
 
 function normalizeUpperText(value: string): string {
   return normalizeText(value).toUpperCase()
 }
 
+function applyPostPriceOverride(value: string): string {
+  return value.replace(/18X\s+R\$\s*66,00/gi, '18X R$ 86,00')
+}
+
 function formatCurrentPriceForCard(value: string): string {
-  const normalized = normalizeUpperText(value)
+  const normalized = applyPostPriceOverride(normalizeUpperText(value))
   if (!normalized) return DEFAULT_CURRENT_PRICE
   if (/\/M[EÊ]S/i.test(normalized)) return normalized
   return `${normalized}/MÊS`
+}
+
+function formatCurrentPriceForDisplay(value: string): string {
+  const normalized = applyPostPriceOverride(normalizeText(value))
+  if (!normalized) return '18X R$ 86,00 por mês'
+  return normalized.replace(/\/m[eê]s/i, ' por mês')
 }
 
 function formatOldPriceForCard(oldValue: string, currentValueWithSuffix: string): string {
@@ -117,41 +66,51 @@ function formatOldPriceForCard(oldValue: string, currentValueWithSuffix: string)
   return normalizedOld
 }
 
-function buildFallbackCourse(target: TargetPsychologyCourse): HealthCourse {
+function buildFallbackCourse(target: PsychologyPostCourseCatalogItem): HealthCourse {
   return {
-    id: `fallback-${target.fallbackValue}`,
+    id: target.fallbackValue,
     title: target.title,
     oldPrice: DEFAULT_OLD_PRICE,
     price: DEFAULT_CURRENT_PRICE,
-    imageSrc: target.imageSrc,
+    hoursLabel: buildPostCourseHoursLabel(target.workloads),
+    imageSrc: target.imageSrc ?? '',
+    featureLabel: target.featureLabel,
     selection: {
       courseType: 'pos',
       courseValue: target.fallbackValue,
       courseLabel: target.title,
+      courseId: target.fallbackCourseId,
+      priceLabel: DEFAULT_CURRENT_PRICE,
     },
   }
 }
 
-function mapPostCourseToHealthCard(course: PostCourse, target: TargetPsychologyCourse): HealthCourse {
+function mapPostCourseToHealthCard(
+  course: PostCourse,
+  target: PsychologyPostCourseCatalogItem,
+): HealthCourse {
   const price = formatCurrentPriceForCard(course.currentInstallmentPrice)
   const oldPrice = formatOldPriceForCard(course.oldInstallmentPrice, price)
 
   return {
-    id: course.value,
+    id: target.fallbackValue,
     title: target.title,
     oldPrice,
     price,
-    imageSrc: target.imageSrc,
+    hoursLabel: buildPostCourseHoursLabel(target.workloads),
+    imageSrc: target.imageSrc ?? '',
+    featureLabel: target.featureLabel,
     selection: {
       courseType: 'pos',
-      courseValue: course.value,
+      courseValue: target.fallbackValue,
       courseLabel: course.label,
       courseId: course.courseId,
+      priceLabel: price,
     },
   }
 }
 
-const fallbackHealthCourses: HealthCourse[] = TARGET_PSYCHOLOGY_COURSES.map(buildFallbackCourse)
+const fallbackHealthCourses: HealthCourse[] = FEATURED_PSYCHOLOGY_POST_COURSES.map(buildFallbackCourse)
 
 export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSectionProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null)
@@ -208,10 +167,10 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
         const parsedCourses = parsePostGraduationCourses(rawText)
         const usedCourseValues = new Set<string>()
 
-        const resolvedCourses = TARGET_PSYCHOLOGY_COURSES.map((targetCourse) => {
+        const resolvedCourses = FEATURED_PSYCHOLOGY_POST_COURSES.map((targetCourse) => {
           const matchedCourse = parsedCourses.find((course) => {
             if (usedCourseValues.has(course.value)) return false
-            return courseMatchesTarget(course.label, targetCourse)
+            return psychologyPostCourseMatches(course.label, targetCourse)
           })
 
           if (!matchedCourse) {
@@ -332,12 +291,22 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
             <img
               className="lp-health-ead__banner-image"
               src="/landing/posgraduacao-banner.webp"
-              alt="Pós-graduação EAD em Psicologia"
+              alt="Pós-Graduação EAD em Psicologia"
             />
           </picture>
         </a>
 
         <div className="lp-health-ead__carousel" id="pos-graduacao-courses">
+          <div className="lp-health-ead__notice" role="note">
+            <span className="lp-health-ead__notice-icon" aria-hidden="true">
+              !
+            </span>
+            <p>
+              Apenas os Cursos (a partir de 420h) atendem às normativas e exigências estabelecidas
+              pelo CRP, assegurando conformidade com a legislação profissional vigente.
+            </p>
+          </div>
+
           <div className="lp-health-ead__carousel-shell">
             <div ref={viewportRef} className="lp-health-ead__viewport">
               <div
@@ -353,23 +322,26 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
                         alt={`Imagem do curso ${course.title}`}
                         loading="lazy"
                       />
+                      <span
+                        className={`lp-health-ead-card__feature ${
+                          course.featureLabel.includes('VIDEOAULAS')
+                            ? 'lp-health-ead-card__feature--videoaulas'
+                            : ''
+                        }`}
+                      >
+                        {course.featureLabel}
+                      </span>
                     </div>
 
                     <div className="lp-health-ead-card__badges">
                       <span className="lp-health-ead-card__mec">RECONHECIDO MEC</span>
+                      <span className="lp-health-ead-card__hours">{course.hoursLabel}</span>
                     </div>
                     <h3 className="lp-health-ead-card__title">{course.title}</h3>
 
                     <div className="lp-health-ead-card__prices">
-                      {course.oldPrice ? (
-                        <p className="lp-health-ead-card__old-price">
-                          De: <span>{course.oldPrice}</span>
-                        </p>
-                      ) : null}
-
-                      <div className="lp-health-ead-card__price-row">
-                        <p className="lp-health-ead-card__price">Por: {course.price}</p>
-                      </div>
+                      <p className="lp-health-ead-card__price-prefix">A partir de</p>
+                      <p className="lp-health-ead-card__price">{formatCurrentPriceForDisplay(course.price)}</p>
                     </div>
 
                     <button
@@ -405,15 +377,6 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
             </button>
           </div>
 
-          <div className="lp-health-ead__notice" role="note">
-            <span className="lp-health-ead__notice-icon" aria-hidden="true">
-              !
-            </span>
-            <p>
-              Os cursos atendem às normativas e exigências estabelecidas pelo CFP e CRP, assegurando
-              conformidade com a legislação profissional vigente.
-            </p>
-          </div>
         </div>
       </div>
     </section>

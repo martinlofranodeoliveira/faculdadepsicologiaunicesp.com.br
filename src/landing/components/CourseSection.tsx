@@ -12,6 +12,13 @@ import {
   type CourseType,
 } from '../crmLead'
 import { formCourseGroups } from '../data'
+import {
+  PSYCHOLOGY_POST_COURSES,
+  getDefaultWorkloadValue,
+  getPsychologyPostCourseByValue,
+  normalizeComparableCourseText,
+  psychologyPostCourseMatches,
+} from '../psychologyPostCourses'
 import { POS_COURSES_ENDPOINT, parsePostGraduationCourses } from '../postCourses'
 
 type FormStep = 1 | 2
@@ -26,14 +33,9 @@ type CourseOption = {
   courseId?: number
 }
 
-type FieldName = 'courseType' | 'course' | 'fullName' | 'email' | 'phone'
+type FieldName = 'courseType' | 'course' | 'workload' | 'fullName' | 'email' | 'phone'
 type FieldErrors = Partial<Record<FieldName, string>>
 type Touched = Record<FieldName, boolean>
-type TargetPsychologyPostCourse = {
-  title: string
-  fallbackValue: string
-  aliases: string[]
-}
 
 const COURSE_TYPE_OPTIONS: Array<{ value: CourseType; label: string }> = [
   { value: 'graduacao', label: 'Graduação' },
@@ -45,14 +47,10 @@ const DEFAULT_GRADUATION_OPTION: CourseOption = {
   label: 'Graduação em Psicologia Presencial',
 }
 
-const STEP_FIELDS: Record<FormStep, FieldName[]> = {
-  1: ['courseType', 'course'],
-  2: ['fullName', 'email', 'phone'],
-}
-
 const EMPTY_TOUCHED: Touched = {
   courseType: false,
   course: false,
+  workload: false,
   fullName: false,
   email: false,
   phone: false,
@@ -60,63 +58,6 @@ const EMPTY_TOUCHED: Touched = {
 
 const COURSE_SCROLL_PAGE_SIZE = 24
 const STEP_TRANSITION_DURATION_MS = 240
-const TARGET_PSYCHOLOGY_POST_COURSES: TargetPsychologyPostCourse[] = [
-  {
-    title: 'NEUROPSICOLOGIA',
-    fallbackValue: 'pos-neuropsicologia',
-    aliases: ['NEUROPSICOLOGIA'],
-  },
-  {
-    title: 'PSICOLOGIA ESCOLAR E EDUCACIONAL',
-    fallbackValue: 'pos-psicologia-escolar-e-educacional',
-    aliases: ['PSICOLOGIA ESCOLAR E EDUCACIONAL'],
-  },
-  {
-    title: 'PSICOLOGIA FORENSE E JURÍDICA',
-    fallbackValue: 'pos-psicologia-forense-e-juridica',
-    aliases: ['PSICOLOGIA FORENSE E JURIDICA', 'PSICOLOGIA FORENSE E JURÍDICA'],
-  },
-  {
-    title: 'PSICOLOGIA INFANTIL',
-    fallbackValue: 'pos-psicologia-infantil',
-    aliases: ['PSICOLOGIA INFANTIL'],
-  },
-  {
-    title: 'PSICOLOGIA PASTORAL',
-    fallbackValue: 'pos-psicologia-pastoral',
-    aliases: ['PSICOLOGIA PASTORAL'],
-  },
-  {
-    title: 'PSICOLOGIA SOCIAL',
-    fallbackValue: 'pos-psicologia-social',
-    aliases: ['PSICOLOGIA SOCIAL', 'PSICOLOGIA SOCIAL E'],
-  },
-]
-
-function normalizeComparableText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-}
-
-function normalizeCourseLookupText(value: string): string {
-  return normalizeComparableText(value).replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim()
-}
-
-function courseMatchesTarget(courseLabel: string, target: TargetPsychologyPostCourse): boolean {
-  const normalizedLabel = normalizeCourseLookupText(courseLabel)
-
-  return target.aliases.some((alias) => {
-    const normalizedAlias = normalizeCourseLookupText(alias)
-    return (
-      normalizedLabel === normalizedAlias ||
-      normalizedLabel.includes(normalizedAlias) ||
-      normalizedAlias.includes(normalizedLabel)
-    )
-  })
-}
 
 function validateCourseType(value: string): string | undefined {
   if (!value) return 'Selecione para continuar'
@@ -128,8 +69,15 @@ function validateCourse(value: string): string | undefined {
   return undefined
 }
 
-function validateField(field: FieldName, value: string): string | undefined {
+function validateWorkload(value: string, courseType: CourseType | ''): string | undefined {
+  if (courseType !== 'pos') return undefined
+  if (!value) return 'Selecione a carga horária para continuar'
+  return undefined
+}
+
+function validateField(field: FieldName, value: string, courseType: CourseType | ''): string | undefined {
   if (field === 'courseType') return validateCourseType(value)
+  if (field === 'workload') return validateWorkload(value, courseType)
   if (field === 'fullName') return validateFullName(value)
   if (field === 'email') return validateEmail(value)
   if (field === 'phone') return validatePhone(value)
@@ -145,13 +93,14 @@ export function CourseSection() {
   const [courseType, setCourseType] = useState<CourseType | ''>('graduacao')
   const [course, setCourse] = useState(DEFAULT_GRADUATION_OPTION.value)
   const [courseSearch, setCourseSearch] = useState(DEFAULT_GRADUATION_OPTION.label)
+  const [workload, setWorkload] = useState('')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [isCourseSearchOpen, setIsCourseSearchOpen] = useState(false)
   const [postCourseOptions, setPostCourseOptions] = useState<CourseOption[]>(
     () =>
-      TARGET_PSYCHOLOGY_POST_COURSES.map((targetCourse) => ({
+      PSYCHOLOGY_POST_COURSES.map((targetCourse) => ({
         value: targetCourse.fallbackValue,
         label: targetCourse.title,
       })),
@@ -185,32 +134,33 @@ export function CourseSection() {
       }
 
       const rawText = await response.text()
-      const parsedCourses = parsePostGraduationCourses(rawText).map((courseItem) => ({
-        value: courseItem.value,
-        label: courseItem.label,
-        courseId: courseItem.courseId,
-      }))
+      const parsedCourses = parsePostGraduationCourses(rawText)
 
       if (!parsedCourses.length) {
         throw new Error('No post-graduation courses were parsed from the API response')
       }
 
       const usedCourseValues = new Set<string>()
-      const resolvedPsychologyPostCourses = TARGET_PSYCHOLOGY_POST_COURSES.map((targetCourse) => {
-        const matchedCourse = parsedCourses.find((courseOption) => {
-          if (usedCourseValues.has(courseOption.value)) return false
-          return courseMatchesTarget(courseOption.label, targetCourse)
+      const resolvedPsychologyPostCourses = PSYCHOLOGY_POST_COURSES.map((targetCourse) => {
+        const matchedCourse = parsedCourses.find((courseItem) => {
+          if (usedCourseValues.has(courseItem.value)) return false
+          return psychologyPostCourseMatches(courseItem.label, targetCourse)
         })
 
         if (!matchedCourse) {
           return {
             value: targetCourse.fallbackValue,
             label: targetCourse.title,
+            courseId: targetCourse.fallbackCourseId,
           }
         }
 
         usedCourseValues.add(matchedCourse.value)
-        return matchedCourse
+        return {
+          value: targetCourse.fallbackValue,
+          label: matchedCourse.label,
+          courseId: matchedCourse.courseId,
+        }
       })
 
       setPostCourseOptions(resolvedPsychologyPostCourses)
@@ -273,15 +223,31 @@ export function CourseSection() {
   }, [courseType, courseOptionsByType])
 
   const filteredCourses = useMemo(() => {
-    const normalized = normalizeComparableText(courseSearch)
+    const normalized = normalizeComparableCourseText(courseSearch)
     return availableCourses.filter((item) => {
-      return normalizeComparableText(item.label).includes(normalized)
+      return normalizeComparableCourseText(item.label).includes(normalized)
     })
   }, [availableCourses, courseSearch])
 
   useEffect(() => {
     setVisibleCourseCount(COURSE_SCROLL_PAGE_SIZE)
   }, [courseType, courseSearch])
+
+  useEffect(() => {
+    if (courseType !== 'pos') {
+      setWorkload('')
+      return
+    }
+
+    const currentPostCourse = getPsychologyPostCourseByValue(course)
+    const defaultWorkloadValue = getDefaultWorkloadValue(currentPostCourse?.workloads ?? [])
+
+    setWorkload((current) => {
+      if (!currentPostCourse) return ''
+      if (currentPostCourse.workloads.some((item) => item.value === current)) return current
+      return defaultWorkloadValue
+    })
+  }, [course, courseType])
 
   const visibleCourses = useMemo(() => {
     return filteredCourses.slice(0, visibleCourseCount)
@@ -313,12 +279,23 @@ export function CourseSection() {
     return lookup
   }, [courseOptionsLookup])
 
+  const selectedPostCourse = useMemo(() => {
+    if (courseType !== 'pos') return undefined
+    return getPsychologyPostCourseByValue(course)
+  }, [course, courseType])
+
+  const selectedPostCourseWorkloads = selectedPostCourse?.workloads ?? []
+  const isWorkloadRequired = courseType === 'pos'
+  const isWorkloadDisabled = !isWorkloadRequired || !course || !selectedPostCourseWorkloads.length
+  const shouldShowWorkloadField = step === 1 && courseType === 'pos'
+
   const isPostCoursesLoading = courseType === 'pos' && postCourseStatus === 'loading'
   const isCourseSearchDisabled = !courseType || isPostCoursesLoading
   const isGraduationCourseLocked = courseType === 'graduacao'
 
   const courseTypeInvalid = Boolean(touched.courseType && fieldErrors.courseType)
   const courseInvalid = Boolean(touched.course && fieldErrors.course)
+  const workloadInvalid = Boolean(touched.workload && fieldErrors.workload)
   const fullNameInvalid = Boolean(touched.fullName && fieldErrors.fullName)
   const emailInvalid = Boolean(touched.email && fieldErrors.email)
   const phoneInvalid = Boolean(touched.phone && fieldErrors.phone)
@@ -333,7 +310,7 @@ export function CourseSection() {
         }`
 
   const applyFieldValidation = (field: FieldName, value: string) => {
-    const error = validateField(field, value)
+    const error = validateField(field, value, courseType)
     setFieldErrors((previous) => ({ ...previous, [field]: error }))
   }
 
@@ -344,16 +321,25 @@ export function CourseSection() {
   const getFieldValue = (field: FieldName): string => {
     if (field === 'courseType') return courseType
     if (field === 'course') return course
+    if (field === 'workload') return workload
     if (field === 'fullName') return fullName
     if (field === 'email') return email
     return phone
+  }
+
+  const getStepFields = (targetStep: FormStep): FieldName[] => {
+    if (targetStep === 1) {
+      return ['courseType', 'course', ...(courseType === 'pos' ? (['workload'] as FieldName[]) : [])]
+    }
+
+    return ['fullName', 'email', 'phone']
   }
 
   const validateFields = (fields: FieldName[]): boolean => {
     const nextErrors: FieldErrors = {}
 
     fields.forEach((field) => {
-      nextErrors[field] = validateField(field, getFieldValue(field))
+      nextErrors[field] = validateField(field, getFieldValue(field), courseType)
     })
 
     setFieldErrors((previous) => ({ ...previous, ...nextErrors }))
@@ -379,7 +365,7 @@ export function CourseSection() {
   const handleStepAdvance = (from: FormStep) => {
     if (isStepTransitioning) return
 
-    const isValid = validateFields(STEP_FIELDS[from])
+    const isValid = validateFields(getStepFields(from))
     if (!isValid) {
       setSubmitStatus('error')
       setSubmitMessage('')
@@ -407,6 +393,7 @@ export function CourseSection() {
     return {
       courseType: validateCourseType(courseType),
       course: validateCourse(course),
+      workload: validateWorkload(workload, courseType),
       fullName: validateFullName(fullName),
       email: validateEmail(email),
       phone: validatePhone(phone),
@@ -440,6 +427,7 @@ export function CourseSection() {
     setTouched({
       courseType: true,
       course: true,
+      workload: true,
       fullName: true,
       email: true,
       phone: true,
@@ -469,6 +457,11 @@ export function CourseSection() {
           courseValue: course,
           courseLabel,
           courseId: selectedCourseOption?.courseId,
+          workloadValue: resolvedCourseType === 'pos' ? workload : undefined,
+          workloadLabel:
+            resolvedCourseType === 'pos'
+              ? selectedPostCourseWorkloads.find((item) => item.value === workload)?.label
+              : undefined,
         },
       })
 
@@ -483,15 +476,28 @@ export function CourseSection() {
   }
 
   return (
-    <section id="contato" className="lp-lead">
+    <section
+      id="contato"
+      className={`lp-lead ${shouldShowWorkloadField ? 'lp-lead--post-active' : ''}`}
+    >
       <div className="lp-lead__inner">
         <div className="lp-lead__title-wrap">
           <h2 className="lp-lead__title">{formLeadTitle}</h2>
         </div>
 
-        <form className={`lp-lead__form lp-lead__form--step-${step}`} onSubmit={handleSubmit} noValidate>
+        <form
+          className={`lp-lead__form lp-lead__form--step-${step} ${
+            shouldShowWorkloadField ? 'lp-lead__form--step-1-post' : ''
+          }`}
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {step === 1 ? (
-            <div className={`lp-lead__row lp-lead__row--step-1 ${rowTransitionClass}`}>
+            <div
+              className={`lp-lead__row lp-lead__row--step-1 ${
+                shouldShowWorkloadField ? 'is-post' : ''
+              } ${rowTransitionClass}`}
+            >
               <div className="lp-lead__field-wrap lp-lead__field-wrap--modality">
                 <label
                   className={`lp-lead__field lp-lead__field--select ${
@@ -517,14 +523,22 @@ export function CourseSection() {
                         setCourseType(nextType)
                         setCourse(nextCourseValue)
                         setCourseSearch(nextCourseLabel)
+                        setWorkload('')
                         setIsCourseSearchOpen(false)
+                        setFieldErrors((previous) => ({ ...previous, workload: undefined }))
+                        setTouched((previous) => ({
+                          ...previous,
+                          workload: false,
+                        }))
 
                         if (touched.courseType) {
-                          applyFieldValidation('courseType', nextType)
+                          const error = validateField('courseType', nextType, nextType)
+                          setFieldErrors((previous) => ({ ...previous, courseType: error }))
                         }
 
                         if (touched.course) {
-                          applyFieldValidation('course', nextCourseValue)
+                          const error = validateField('course', nextCourseValue, nextType)
+                          setFieldErrors((previous) => ({ ...previous, course: error }))
                         }
                       }}
                     >
@@ -592,14 +606,15 @@ export function CourseSection() {
                         if (isGraduationCourseLocked) {
                           setCourse(DEFAULT_GRADUATION_OPTION.value)
                           setCourseSearch(DEFAULT_GRADUATION_OPTION.label)
+                          setWorkload('')
                           applyFieldValidation('course', DEFAULT_GRADUATION_OPTION.value)
                           return
                         }
 
-                        const normalizedSearch = normalizeComparableText(courseSearch)
+                        const normalizedSearch = normalizeComparableCourseText(courseSearch)
                         if (!course && normalizedSearch) {
                           const exactMatch = availableCourses.find(
-                            (item) => normalizeComparableText(item.label) === normalizedSearch,
+                            (item) => normalizeComparableCourseText(item.label) === normalizedSearch,
                           )
                           if (exactMatch) {
                             setCourse(exactMatch.value)
@@ -621,13 +636,16 @@ export function CourseSection() {
                       setCourseSearch(value)
                       setIsCourseSearchOpen(Boolean(courseType))
 
-                      const normalizedValue = normalizeComparableText(value)
+                      const normalizedValue = normalizeComparableCourseText(value)
                       const selectedCourseLabel = course ? (courseLookup.get(course) ?? '') : ''
 
                       if (!normalizedValue) {
                         if (course) {
                           setCourse('')
                         }
+                        setWorkload('')
+                        setFieldErrors((previous) => ({ ...previous, workload: undefined }))
+                        setTouched((previous) => ({ ...previous, workload: false }))
                         if (touched.course) {
                           applyFieldValidation('course', '')
                         }
@@ -637,9 +655,12 @@ export function CourseSection() {
                       if (
                         course &&
                         selectedCourseLabel &&
-                        normalizeComparableText(selectedCourseLabel) !== normalizedValue
+                        normalizeComparableCourseText(selectedCourseLabel) !== normalizedValue
                       ) {
                         setCourse('')
+                        setWorkload('')
+                        setFieldErrors((previous) => ({ ...previous, workload: undefined }))
+                        setTouched((previous) => ({ ...previous, workload: false }))
                         if (touched.course) {
                           applyFieldValidation('course', '')
                         }
@@ -689,8 +710,11 @@ export function CourseSection() {
                           onClick={() => {
                             setCourse(item.value)
                             setCourseSearch(item.label)
+                            setWorkload(getDefaultWorkloadValue(getPsychologyPostCourseByValue(item.value)?.workloads ?? []))
                             setIsCourseSearchOpen(false)
                             markTouched('course')
+                            setFieldErrors((previous) => ({ ...previous, workload: undefined }))
+                            setTouched((previous) => ({ ...previous, workload: false }))
                             applyFieldValidation('course', item.value)
                           }}
                         >
@@ -715,6 +739,54 @@ export function CourseSection() {
                   </span>
                 ) : null}
               </div>
+
+              {shouldShowWorkloadField ? (
+                <div className="lp-lead__field-wrap lp-lead__field-wrap--workload">
+                  <label
+                    className={`lp-lead__field lp-lead__field--select ${
+                      workloadInvalid ? 'is-invalid' : ''
+                    } ${isWorkloadDisabled ? 'is-disabled' : ''}`}
+                  >
+                    <div className="lp-lead__select-wrapper">
+                      <Select
+                        value={workload}
+                        onValueChange={(value) => {
+                          setWorkload(value)
+                          if (touched.workload) {
+                            applyFieldValidation('workload', value)
+                          }
+                        }}
+                        disabled={isWorkloadDisabled}
+                      >
+                        <SelectTrigger
+                          className="lp-lead__select-trigger"
+                          aria-label="Selecione a carga horária"
+                          aria-invalid={workloadInvalid}
+                          aria-describedby={workloadInvalid ? 'lead-workload-error' : undefined}
+                          onBlur={() => {
+                            markTouched('workload')
+                            applyFieldValidation('workload', workload)
+                          }}
+                        >
+                          <SelectValue placeholder="Selecione a carga horária" />
+                        </SelectTrigger>
+                        <SelectContent className="lp-lead__select-content" position="popper" sideOffset={6}>
+                          {selectedPostCourseWorkloads.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </label>
+                  {workloadInvalid ? (
+                    <span className="lp-lead__error" id="lead-workload-error">
+                      {fieldErrors.workload}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
 
               <button type="submit" className="lp-lead__button" disabled={isStepTransitioning}>
                 CONTINUAR

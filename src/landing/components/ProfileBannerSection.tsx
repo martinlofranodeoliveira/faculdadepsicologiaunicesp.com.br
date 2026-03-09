@@ -13,14 +13,14 @@ export function ProfileBannerSection() {
           className="lp-post-banner__link"
           href="#pos-graduacao"
           onClick={handleNavigateToPostCourses}
-          aria-label="Ir para cursos de pós-graduação"
+          aria-label="Ir para cursos de Pós-Graduação"
         >
           <picture className="lp-post-banner__picture">
             <source media="(max-width: 768px)" srcSet="/landing/posgraduacao-banner-mobile.webp" />
             <img
               className="lp-post-banner__image"
               src="/landing/posgraduacao-banner.webp"
-              alt="Pós-graduação EAD - Agilidade e assertividade faltam por aí?"
+              alt="Pós-Graduação EAD - Agilidade e assertividade faltam por aí?"
             />
           </picture>
         </a>

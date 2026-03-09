@@ -34,6 +34,9 @@ export type CourseLeadSelection = {
   courseValue: string
   courseLabel: string
   courseId?: number
+  workloadValue?: string
+  workloadLabel?: string
+  priceLabel?: string
 }
 
 export type SendLeadToCrmInput = {
@@ -153,6 +156,9 @@ export async function sendLeadToCrm({
   const gradCourseId = getGraduationCourseId(selection.courseValue)
   const postCourseId = selection.courseId ?? 0
   const courseLabel = selection.courseLabel.trim()
+  const workloadObservation = selection.workloadLabel?.trim()
+    ? ` | Carga horária: ${selection.workloadLabel.trim()}`
+    : ''
 
   const payload = {
     aluno: 0,
@@ -169,7 +175,7 @@ export async function sendLeadToCrm({
     funil: isPostGraduation ? funilPos : funilGrad,
     status: statusLead,
     observacao: isPostGraduation
-      ? 'PÓS-GRADUAÇÃO: Lead Landing Page Faculdade de Psicologia'
+      ? `PÓS-GRADUAÇÃO: Lead Landing Page Faculdade de Psicologia${workloadObservation}`
       : 'GRADUAÇÃO: Lead Landing Page Faculdade de Psicologia',
     campanha: pickTrackingValue(trackingParams, ['campanha', 'utm_campaign']),
     midia: pickTrackingValue(trackingParams, ['midia', 'utm_medium']),
