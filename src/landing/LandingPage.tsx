@@ -13,7 +13,6 @@ import { Header } from './components/Header'
 import { HealthCoursesSection } from './components/HealthCoursesSection'
 import { HeroSection } from './components/HeroSection'
 import { MarketSection } from './components/MarketSection'
-import { ProfileBannerSection } from './components/ProfileBannerSection'
 
 const HERO_COURSE_SELECTION: CourseLeadSelection = {
   courseType: 'graduacao',
@@ -41,7 +40,6 @@ export function LandingPage() {
       <Header onOpenPopup={openHeroPopup} />
       <HeroSection onOpenPopup={openHeroPopup} />
       <CourseSection />
-      <ProfileBannerSection />
       <FaqSection onOpenPopup={openHeroPopup} />
       <FooterSection />
       <MarketSection />

@@ -1,5 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react'
 
+import type { MouseEvent } from 'react'
+
 import type { CourseLeadSelection } from '../crmLead'
 import { POS_COURSES_ENDPOINT, parsePostGraduationCourses, type PostCourse } from '../postCourses'
 
@@ -10,7 +12,6 @@ const DEFAULT_CURRENT_PRICE = '18X R$ 66,00/MÊS'
 
 type HealthCourse = {
   id: string
-  tag: string
   title: string
   oldPrice: string
   price: string
@@ -119,7 +120,6 @@ function formatOldPriceForCard(oldValue: string, currentValueWithSuffix: string)
 function buildFallbackCourse(target: TargetPsychologyCourse): HealthCourse {
   return {
     id: `fallback-${target.fallbackValue}`,
-    tag: 'POS EAD',
     title: target.title,
     oldPrice: DEFAULT_OLD_PRICE,
     price: DEFAULT_CURRENT_PRICE,
@@ -138,7 +138,6 @@ function mapPostCourseToHealthCard(course: PostCourse, target: TargetPsychologyC
 
   return {
     id: course.value,
-    tag: 'POS EAD',
     title: target.title,
     oldPrice,
     price,
@@ -311,18 +310,34 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
 
   const offset = cardsPerView > 1 ? clampedIndex * (CARD_WIDTH + CARD_GAP) : 0
 
+  const handleNavigateToCards = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+    document.getElementById('pos-graduacao-courses')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   return (
     <section id="pos-graduacao" className="lp-health-ead" aria-label="Pós EAD em Psicologia">
       <div className="lp-health-ead__inner">
-        <header className="lp-health-ead__header">
-          <h2 className="lp-health-ead__title">PÓS EAD NA ÁREA DA PSICOLOGIA</h2>
-          <p className="lp-health-ead__highlight">
-            <span>PSICÓLOGOS PÓS-GRADUADOS</span>
-            <strong>RECEBEM SALÁRIOS ATÉ 2X MAIORES</strong>
-          </p>
-        </header>
+        <a
+          className="lp-health-ead__banner-link"
+          href="#pos-graduacao-courses"
+          onClick={handleNavigateToCards}
+          aria-label="Ir para cursos de pós-graduação"
+        >
+          <picture className="lp-health-ead__banner-picture">
+            <source media="(max-width: 768px)" srcSet="/landing/posgraduacao-banner-mobile.webp" />
+            <img
+              className="lp-health-ead__banner-image"
+              src="/landing/posgraduacao-banner.webp"
+              alt="Pós-graduação EAD em Psicologia"
+            />
+          </picture>
+        </a>
 
-        <div className="lp-health-ead__carousel">
+        <div className="lp-health-ead__carousel" id="pos-graduacao-courses">
           <div className="lp-health-ead__carousel-shell">
             <div ref={viewportRef} className="lp-health-ead__viewport">
               <div
@@ -341,7 +356,6 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
                     </div>
 
                     <div className="lp-health-ead-card__badges">
-                      <span className="lp-health-ead-card__tag">{course.tag}</span>
                       <span className="lp-health-ead-card__mec">RECONHECIDO MEC</span>
                     </div>
                     <h3 className="lp-health-ead-card__title">{course.title}</h3>

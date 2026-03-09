@@ -21,18 +21,49 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
 }
 
-.lp-logo {
+.lp-header__brand {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.lp-header__brand-logos {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.lp-header__divider {
+  width: 1px;
+  height: 52px;
+  border-radius: 2px;
+  background: #d5d5d5;
+  flex-shrink: 0;
 }
 
 .lp-logo__image {
-  width: 185px;
-  height: auto;
+  height: 55px;
   display: block;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.lp-logo__image--psychology {
+  height: 55px;
+}
+
+.lp-logo__image--unicesp {
+  height: 55px;
+}
+
+.lp-logo__image--fasul {
+  height: 55px;
 }
 
 .lp-header__cta {
@@ -790,12 +821,30 @@
 
 .lp-health-ead {
   background: #00163b;
-  padding: 41px 0 32px;
+  padding: 45px 0 30px;
 }
 
 .lp-health-ead__inner {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
+}
+
+.lp-health-ead__banner-link {
+  display: block;
+  text-decoration: none;
+}
+
+.lp-health-ead__banner-picture {
+  display: block;
+  width: 100%;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.lp-health-ead__banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .lp-health-ead__header {
@@ -840,9 +889,9 @@
 }
 
 .lp-health-ead__carousel {
-  margin-top: 40px;
+  margin-top: 20px;
   display: grid;
-  gap: 16px;
+  gap: 29px;
 }
 
 .lp-health-ead__carousel-shell {
@@ -1752,6 +1801,10 @@
     overflow: visible;
   }
 
+  .lp-health-ead__banner-picture {
+    border-radius: 24px;
+  }
+
   .lp-health-ead__header {
     flex-direction: column;
     align-items: flex-start;
@@ -1773,6 +1826,11 @@
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+  }
+
+  .lp-health-ead__carousel {
+    margin-top: 18px;
+    gap: 20px;
   }
 
   .lp-health-ead__viewport {
@@ -1856,18 +1914,51 @@
   }
 
   .lp-header__inner {
-    width: min(364px, calc(100% - 26px));
-    min-height: 48px;
+    width: min(390px, 100%);
+    min-height: 111px;
+    padding: 11px 14px;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 11px;
   }
 
-  .lp-logo__image {
-    width: clamp(110px, 32vw, 118px);
+  .lp-header__brand {
+    width: 100%;
+  }
+
+  .lp-header__brand-logos {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .lp-header__divider {
+    width: 1px;
+    height: 37.5px;
+  }
+
+  .lp-logo__image--psychology {
+    width: min(132px, 36vw);
+    height: auto;
+  }
+
+  .lp-logo__image--unicesp {
+    width: min(81px, 22vw);
+    height: auto;
+  }
+
+  .lp-logo__image--fasul {
+    width: min(64px, 18vw);
+    height: auto;
   }
 
   .lp-header__cta {
-    min-height: 28px;
-    padding: 6.493px 12.985px;
-    border-radius: 6px;
+    width: 100%;
+    min-height: 40px;
+    padding: 12px;
+    border-radius: 10px;
     font-size: 12px;
     line-height: 15.582px;
     font-weight: 800;
@@ -2277,7 +2368,7 @@
   }
 
   .lp-health-ead {
-    padding: 24px 0 24px;
+    padding: 25px 0 25px;
     overflow-x: clip;
   }
 
@@ -2285,6 +2376,10 @@
     width: calc(100% - 28px);
     max-width: 362px;
     overflow: visible;
+  }
+
+  .lp-health-ead__banner-picture {
+    border-radius: 20px;
   }
 
   .lp-health-ead__header {
@@ -2312,8 +2407,8 @@
   }
 
   .lp-health-ead__carousel {
-    margin-top: 14px;
-    gap: 12px;
+    margin-top: 25px;
+    gap: 25px;
   }
 
   .lp-health-ead__carousel-shell {
