@@ -1,16 +1,33 @@
-﻿export function FooterBottomSection() {
+const GROUP_LOGOS = [
+  {
+    src: '/landing/logo-rodape-fasul.webp',
+    alt: 'FASUL Educacional',
+  },
+  {
+    src: '/landing/logo-rodape-unicesp.webp',
+    alt: 'UNICESP',
+  },
+  {
+    src: '/landing/logo-rodape-faculdade-paulista.webp',
+    alt: 'Faculdade Paulista',
+  },
+  {
+    src: '/landing/logo-rodape-enfermagem.webp',
+    alt: 'Faculdade de Enfermagem',
+  },
+]
+
+export function FooterBottomSection() {
   return (
     <footer id="rodape" className="lp-footer-bottom">
       <div className="lp-footer-bottom__inner">
         <div className="lp-footer-bottom__top">
           <section className="lp-footer-brand">
-            <div className="lp-footer-brand__logo-wrap">
-              <img
-                className="lp-footer-brand__logo"
-                src="/landing/faculdade-de-psicologia-logo.webp"
-                alt="Faculdade de Psicologia"
-              />
-            </div>
+            <img
+              className="lp-footer-brand__logo"
+              src="/landing/faculdade-de-psicologia-logo-rodape.webp"
+              alt="Faculdade de Psicologia"
+            />
 
             <p className="lp-footer-brand__description">
               Excelência no ensino superior com foco na inovação e na empregabilidade dos nossos alunos.
@@ -23,6 +40,18 @@
               <a href="#" aria-label="Instagram">
                 <img src="/landing/footer-social-instagram.png" alt="" aria-hidden="true" />
               </a>
+            </div>
+
+            <div className="lp-footer-brand__group">
+              <p className="lp-footer-brand__group-title">Grupo FASUL Educacional</p>
+
+              <div className="lp-footer-brand__group-logos">
+                {GROUP_LOGOS.map((logo) => (
+                  <div key={logo.src} className="lp-footer-brand__group-logo-card">
+                    <img src={logo.src} alt={logo.alt} />
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 

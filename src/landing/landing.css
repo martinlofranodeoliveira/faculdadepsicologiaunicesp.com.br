@@ -1423,7 +1423,7 @@
 .lp-footer-bottom {
   background: #0d0a08;
   border-top: 1px solid #2a2420;
-  padding: 66px 0 30px;
+  padding: 46px 0 45px;
 }
 
 .lp-footer-bottom__inner {
@@ -1441,23 +1441,14 @@
 .lp-footer-brand {
   display: flex;
   flex-direction: column;
-  gap: 23px;
-}
-
-.lp-footer-brand__logo-wrap {
-  width: 184px;
-  height: 59px;
-  border-radius: 7px;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 22px;
 }
 
 .lp-footer-brand__logo {
-  width: 166px;
-  height: auto;
+  width: 153px;
+  height: 50px;
   display: block;
+  object-fit: contain;
 }
 
 .lp-footer-brand__description {
@@ -1492,11 +1483,53 @@
   height: 27px;
 }
 
+.lp-footer-brand__group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-footer-brand__group-title {
+  margin: 0;
+  color: #7e7f82;
+  font-family: 'Liberation Sans', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.lp-footer-brand__group-logos {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.lp-footer-brand__group-logo-card {
+  min-height: 44px;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 11px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.lp-footer-brand__group-logo-card img {
+  display: block;
+  width: auto;
+  height: auto;
+}
+
 .lp-footer-contact-block,
 .lp-footer-map-block {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
 }
 
 .lp-footer-contact-block h3,
@@ -1581,7 +1614,7 @@
   width: 96px;
   height: 32px;
   border-radius: 8px;
-  background: #1e5ec8;
+  background: #6ec9f0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1601,7 +1634,7 @@
 }
 
 .lp-footer-bottom__bar {
-  margin-top: 45px;
+  margin-top: 20px;
   border-top: 1px solid #2a2420;
   padding-top: 33px;
   display: flex;
@@ -1890,6 +1923,10 @@
 
   .lp-footer-brand__description {
     max-width: 100%;
+  }
+
+  .lp-footer-brand__group-logos {
+    gap: 10px;
   }
 
   .lp-footer-bottom__bar {
@@ -2606,19 +2643,35 @@
     gap: 16px;
   }
 
-  .lp-footer-brand__logo-wrap {
-    width: 170px;
-    height: 55px;
-  }
-
   .lp-footer-brand__logo {
-    width: 152px;
+    width: 144px;
+    height: auto;
   }
 
   .lp-footer-brand__description {
     max-width: 100%;
     font-size: 13px;
     line-height: 1.5;
+  }
+
+  .lp-footer-brand__group {
+    gap: 10px;
+  }
+
+  .lp-footer-brand__group-logos {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .lp-footer-brand__group-logo-card {
+    min-height: 40px;
+    padding: 9px 12px;
+    flex: 0 0 calc(50% - 4px);
+  }
+
+  .lp-footer-brand__group-logo-card img {
+    width: auto;
+    height: auto;
   }
 
   .lp-footer-contact-block,

@@ -104,7 +104,7 @@ export function FaqCtaSection() {
 
           <div className="lp-faq-contact__text">
             <strong>AINDA TEM DÚVIDAS?</strong>
-            <p>O diploma EAD tem a mesma validade?</p>
+            <p>Fale com nossas consultoras no WhatsApp</p>
           </div>
 
           <button type="button" className="lp-faq-contact__button">
