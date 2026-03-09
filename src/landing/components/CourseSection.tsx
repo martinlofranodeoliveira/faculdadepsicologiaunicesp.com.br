@@ -39,7 +39,7 @@ type Touched = Record<FieldName, boolean>
 
 const COURSE_TYPE_OPTIONS: Array<{ value: CourseType; label: string }> = [
   { value: 'graduacao', label: 'Graduação' },
-  { value: 'pos', label: 'Pós-graduação EAD' },
+  { value: 'pos', label: 'Pós-Graduação EAD' },
 ]
 
 const DEFAULT_GRADUATION_OPTION: CourseOption = {
@@ -168,7 +168,7 @@ export function CourseSection() {
     } catch (error) {
       console.error('Erro ao carregar cursos de pós-graduação da API:', error)
       setPostCourseStatus('error')
-      setPostCourseErrorMessage('Não foi possível carregar os cursos de Pós-graduação no momento.')
+      setPostCourseErrorMessage('Não foi possível carregar os cursos de Pós-Graduação no momento.')
     }
   }, [])
 
