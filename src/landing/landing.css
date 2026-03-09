@@ -1982,13 +1982,13 @@
   }
 
   .lp-logo__image--unicesp {
-    width: min(81px, 22vw);
-    height: auto;
+    width: auto;
+    height: 44px;
   }
 
   .lp-logo__image--fasul {
-    width: min(64px, 18vw);
-    height: auto;
+    width: auto;
+    height: 44px;
   }
 
   .lp-header__cta {
