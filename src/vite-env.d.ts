@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  readonly VITE_CLARITY_PROJECT_ID?: string
   readonly VITE_CRM_LEAD_ENDPOINT?: string
   readonly VITE_CRM_API_KEY?: string
   readonly VITE_CRM_BEARER_TOKEN?: string

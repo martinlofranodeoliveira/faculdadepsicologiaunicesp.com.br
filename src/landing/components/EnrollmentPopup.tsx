@@ -61,6 +61,11 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
     return null
   }
 
+  const topImageSrc =
+    selection.courseType === 'pos'
+      ? '/landing/posgraduacao-presencial-psicologia-topo-popup.webp'
+      : '/landing/graduacao-presencial-psicologia-topo-popup.webp'
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
@@ -110,7 +115,7 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
         <header className="lp-enrollment-modal__top">
           <img
             className="lp-enrollment-modal__top-image"
-            src="/landing/graduacao-presencial-psicologia-topo-popup.webp"
+            src={topImageSrc}
             alt=""
             aria-hidden="true"
           />
