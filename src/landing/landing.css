@@ -35,7 +35,7 @@
 .lp-header__brand-logos {
   display: inline-flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   min-width: 0;
 }
 

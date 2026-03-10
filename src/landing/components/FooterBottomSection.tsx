@@ -69,7 +69,7 @@ export function FooterBottomSection() {
               </li>
               <li>
                 <img src="/landing/footer-icon-phone.svg" alt="" aria-hidden="true" />
-                <a href="tel:+551140028922">(11) 4002-8922</a>
+                <a href="tel:+553598060604">(35) 9806-0604</a>
               </li>
               <li>
                 <img src="/landing/footer-icon-mail.svg" alt="" aria-hidden="true" />
