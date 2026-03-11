@@ -50,6 +50,9 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
   const workloadOptions = postCourse?.workloads ?? []
   const resolvedWorkloadOption = workloadOptions.find((item) => item.value === workload)
   const postPriceLabel = selection?.priceLabel ?? DEFAULT_POST_PRICE
+  const displayCourseLabel = isPostGraduation
+    ? selection?.courseLabel ?? ''
+    : (selection?.courseLabel ?? '').replace(/\s+presencial$/i, '').trim()
 
   const firstErrorMessage = useMemo(() => {
     return errors.workload ?? errors.fullName ?? errors.email ?? errors.phone ?? ''
@@ -186,7 +189,7 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
                 : 'lp-enrollment-modal__title'
             }
           >
-            Curso: {selection.courseLabel}
+            Curso: {displayCourseLabel}
           </h2>
 
           {!isPostGraduation ? (
