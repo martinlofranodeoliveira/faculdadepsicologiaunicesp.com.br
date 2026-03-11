@@ -43,10 +43,10 @@ export function Header({ onOpenPopup }: HeaderProps) {
           <span className="lp-header__divider" aria-hidden="true" />
           <img
             className="lp-logo__image lp-logo__image--partner lp-logo__image--enfermagem"
-            src="/landing/logo-rodape-enfermagem.webp"
+            src="/landing/logo-faculdade-de-enfermagem.webp"
             alt="Faculdade de Enfermagem"
-            width={83}
-            height={24}
+            width={155}
+            height={44}
           />
         </div>
 
