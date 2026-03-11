@@ -21,6 +21,7 @@ export function HeroSection({ onOpenPopup }: HeroSectionProps) {
             src="/landing/graduacao-presencial-psicologia.webp"
             alt="Graduação presencial em Psicologia"
             loading="eager"
+            decoding="async"
             fetchPriority="high"
           />
         </picture>

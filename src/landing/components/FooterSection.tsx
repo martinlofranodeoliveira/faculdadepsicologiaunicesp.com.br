@@ -37,6 +37,7 @@ export function FooterSection() {
               src="/landing/sobre-o-curso-psicologia.webp"
               alt="Estudante de psicologia em atendimento supervisionado"
               loading="lazy"
+              decoding="async"
             />
           </picture>
         </div>

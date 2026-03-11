@@ -2,6 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Kumbh Sans';
+  src:
+    local('Kumbh Sans Variable'),
+    local('Kumbh Sans'),
+    url('./assets/fonts/KumbhSans-VariableFont_YOPQ,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Liberation Sans';
+  src:
+    local('Liberation Sans'),
+    local('LiberationSans'),
+    url('./assets/fonts/LiberationSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Liberation Sans';
+  src:
+    local('Liberation Sans Bold'),
+    local('LiberationSans-Bold'),
+    url('./assets/fonts/LiberationSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --font-sans: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
   --font-display: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;

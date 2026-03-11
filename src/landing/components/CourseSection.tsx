@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type UIEventHandler } from 'react'
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
 import {
   formatPhoneMask,
   normalizeName,
@@ -12,6 +10,7 @@ import {
   type CourseType,
 } from '../crmLead'
 import { formCourseGroups } from '../data'
+import { OverlaySelect } from './OverlaySelect'
 import {
   PSYCHOLOGY_POST_COURSES,
   getDefaultWorkloadValue,
@@ -173,8 +172,10 @@ export function CourseSection() {
   }, [])
 
   useEffect(() => {
+    if (courseType !== 'pos') return
+    if (postCourseStatus === 'loading' || postCourseStatus === 'success') return
     void loadPostCourses()
-  }, [loadPostCourses])
+  }, [courseType, loadPostCourses, postCourseStatus])
 
   useEffect(() => {
     if (stepTransitionPhase !== 'exit' || queuedStep === null) {
@@ -511,8 +512,21 @@ export function CourseSection() {
                     aria-hidden="true"
                   />
                   <div className="lp-lead__select-wrapper">
-                    <Select
+                    <OverlaySelect
                       value={courseType}
+                      options={COURSE_TYPE_OPTIONS}
+                      placeholder="Modalidade"
+                      ariaLabel="Selecione o tipo de curso"
+                      ariaInvalid={courseTypeInvalid}
+                      ariaDescribedBy={courseTypeInvalid ? 'lead-course-type-error' : undefined}
+                      triggerClassName="ui-select-trigger"
+                      contentClassName="lp-lead__select-content"
+                      itemClassName="ui-select-item"
+                      showChevron={false}
+                      onBlur={() => {
+                        markTouched('courseType')
+                        applyFieldValidation('courseType', courseType)
+                      }}
                       onValueChange={(value) => {
                         const nextType = value as CourseType
                         const nextCourseValue =
@@ -541,27 +555,7 @@ export function CourseSection() {
                           setFieldErrors((previous) => ({ ...previous, course: error }))
                         }
                       }}
-                    >
-                      <SelectTrigger
-                        className="lp-lead__select-trigger"
-                        aria-label="Selecione o tipo de curso"
-                        aria-invalid={courseTypeInvalid}
-                        aria-describedby={courseTypeInvalid ? 'lead-course-type-error' : undefined}
-                        onBlur={() => {
-                          markTouched('courseType')
-                          applyFieldValidation('courseType', courseType)
-                        }}
-                      >
-                        <SelectValue placeholder="Modalidade" />
-                      </SelectTrigger>
-                      <SelectContent className="lp-lead__select-content" position="popper" sideOffset={6}>
-                        {COURSE_TYPE_OPTIONS.map((item) => (
-                          <SelectItem key={item.value} value={item.value}>
-                            {item.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
                   </div>
                 </label>
                 {courseTypeInvalid ? (
@@ -748,36 +742,28 @@ export function CourseSection() {
                     } ${isWorkloadDisabled ? 'is-disabled' : ''}`}
                   >
                     <div className="lp-lead__select-wrapper">
-                      <Select
+                      <OverlaySelect
                         value={workload}
+                        disabled={isWorkloadDisabled}
+                        options={selectedPostCourseWorkloads}
+                        placeholder={'Selecione a carga hor\u00E1ria'}
+                        ariaLabel={'Selecione a carga hor\u00E1ria'}
+                        ariaInvalid={workloadInvalid}
+                        ariaDescribedBy={workloadInvalid ? 'lead-workload-error' : undefined}
+                        triggerClassName="ui-select-trigger"
+                        contentClassName="lp-lead__select-content"
+                        itemClassName="ui-select-item"
+                        onBlur={() => {
+                          markTouched('workload')
+                          applyFieldValidation('workload', workload)
+                        }}
                         onValueChange={(value) => {
                           setWorkload(value)
                           if (touched.workload) {
                             applyFieldValidation('workload', value)
                           }
                         }}
-                        disabled={isWorkloadDisabled}
-                      >
-                        <SelectTrigger
-                          className="lp-lead__select-trigger"
-                          aria-label="Selecione a carga horária"
-                          aria-invalid={workloadInvalid}
-                          aria-describedby={workloadInvalid ? 'lead-workload-error' : undefined}
-                          onBlur={() => {
-                            markTouched('workload')
-                            applyFieldValidation('workload', workload)
-                          }}
-                        >
-                          <SelectValue placeholder="Selecione a carga horária" />
-                        </SelectTrigger>
-                        <SelectContent className="lp-lead__select-content" position="popper" sideOffset={6}>
-                          {selectedPostCourseWorkloads.map((item) => (
-                            <SelectItem key={item.value} value={item.value}>
-                              {item.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      />
                     </div>
                   </label>
                   {workloadInvalid ? (

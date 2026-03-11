@@ -21,6 +21,9 @@ export function ProfileBannerSection() {
               className="lp-post-banner__image"
               src="/landing/posgraduacao-banner.webp"
               alt="Pós-Graduação EAD - Agilidade e assertividade faltam por aí?"
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
             />
           </picture>
         </a>

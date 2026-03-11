@@ -38,7 +38,13 @@ export function MarketSection() {
         <div className="lp-market-areas__grid">
           {MARKET_AREAS.map((area, index) => (
             <article key={`${area.title}-${index}`} className="lp-market-areas__card">
-              <img src={area.image} alt={`Atuação profissional em ${area.title}`} loading="lazy" />
+              <img
+                src={area.image}
+                alt={`Atuacao profissional em ${area.title}`}
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+              />
 
               <div className="lp-market-areas__salary">
                 <img src="/landing/areas-paid.svg" alt="" aria-hidden="true" />

@@ -8,6 +8,12 @@ homolog.faculdadepsicologiaunicesp.com.br {
     X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex"
   }
 
+  @build_assets path /assets/*
+  header @build_assets Cache-Control "public, max-age=31536000, immutable"
+
+  @public_static path /landing/* /favicon.ico /favicon-16x16.png /favicon-32x32.png /apple-touch-icon.png /site.webmanifest
+  header @public_static Cache-Control "public, max-age=604800"
+
   route {
     @robots path /robots.txt /robots.txt/*
     rewrite @robots /robots-homolog.txt

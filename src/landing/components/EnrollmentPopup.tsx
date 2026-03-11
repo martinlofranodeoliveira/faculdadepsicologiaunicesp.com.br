@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
 import {
   formatPhoneMask,
   normalizeName,
@@ -11,6 +9,7 @@ import {
   validatePhone,
   type CourseLeadSelection,
 } from '../crmLead'
+import { OverlaySelect } from './OverlaySelect'
 import {
   formatWorkloadLabelForDisplay,
   getDefaultWorkloadValue,
@@ -203,29 +202,20 @@ export function EnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupP
           <form className="lp-enrollment-modal__form" onSubmit={handleSubmit} noValidate>
             {isPostGraduation ? (
               <div className="lp-enrollment-modal__select-wrap">
-                <Select value={workload} onValueChange={setWorkload}>
-                  <SelectTrigger
-                    className={`lp-enrollment-modal__select-trigger ${
-                      errors.workload ? 'is-invalid' : ''
-                    }`}
-                    aria-label="Selecione a carga horária"
-                    aria-invalid={errors.workload ? 'true' : 'false'}
-                    aria-describedby={errors.workload ? 'enrollment-workload-error' : undefined}
-                  >
-                    <SelectValue placeholder="Selecione a carga horária" />
-                  </SelectTrigger>
-                  <SelectContent
-                    className="lp-enrollment-modal__select-content"
-                    position="popper"
-                    sideOffset={6}
-                  >
-                    {workloadOptions.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <OverlaySelect
+                  value={workload}
+                  options={workloadOptions}
+                  placeholder={'Selecione a carga hor\u00E1ria'}
+                  ariaLabel={'Selecione a carga hor\u00E1ria'}
+                  ariaInvalid={Boolean(errors.workload)}
+                  ariaDescribedBy={errors.workload ? 'enrollment-workload-error' : undefined}
+                  triggerClassName={`lp-enrollment-modal__select-trigger ${
+                    errors.workload ? 'is-invalid' : ''
+                  }`}
+                  contentClassName="lp-enrollment-modal__select-content"
+                  itemClassName="ui-select-item"
+                  onValueChange={setWorkload}
+                />
               </div>
             ) : null}
 

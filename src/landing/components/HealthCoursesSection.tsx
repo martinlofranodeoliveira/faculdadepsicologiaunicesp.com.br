@@ -113,6 +113,7 @@ function mapPostCourseToHealthCard(
 const fallbackHealthCourses: HealthCourse[] = FEATURED_PSYCHOLOGY_POST_COURSES.map(buildFallbackCourse)
 
 export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSectionProps) {
+  const sectionRef = useRef<HTMLElement | null>(null)
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const [cardsPerView, setCardsPerView] = useState(3)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -120,6 +121,31 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
   const [isMobileCarousel, setIsMobileCarousel] = useState(false)
   const [mobileCanPrev, setMobileCanPrev] = useState(false)
   const [mobileCanNext, setMobileCanNext] = useState(true)
+  const [shouldLoadCourses, setShouldLoadCourses] = useState(false)
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setShouldLoadCourses(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        setShouldLoadCourses(true)
+        observer.disconnect()
+      },
+      {
+        rootMargin: '320px 0px',
+      },
+    )
+
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [shouldLoadCourses])
 
   useEffect(() => {
     const viewport = viewportRef.current
@@ -146,6 +172,8 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
   }, [])
 
   useEffect(() => {
+    if (!shouldLoadCourses) return
+
     const abortController = new AbortController()
     let isMounted = true
 
@@ -278,7 +306,12 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
   }
 
   return (
-    <section id="pos-graduacao" className="lp-health-ead" aria-label="Pós EAD em Psicologia">
+    <section
+      ref={sectionRef}
+      id="pos-graduacao"
+      className="lp-health-ead"
+      aria-label="Pós EAD em Psicologia"
+    >
       <div className="lp-health-ead__inner">
         <a
           className="lp-health-ead__banner-link"
@@ -292,6 +325,9 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
               className="lp-health-ead__banner-image"
               src="/landing/posgraduacao-banner.webp"
               alt="Pós-Graduação EAD em Psicologia"
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
             />
           </picture>
         </a>
@@ -321,6 +357,7 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
                         src={course.imageSrc}
                         alt={`Imagem do curso ${course.title}`}
                         loading="lazy"
+                        decoding="async"
                       />
                       <span
                         className={`lp-health-ead-card__feature ${

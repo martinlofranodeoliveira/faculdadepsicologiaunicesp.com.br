@@ -7,11 +7,18 @@ export function FaqSection({ onOpenPopup }: FaqSectionProps) {
     <section id="graduacao" className="lp-graduation" aria-label="Sobre o curso de graduação em psicologia">
       <div className="lp-graduation__inner">
         <div className="lp-graduation__media">
-          <img
-            src="/landing/graduacao-presencial-psicologia-sessao-com-estudante.webp"
-            alt="Estudante de psicologia em sessão com paciente"
-            loading="lazy"
-          />
+          <picture>
+            <source
+              media="(max-width: 768px)"
+              srcSet="/landing/graduacao-presencial-psicologia-sessao-com-estudante-mobile.webp"
+            />
+            <img
+              src="/landing/graduacao-presencial-psicologia-sessao-com-estudante.webp"
+              alt="Estudante de psicologia em sessão com paciente"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
         </div>
 
         <div className="lp-graduation__content">

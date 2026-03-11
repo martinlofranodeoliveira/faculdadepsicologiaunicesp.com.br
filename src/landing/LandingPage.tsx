@@ -1,18 +1,38 @@
 import './landing.css'
-import { useCallback, useState } from 'react'
+import { Suspense, lazy, useCallback, useState } from 'react'
 
 import type { CourseLeadSelection } from './crmLead'
 import { CourseSection } from './components/CourseSection'
-import { EnrollmentPopup } from './components/EnrollmentPopup'
-import { FaqCtaSection } from './components/FaqCtaSection'
+import { DeferredSection } from './components/DeferredSection'
 import { FaqSection } from './components/FaqSection'
-import { FooterBottomSection } from './components/FooterBottomSection'
-import { FooterSection } from './components/FooterSection'
-import { GradeSection } from './components/GradeSection'
 import { Header } from './components/Header'
-import { HealthCoursesSection } from './components/HealthCoursesSection'
 import { HeroSection } from './components/HeroSection'
-import { MarketSection } from './components/MarketSection'
+
+const EnrollmentPopup = lazy(() =>
+  import('./components/EnrollmentPopup').then((module) => ({ default: module.EnrollmentPopup })),
+)
+const FooterSection = lazy(() =>
+  import('./components/FooterSection').then((module) => ({ default: module.FooterSection })),
+)
+const MarketSection = lazy(() =>
+  import('./components/MarketSection').then((module) => ({ default: module.MarketSection })),
+)
+const GradeSection = lazy(() =>
+  import('./components/GradeSection').then((module) => ({ default: module.GradeSection })),
+)
+const HealthCoursesSection = lazy(() =>
+  import('./components/HealthCoursesSection').then((module) => ({
+    default: module.HealthCoursesSection,
+  })),
+)
+const FaqCtaSection = lazy(() =>
+  import('./components/FaqCtaSection').then((module) => ({ default: module.FaqCtaSection })),
+)
+const FooterBottomSection = lazy(() =>
+  import('./components/FooterBottomSection').then((module) => ({
+    default: module.FooterBottomSection,
+  })),
+)
 
 const HERO_COURSE_SELECTION: CourseLeadSelection = {
   courseType: 'graduacao',
@@ -41,18 +61,46 @@ export function LandingPage() {
       <HeroSection onOpenPopup={openHeroPopup} />
       <CourseSection />
       <FaqSection onOpenPopup={openHeroPopup} />
-      <FooterSection />
-      <MarketSection />
-      <GradeSection onOpenPopup={openHeroPopup} />
-      <HealthCoursesSection onOpenCoursePopup={openCoursePopup} />
-      <FaqCtaSection />
-      <FooterBottomSection />
-      <EnrollmentPopup
-        key={popupSelection ? `${popupSelection.courseValue}-${popupSelection.courseId ?? 0}` : 'closed'}
-        isOpen={popupSelection !== null}
-        selection={popupSelection}
-        onClose={closePopup}
-      />
+      <DeferredSection minHeight={760}>
+        <Suspense fallback={null}>
+          <FooterSection />
+        </Suspense>
+      </DeferredSection>
+      <DeferredSection minHeight={780}>
+        <Suspense fallback={null}>
+          <MarketSection />
+        </Suspense>
+      </DeferredSection>
+      <DeferredSection minHeight={920}>
+        <Suspense fallback={null}>
+          <GradeSection onOpenPopup={openHeroPopup} />
+        </Suspense>
+      </DeferredSection>
+      <DeferredSection minHeight={860}>
+        <Suspense fallback={null}>
+          <HealthCoursesSection onOpenCoursePopup={openCoursePopup} />
+        </Suspense>
+      </DeferredSection>
+      <DeferredSection minHeight={760}>
+        <Suspense fallback={null}>
+          <FaqCtaSection />
+        </Suspense>
+      </DeferredSection>
+      <DeferredSection minHeight={820}>
+        <Suspense fallback={null}>
+          <FooterBottomSection />
+        </Suspense>
+      </DeferredSection>
+      {popupSelection ? (
+        <Suspense fallback={null}>
+          <EnrollmentPopup
+            key={`${popupSelection.courseValue}-${popupSelection.courseId ?? 0}`}
+            isOpen
+            selection={popupSelection}
+            onClose={closePopup}
+          />
+        </Suspense>
+      ) : null}
     </main>
   )
 }
