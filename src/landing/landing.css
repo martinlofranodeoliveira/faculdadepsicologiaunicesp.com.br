@@ -48,7 +48,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 45px;
+  gap: 40px;
   min-width: 0;
   flex: 1;
 }
