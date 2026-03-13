@@ -48,7 +48,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 24px;
   min-width: 0;
   flex: 1;
 }
@@ -84,10 +84,6 @@
   max-height: 32px;
 }
 
-.lp-logo__image--paulista {
-  max-height: 32px;
-}
-
 .lp-logo__image--enfermagem {
   max-height: 32px;
 }
@@ -117,7 +113,7 @@
   }
 
   .lp-header__partner-logos {
-    gap: 10px;
+    gap: 12px;
   }
 
   .lp-header__divider {
@@ -161,12 +157,12 @@
     width: 100%;
     flex: none;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px 14px;
+    flex-wrap: nowrap;
+    gap: 10px;
   }
 
   .lp-header__divider {
-    height: 28px;
+    height: 22px;
   }
 
   .lp-logo__image--psychology {
@@ -174,11 +170,11 @@
   }
 
   .lp-logo__image--partner {
-    max-height: 26px;
+    max-height: 20px;
   }
 
   .lp-logo__image--fasul-group {
-    max-height: 22px;
+    max-height: 18px;
   }
 
   .lp-header__cta {
@@ -2342,12 +2338,13 @@
   .lp-header__partner-logos {
     width: 100%;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px 12px;
+    flex-wrap: nowrap;
+    gap: 8px;
   }
 
   .lp-header__divider {
-    display: none;
+    display: block;
+    height: 18px;
   }
 
   .lp-logo__image--psychology {
@@ -2356,11 +2353,11 @@
   }
 
   .lp-logo__image--partner {
-    max-height: 24px;
+    max-height: 18px;
   }
 
   .lp-logo__image--fasul-group {
-    max-height: 20px;
+    max-height: 16px;
   }
 
   .lp-header__cta {

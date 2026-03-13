@@ -16,12 +16,12 @@ export function Header({ onOpenPopup }: HeaderProps) {
           />
         </a>
 
-        <div className="lp-header__partner-logos" aria-label="InstituiÃ§Ãµes do grupo educacional">
+        <div className="lp-header__partner-logos" aria-label="Instituições do grupo educacional">
           <img
-            className="lp-logo__image lp-logo__image--partner lp-logo__image--fasul-group"
-            src="/landing/logo-grupo-fasul-educacional.webp"
-            alt="Grupo FASUL Educacional"
-            width={206}
+            className="lp-logo__image lp-logo__image--partner lp-logo__image--enfermagem"
+            src="/landing/logo-faculdade-de-enfermagem.webp"
+            alt="Faculdade de Enfermagem"
+            width={155}
             height={44}
           />
           <span className="lp-header__divider" aria-hidden="true" />
@@ -32,20 +32,11 @@ export function Header({ onOpenPopup }: HeaderProps) {
             width={126}
             height={44}
           />
-          <span className="lp-header__divider" aria-hidden="true" />
           <img
-            className="lp-logo__image lp-logo__image--partner lp-logo__image--paulista"
-            src="/landing/logo-faculdade-paulista.webp"
-            alt="Faculdade Paulista"
-            width={141}
-            height={44}
-          />
-          <span className="lp-header__divider" aria-hidden="true" />
-          <img
-            className="lp-logo__image lp-logo__image--partner lp-logo__image--enfermagem"
-            src="/landing/logo-faculdade-de-enfermagem.webp"
-            alt="Faculdade de Enfermagem"
-            width={155}
+            className="lp-logo__image lp-logo__image--partner lp-logo__image--fasul-group"
+            src="/landing/logo-grupo-fasul-educacional.webp"
+            alt="Grupo FASUL Educacional"
+            width={206}
             height={44}
           />
         </div>
