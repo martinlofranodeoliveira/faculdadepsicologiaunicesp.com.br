@@ -36,21 +36,30 @@
   gap: 28px;
 }
 
+.lp-header__logos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 28px;
+  min-width: 0;
+  flex: 1;
+}
+
 .lp-header__brand {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
   min-width: 0;
-  flex-shrink: 1;
+  flex-shrink: 0;
 }
 
 .lp-header__partner-logos {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 24px;
+  justify-content: flex-start;
+  gap: 28px;
   min-width: 0;
-  flex: 1;
+  flex-shrink: 1;
 }
 
 .lp-header__divider {
@@ -112,6 +121,10 @@
     gap: 18px;
   }
 
+  .lp-header__logos {
+    gap: 12px;
+  }
+
   .lp-header__partner-logos {
     gap: 12px;
   }
@@ -147,14 +160,19 @@
     row-gap: 14px;
   }
 
-  .lp-header__brand {
+  .lp-header__logos {
     order: 1;
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .lp-header__brand {
     justify-content: center;
   }
 
   .lp-header__partner-logos {
-    order: 2;
-    width: 100%;
+    width: auto;
     flex: none;
     justify-content: center;
     flex-wrap: nowrap;
@@ -178,7 +196,7 @@
   }
 
   .lp-header__cta {
-    order: 3;
+    order: 2;
     margin: 0 auto;
     width: auto;
     min-height: 42px;
@@ -2330,13 +2348,13 @@
     gap: 12px;
   }
 
-  .lp-header__brand {
+  .lp-header__logos {
     width: 100%;
     justify-content: center;
+    gap: 8px;
   }
 
   .lp-header__partner-logos {
-    width: 100%;
     justify-content: center;
     flex-wrap: nowrap;
     gap: 8px;
