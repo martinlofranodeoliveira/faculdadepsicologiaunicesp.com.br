@@ -1,0 +1,17 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+import { ThankYouPage } from '@/thankyou/ThankYouPage'
+
+const title = `Inscrição finalizada | Graduação | ${siteConfig.name}`
+const description = 'Recebemos sua inscrição para a graduação.'
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath="/graduacao/inscricao-finalizada"
+  noindex={true}
+>
+  <ThankYouPage client:load variant="graduation" />
+</BaseLayout>

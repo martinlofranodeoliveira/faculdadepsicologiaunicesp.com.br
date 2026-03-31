@@ -1,0 +1,13 @@
+---
+import NotFoundPage from '@/components/NotFoundPage.astro'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+---
+
+<BaseLayout
+  title={`Página não encontrada | ${siteConfig.name}`}
+  description="O conteúdo solicitado não foi encontrado."
+  noindex={true}
+>
+  <NotFoundPage />
+</BaseLayout>

@@ -1,0 +1,29 @@
+---
+import PostCategoryPage from '@/course/PostCategoryPage.astro'
+import { getPostCategoryCourses } from '@/course/postCategoryData'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+
+export const prerender = false
+
+const courses = await getPostCategoryCourses()
+const title = `Pós-graduação | ${siteConfig.name}`
+const description =
+  'Conheça os cursos de pós-graduação, navegue pelas páginas individuais e aproveite uma estrutura preparada para SEO, categoria e API.'
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `Pós-graduação ${siteConfig.name}`,
+  description,
+  url: `${siteConfig.siteUrl}/pos-graduacao`,
+}
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath="/pos-graduacao"
+  structuredData={structuredData}
+>
+  <PostCategoryPage courses={courses} />
+</BaseLayout>

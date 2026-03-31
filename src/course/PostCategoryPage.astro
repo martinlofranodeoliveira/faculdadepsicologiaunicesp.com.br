@@ -1,0 +1,43 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import SiteFooter from '@/components/SiteFooter.astro'
+import SiteHeader from '@/components/SiteHeader.astro'
+
+import { PostCategoryExplorer } from './PostCategoryExplorer'
+import type { PostCategoryCourse } from './postCategoryData'
+
+interface Props {
+  courses: PostCategoryCourse[]
+}
+
+const { courses } = Astro.props
+---
+
+<SiteHeader />
+
+<main class="catalog-page">
+  <section class="container catalog-page__hero">
+    <div class="catalog-page__hero-card">
+      <Breadcrumbs
+        items={[
+          { label: 'Início', href: '/' },
+          { label: 'Pós-graduação' },
+        ]}
+      />
+
+      <div class="catalog-page__hero-copy">
+        <p class="eyebrow">Categoria</p>
+        <h1 class="section-title">Pós-graduação com páginas individuais e estrutura pronta para API.</h1>
+        <p class="section-copy">
+          Esta categoria já nasce desacoplada da landing principal, com busca, filtro e navegação direta para cada curso.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <PostCategoryExplorer client:load courses={courses} />
+  </section>
+</main>
+
+<SiteFooter />

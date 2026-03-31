@@ -1,0 +1,32 @@
+---
+import { LandingPage } from '@/landing/LandingPage'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+
+const title = `${siteConfig.name} | Graduação e Pós-graduação`
+const description =
+  'Conheça a graduação presencial e os cursos de pós-graduação da Faculdade de Psicologia UNICESP.'
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/" siteTheme={false}>
+  <Fragment slot="head">
+    <link
+      rel="preload"
+      as="image"
+      href="/landing/graduacao-presencial-psicologia.webp"
+      type="image/webp"
+      media="(min-width: 769px)"
+      imagesizes="100vw"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="/landing/graduacao-presencial-psicologia-mobile.webp"
+      type="image/webp"
+      media="(max-width: 768px)"
+      imagesizes="100vw"
+    />
+  </Fragment>
+
+  <LandingPage client:load />
+</BaseLayout>

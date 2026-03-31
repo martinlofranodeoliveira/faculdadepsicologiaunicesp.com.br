@@ -1,0 +1,22 @@
+---
+interface Props {
+  title?: string
+  message?: string
+  homeLabel?: string
+}
+
+const {
+  title = 'Página não encontrada',
+  message = 'Verifique o endereço ou volte para a página inicial.',
+  homeLabel = 'Voltar para a página inicial',
+} = Astro.props
+---
+
+<main class="not-found-page">
+  <div class="container--narrow not-found-page__inner surface-card">
+    <p class="eyebrow">Erro 404</p>
+    <h1>{title}</h1>
+    <p>{message}</p>
+    <a class="button-primary" href="/">{homeLabel}</a>
+  </div>
+</main>

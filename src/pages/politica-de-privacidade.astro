@@ -1,0 +1,17 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+import { LegalPage } from '@/legal/LegalPage'
+
+const title = `Política de Privacidade | ${siteConfig.name}`
+const description = 'Consulte as informações de privacidade e proteção de dados.'
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath="/politica-de-privacidade"
+  siteTheme={false}
+>
+  <LegalPage kind="privacy" />
+</BaseLayout>

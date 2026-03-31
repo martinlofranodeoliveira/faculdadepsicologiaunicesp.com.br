@@ -1,0 +1,53 @@
+---
+import { siteConfig, siteNavigation } from '@/site/config'
+
+interface Props {
+  transparent?: boolean
+}
+
+const { transparent = false } = Astro.props
+---
+
+<header class:list={['site-header', transparent && 'site-header--transparent']}>
+  <div class="container site-header__inner">
+    <a class="site-header__brand" href="/" aria-label={siteConfig.name}>
+      <span class="site-header__brand-logos">
+        <img
+          class="site-header__logo site-header__logo--main"
+          src="/landing/faculdade-de-psicologia-logo.webp"
+          alt="Faculdade de Psicologia"
+          width="172"
+          height="52"
+        />
+        <span class="site-header__brand-stack" aria-hidden="true">
+          <img
+            class="site-header__logo site-header__logo--mini"
+            src="/landing/logo-faculdade-unicesp.webp"
+            alt="UNICESP"
+            width="104"
+            height="28"
+          />
+        </span>
+      </span>
+      <span class="site-header__brand-copy">
+        <strong>{siteConfig.shortName}</strong>
+        <small>Estrutura acadêmica em psicologia</small>
+      </span>
+    </a>
+
+    <nav class="site-header__nav" aria-label="Navegação principal">
+      {siteNavigation.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+    </nav>
+
+    <div class="site-header__actions">
+      <a class="button-ghost site-header__phone" href={siteConfig.phoneHref}>
+        {siteConfig.phoneLabel}
+      </a>
+      <a class="button-primary" href="/graduacao/psicologia">
+        Quero me inscrever
+      </a>
+    </div>
+  </div>
+</header>

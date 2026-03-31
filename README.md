@@ -1,13 +1,14 @@
 # faculdadepsicologiaunicesp.com.br
 
-Estrutura inicial da landing page com a mesma base tecnológica usada no projeto de referência:
+Migração da antiga landing page para uma estrutura de site em `Astro + React`, inspirada na arquitetura de navegação da `faculdadepaulista.com.br`, mas com componentes, layout e conteúdo próprios.
 
-- React 19 + TypeScript
-- Vite 7
+## Stack
+
+- Astro 6
+- React 19
+- TypeScript
 - Tailwind CSS
 - ESLint
-- Estrutura de páginas `landing` + `legal`
-- Componentes base em `src/components/ui`
 
 ## Como rodar
 
@@ -24,7 +25,17 @@ npm run build
 
 ## Estrutura principal
 
-- `src/landing`: componentes e estilos da landing.
-- `src/legal`: páginas de política/termos.
-- `src/lib`: utilitários compartilhados.
-- `src/components/ui`: base de componentes reutilizáveis.
+- `src/pages`: rotas Astro do site.
+- `src/home`: home e camada de dados da página inicial.
+- `src/course`: categoria de pós, página de curso e explorador.
+- `src/lead`: formulários reutilizáveis.
+- `src/vestibular`: fluxo de vestibular da graduação.
+- `src/lib`: catálogo, CRM, jornada e sitemap.
+- `src/site`: configuração global e fallback do catálogo.
+- `src/legal`: conteúdo e componente das páginas legais.
+
+## Observações
+
+- A graduação foi mantida como rota direta para o curso principal, sem categoria própria.
+- A categoria de pós e as páginas de curso já estão preparadas para consumir dados da API pública.
+- Quando a API não estiver configurada, o projeto usa fallback local para não quebrar a build nem o ambiente de desenvolvimento.

@@ -1,0 +1,63 @@
+---
+import { footerGroupLogos, siteConfig } from '@/site/config'
+---
+
+<footer class="site-footer" id="contato">
+  <div class="container site-footer__inner">
+    <section class="site-footer__intro surface-card">
+      <div>
+        <p class="eyebrow">Contato</p>
+        <h2 class="site-footer__title">Base pronta para captação, atendimento e expansão de catálogo.</h2>
+        <p class="site-footer__copy">
+          A nova estrutura separa home, cursos, categoria, vestibular e formulários sem depender de uma landing única.
+        </p>
+      </div>
+
+      <div class="site-footer__contact-list">
+        <a class="site-footer__contact-item" href={siteConfig.phoneHref}>
+          <span>Telefone</span>
+          <strong>{siteConfig.phoneLabel}</strong>
+        </a>
+        <a class="site-footer__contact-item" href={`mailto:${siteConfig.email}`}>
+          <span>E-mail</span>
+          <strong>{siteConfig.email}</strong>
+        </a>
+        <a class="site-footer__contact-item" href={siteConfig.mapsHref} target="_blank" rel="noreferrer">
+          <span>Endereço</span>
+          <strong>{siteConfig.addressLines[0]}</strong>
+          <small>{siteConfig.addressLines[1]}</small>
+        </a>
+      </div>
+    </section>
+
+    <div class="site-footer__bottom">
+      <div class="site-footer__brand">
+        <img
+          src="/landing/faculdade-de-psicologia-logo-rodape.webp"
+          alt="Faculdade de Psicologia"
+          width="240"
+          height="68"
+        />
+        <p>
+          Graduação presencial em Psicologia e pós-graduações em Psicologia com arquitetura pronta para evoluir em Astro + React.
+        </p>
+      </div>
+
+      <div class="site-footer__group">
+        {footerGroupLogos.map((logo) => (
+          <div class="site-footer__group-item">
+            <img src={logo.src} alt={logo.alt} loading="lazy" decoding="async" />
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="site-footer__legal">
+      <small>© 2026 {siteConfig.name}. Todos os direitos reservados.</small>
+      <div class="site-footer__links">
+        <a href="/politica-de-privacidade">Política de Privacidade</a>
+        <a href="/termos-de-uso">Termos de Uso</a>
+      </div>
+    </div>
+  </div>
+</footer>

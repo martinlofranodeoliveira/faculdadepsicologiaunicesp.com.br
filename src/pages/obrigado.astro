@@ -1,0 +1,12 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+import { ThankYouPage } from '@/thank-you/ThankYouPage'
+
+const title = `Obrigado | ${siteConfig.name}`
+const description = 'Recebemos o seu cadastro. Nossa equipe entrará em contato em breve.'
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/obrigado" siteTheme={false}>
+  <ThankYouPage />
+</BaseLayout>

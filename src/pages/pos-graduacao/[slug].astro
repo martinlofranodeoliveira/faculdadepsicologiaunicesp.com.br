@@ -1,0 +1,82 @@
+---
+import NotFoundPage from '@/components/NotFoundPage.astro'
+import CoursePage from '@/course/CoursePage.astro'
+import { getPostCoursePageBySlug, getPostCoursePageSummaries } from '@/lib/courseCatalog'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+
+export const prerender = false
+
+const { slug = '' } = Astro.params
+const course = await getPostCoursePageBySlug(slug)
+const relatedCourses = course
+  ? (await getPostCoursePageSummaries()).filter((item) => item.path !== course.path).slice(0, 3)
+  : []
+
+if (!course) {
+  Astro.response.status = 404
+}
+
+const title = course
+  ? `${course.title} | Pós-graduação | ${siteConfig.name}`
+  : `Curso não encontrado | ${siteConfig.name}`
+const metaDescription = course
+  ? course.seoDescription || course.description
+  : 'O curso solicitado não foi encontrado.'
+const description = course
+  ? course.description || course.seoDescription
+  : 'O curso solicitado não foi encontrado.'
+const structuredData = course
+  ? [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Course',
+        name: course.title,
+        description,
+        provider: {
+          '@type': 'CollegeOrUniversity',
+          name: siteConfig.name,
+          url: `${siteConfig.siteUrl}/`,
+        },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: `${siteConfig.siteUrl}/`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Pós-graduação',
+            item: `${siteConfig.siteUrl}/pos-graduacao`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: course.title,
+            item: `${siteConfig.siteUrl}/pos-graduacao/${slug}`,
+          },
+        ],
+      },
+    ]
+  : undefined
+---
+
+<BaseLayout
+  title={title}
+  description={metaDescription}
+  canonicalPath={`/pos-graduacao/${slug}`}
+  structuredData={structuredData}
+  noindex={!course}
+>
+  {course ? (
+    <CoursePage course={course} relatedCourses={relatedCourses} />
+  ) : (
+    <NotFoundPage title="Curso não encontrado" message="Verifique o endereço ou volte para a categoria de pós-graduação." />
+  )}
+</BaseLayout>

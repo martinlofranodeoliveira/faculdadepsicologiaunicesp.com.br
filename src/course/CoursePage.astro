@@ -1,0 +1,211 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import SiteFooter from '@/components/SiteFooter.astro'
+import SiteHeader from '@/components/SiteHeader.astro'
+import { splitDifferentials, type CatalogCourse, type CatalogCourseSummary } from '@/lib/catalogApi'
+import { CourseLeadForm } from '@/lead/CourseLeadForm'
+
+interface Props {
+  course: CatalogCourse
+  relatedCourses: CatalogCourseSummary[]
+}
+
+const { course, relatedCourses } = Astro.props
+
+const leadSelection = {
+  courseType: course.courseType,
+  courseValue: course.value,
+  courseLabel: course.rawLabel,
+  courseId: course.courseId,
+  coursePath: course.path,
+  priceLabel: course.currentInstallmentPriceMonthly,
+}
+
+const differentialItems = splitDifferentials(course.competitiveDifferentials || '')
+const courseBenefits = splitDifferentials(course.competenciesBenefits || '')
+const targetAudience = course.targetAudience || 'Público em definição para esta oferta.'
+const laborMarket = course.laborMarket || 'Atuação profissional vinculada à área de formação do curso.'
+const showVestibularCallout = course.courseType === 'graduacao'
+---
+
+<SiteHeader />
+
+<main class="course-page">
+  <section class="container course-page__hero-shell">
+    <div class="course-hero">
+      <div class="course-hero__copy">
+        <Breadcrumbs
+          items={[
+            { label: 'Início', href: '/' },
+            ...(course.courseType === 'pos'
+              ? [{ label: 'Pós-graduação', href: '/pos-graduacao' }]
+              : [{ label: 'Graduação', href: '/graduacao/psicologia' }]),
+            { label: course.title },
+          ]}
+        />
+
+        <p class="eyebrow">{course.modalityBadge}</p>
+        <h1>{course.title}</h1>
+        <p>{course.description}</p>
+
+        <div class="course-hero__badges">
+          <span class="metric-chip">{course.primaryAreaLabel}</span>
+          <span class="metric-chip">{course.modalityLabel}</span>
+          {course.titulation ? <span class="metric-chip">{course.titulation}</span> : null}
+        </div>
+
+        <div class="course-hero__metrics">
+          <div class="course-hero__metric">
+            <span>Duração</span>
+            <strong>{course.durationText || 'Consulte a grade'}</strong>
+          </div>
+          <div class="course-hero__metric">
+            <span>Investimento</span>
+            <strong>{course.currentInstallmentPriceMonthly}</strong>
+          </div>
+          <div class="course-hero__metric">
+            <span>Oferta anterior</span>
+            <strong>{course.oldInstallmentPrice}</strong>
+          </div>
+        </div>
+
+        {course.teachingPlanUrl ? (
+          <div class="course-page__section-actions">
+            <a class="button-secondary" href={course.teachingPlanUrl} target="_blank" rel="noreferrer">
+              Baixar plano de ensino
+            </a>
+          </div>
+        ) : null}
+      </div>
+
+      <CourseLeadForm
+        client:load
+        selection={leadSelection}
+        institutionSlug={course.institutionSlug}
+        dark={course.courseType === 'graduacao'}
+      />
+    </div>
+  </section>
+
+  <section class="container course-page__body">
+    <section class="course-page__section">
+      <div class="course-page__section-header">
+        <p class="eyebrow">Panorama</p>
+        <h2>O que esta página já resolve</h2>
+        <p>
+          A arquitetura separa contexto acadêmico, oferta comercial e fluxo de inscrição. Assim o layout final pode evoluir sem desmontar a lógica do curso.
+        </p>
+      </div>
+
+      <div class="course-page__section-grid">
+        <article class="course-info-card">
+          <h3>Público indicado</h3>
+          <p>{targetAudience}</p>
+        </article>
+        <article class="course-info-card">
+          <h3>Diferenciais</h3>
+          <p>{differentialItems[0] || 'Diferenciais poderão ser atualizados pela API.'}</p>
+        </article>
+        <article class="course-info-card">
+          <h3>Mercado de atuação</h3>
+          <p>{laborMarket}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="course-page__section">
+      <div class="course-page__section-header">
+        <p class="eyebrow">Benefícios</p>
+        <h2>Camadas de conteúdo organizadas por seção</h2>
+        <p>Os blocos abaixo já aceitam dados vindos da API, mas continuam operando com fallback seguro durante o desenvolvimento.</p>
+      </div>
+
+      <div class="course-page__section-grid">
+        {courseBenefits.length ? (
+          courseBenefits.slice(0, 3).map((benefit) => (
+            <article class="course-info-card">
+              <h3>Competência</h3>
+              <p>{benefit}</p>
+            </article>
+          ))
+        ) : (
+          <article class="course-info-card">
+            <h3>Competências e ganhos</h3>
+            <p>As competências deste curso poderão ser expandidas no catálogo assim que o material acadêmico definitivo estiver disponível.</p>
+          </article>
+        )}
+      </div>
+
+      {showVestibularCallout ? (
+        <div class="course-vestibular-callout">
+          <h3>Vestibular separado da página de curso</h3>
+          <p>
+            A graduação segue para uma rota dedicada de vestibular. Isso permite evoluir a jornada sem transformar a página do curso em um fluxo longo demais.
+          </p>
+          <a class="button-secondary" href="/graduacao/vestibular">Abrir fluxo do vestibular</a>
+        </div>
+      ) : null}
+    </section>
+
+    <section class="course-page__section">
+      <div class="course-page__section-header">
+        <p class="eyebrow">Matriz</p>
+        <h2>Currículo preparado para múltiplas cargas horárias</h2>
+        <p>Quando a API devolver variantes de currículo, esta área passa a renderizar cada uma delas sem alteração estrutural.</p>
+      </div>
+
+      <div class="course-page__section-grid">
+        {course.curriculumVariants.length ? (
+          course.curriculumVariants.slice(0, 3).map((variant) => (
+            <article class="course-curriculum-card">
+              <h3>{variant.name}</h3>
+              <p>Total estimado: {variant.totalHours ? `${variant.totalHours} horas` : 'Consulte a grade completa'}</p>
+              <ul>
+                {variant.disciplines.slice(0, 5).map((discipline) => (
+                  <li>{discipline.name}</li>
+                ))}
+              </ul>
+            </article>
+          ))
+        ) : (
+          <article class="course-curriculum-card">
+            <h3>Matriz em configuração</h3>
+            <p>O currículo será exibido aqui assim que o catálogo acadêmico definitivo for sincronizado.</p>
+          </article>
+        )}
+      </div>
+    </section>
+
+    {relatedCourses.length ? (
+      <section class="course-page__section">
+        <div class="course-page__section-header">
+          <p class="eyebrow">Relacionados</p>
+          <h2>Outras páginas já conectadas à mesma arquitetura</h2>
+          <p>Os cursos relacionados reutilizam a mesma base de rotas, SEO e formulários, mantendo consistência técnica entre as seções.</p>
+        </div>
+
+        <div class="related-course-grid">
+          {relatedCourses.map((relatedCourse) => (
+            <article class="related-course-card surface-card">
+              <div class="related-course-card__media">
+                <img src={relatedCourse.image} alt={relatedCourse.title} loading="lazy" decoding="async" />
+              </div>
+              <div class="related-course-card__body">
+                <p class="related-course-card__area">{relatedCourse.primaryAreaLabel}</p>
+                <h3>{relatedCourse.title}</h3>
+                <p class="catalog-card__course-label">{relatedCourse.rawLabel}</p>
+                <div class="catalog-card__pricing">
+                  <small>{relatedCourse.oldInstallmentPrice}</small>
+                  <strong>{relatedCourse.currentInstallmentPriceMonthly || relatedCourse.currentInstallmentPrice}</strong>
+                </div>
+                <a class="button-primary" href={relatedCourse.path}>Abrir curso</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : null}
+  </section>
+</main>
+
+<SiteFooter />

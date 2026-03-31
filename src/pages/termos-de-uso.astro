@@ -1,0 +1,12 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/site/config'
+import { LegalPage } from '@/legal/LegalPage'
+
+const title = `Termos de Uso | ${siteConfig.name}`
+const description = 'Consulte os termos e condições de navegação.'
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/termos-de-uso" siteTheme={false}>
+  <LegalPage kind="terms" />
+</BaseLayout>
