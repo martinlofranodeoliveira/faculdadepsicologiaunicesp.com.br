@@ -1,12 +1,13 @@
 ---
 import { splitDifferentials, type CatalogCourse, type CatalogCourseSummary } from '@/lib/catalogApi'
-import { CourseLeadForm } from '@/lead/CourseLeadForm'
+import { RelatedCoursesSection } from '@/course/RelatedCoursesSection'
 import { CurriculumSection } from '@/course/CurriculumSection'
 import { TestimonialsSection } from '@/course/TestimonialsSection'
-import { RelatedCoursesSection } from '@/course/RelatedCoursesSection'
+import { FooterBottomSection } from '@/landing/components/FooterBottomSection'
 import { FaqCtaSection } from '@/landing/components/FaqCtaSection'
 import { Header } from '@/landing/components/Header'
-import { FooterBottomSection } from '@/landing/components/FooterBottomSection'
+import { CourseLeadForm } from '@/lead/CourseLeadForm'
+import { siteConfig } from '@/site/config'
 import '@/landing/landing.css'
 
 interface Props {
@@ -16,10 +17,46 @@ interface Props {
 
 const { course, relatedCourses } = Astro.props
 
+function parseHours(value: string) {
+  const match = value.match(/(\d+)/)
+  return match ? Number.parseInt(match[1], 10) : 0
+}
+
+function buildWorkloadSummary(workloadOptions: string[]) {
+  const parsedHours = workloadOptions.map((item) => parseHours(item)).filter((item) => item > 0)
+  if (!parsedHours.length) return 'Consulte a carga horária'
+
+  const minHours = Math.min(...parsedHours)
+  const maxHours = Math.max(...parsedHours)
+  return minHours === maxHours ? `${minHours} horas` : `${minHours} a ${maxHours} horas`
+}
+
+function buildWorkloadDescription(workloadOptions: string[]) {
+  if (!workloadOptions.length) return 'Carga horária confirmada conforme a oferta vigente.'
+  if (workloadOptions.length === 1) return workloadOptions[0]
+  return 'Opções conforme a trilha selecionada'
+}
+
+function buildDurationDescription(courseItem: CatalogCourse, isPostCourse: boolean) {
+  if (isPostCourse && courseItem.durationContinuousMonths > 0) {
+    return `Fluxo contínuo de ${courseItem.durationContinuousMonths} meses`
+  }
+
+  if (courseItem.durationMonths > 0) {
+    return `Planejamento acadêmico de ${courseItem.durationMonths} meses`
+  }
+
+  if (courseItem.semesterCount > 0) {
+    return `${courseItem.semesterCount} semestres`
+  }
+
+  return 'Consulte a coordenação para mais detalhes.'
+}
+
 const leadSelection = {
   courseType: course.courseType,
   courseValue: course.value,
-  courseLabel: course.rawLabel,
+  courseLabel: course.rawLabel || course.title,
   courseId: course.courseId,
   coursePath: course.path,
   priceLabel: course.currentInstallmentPriceMonthly,
@@ -28,8 +65,34 @@ const leadSelection = {
 const courseBenefits = splitDifferentials(course.competenciesBenefits || '')
 const targetAudience = course.targetAudience || 'Público em definição para esta oferta.'
 const laborMarket = course.laborMarket || 'Atuação profissional vinculada à área de formação do curso.'
-
 const isPos = course.courseType === 'pos'
+const institutionDisplayName =
+  course.institutionName && course.institutionName.trim().toUpperCase() !== 'PSICOLOGIA'
+    ? course.institutionName
+    : siteConfig.name
+const modalityTitle = `Modalidade ${course.modalityLabel || (isPos ? 'EAD' : 'Presencial')}`
+const modalityDescription =
+  course.offeringModalityText ||
+  (course.modality === 'presencial'
+    ? 'Aulas presenciais'
+    : course.modality === 'semipresencial'
+      ? 'Atividades híbridas'
+      : 'Aulas online')
+const workloadTitle = buildWorkloadSummary(course.workloadOptions || [])
+const workloadDescription = buildWorkloadDescription(course.workloadOptions || [])
+const durationTitle =
+  course.durationText ||
+  (course.semesterCount > 0
+    ? `${course.semesterCount} semestres`
+    : course.durationMonths > 0
+      ? `${course.durationMonths} meses`
+      : 'Consulte a duração')
+const durationDescription = buildDurationDescription(course, isPos)
+const legalNoticeText = [
+  `O curso de ${course.rawLabel || course.title} integra a oferta acadêmica divulgada pela ${institutionDisplayName}.`,
+  `As informações de modalidade, carga horária, grade curricular e condições comerciais seguem a disponibilidade vigente do catálogo acadêmico e podem ser atualizadas pela instituição.`,
+  `O certificado de conclusão é emitido pela instituição responsável pela oferta, conforme a regulamentação aplicável.`,
+].join('\n\n')
 ---
 
 <div class="lp-page bg-white">
@@ -37,48 +100,43 @@ const isPos = course.courseType === 'pos'
 
   <main class="bg-gradient-to-b from-[#e6ecf4] from-[550px] lg:from-[600px] to-white to-[550px] lg:to-[600px] min-h-screen pt-6 lg:pt-[30px] font-['Liberation_Sans']">
     <div class="container mx-auto px-4 lg:px-8 max-w-[1240px]">
-      
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_552px] gap-12 lg:gap-8 relative">
-        
-        <!-- Left Column: Course Info -->
         <div class="flex flex-col max-w-[662px] w-full order-1">
-          <!-- Breadcrumbs -->
           <div class="mb-[30px] text-[16px] lg:text-[20px] text-[#070707] font-['Liberation_Sans'] flex flex-wrap items-center">
             <a href="/" class="underline hover:opacity-80 transition-opacity">Home</a>
             <span class="mx-2">/</span>
-            <a href={isPos ? "/pos-graduacao" : "/graduacao"} class="underline hover:opacity-80 transition-opacity">{isPos ? 'Pós-Graduação' : 'Graduação'}</a>
+            <a href={isPos ? '/pos-graduacao' : '/graduacao'} class="underline hover:opacity-80 transition-opacity">
+              {isPos ? 'Pós-Graduação' : 'Graduação'}
+            </a>
             <span class="mx-2">/</span>
             <span class="text-black/50 truncate max-w-full inline-block" title={course.title}>{course.title}</span>
           </div>
 
-          <!-- Title -->
           <h1 class="text-[#070707] text-[36px] lg:text-[45px] leading-tight lg:leading-[45px] font-extrabold uppercase mb-8 lg:mb-[60px] font-['Kumbh_Sans']">
             {course.title}
           </h1>
 
-          <!-- Description -->
           <p class="text-[#070707] text-[18px] lg:text-[20px] leading-snug lg:leading-[25px] mb-8 lg:mb-[60px]">
             {course.description}
           </p>
 
-          <!-- Features Icons -->
           <div class="flex flex-col sm:flex-row mb-8 lg:mb-[60px] w-full gap-6 sm:gap-2 lg:gap-4">
             <div class="flex items-start gap-[8px] w-full sm:w-1/3">
               <div class="w-[45px] h-[45px] rounded-[53px] bg-gradient-to-br from-[#1b63de] to-[#0f3678] flex items-center justify-center shrink-0">
-                <img src="/course/modalidade.svg" alt="EAD" class="w-[3.25rem] h-[3.25rem] object-contain" />
+                <img src="/course/modalidade.svg" alt="Modalidade" class="w-[3.25rem] h-[3.25rem] object-contain" />
               </div>
               <div class="flex flex-col justify-center min-h-[45px]">
-                <span class="text-[#070707] text-[14px] lg:text-[15px] font-bold uppercase leading-[20px]">Modalidade EAD</span>
-                <span class="text-[#070707] text-[13px] lg:text-[14px] opacity-75 leading-[16px]">Aulas online</span>
+                <span class="text-[#070707] text-[14px] lg:text-[15px] font-bold uppercase leading-[20px]">{modalityTitle}</span>
+                <span class="text-[#070707] text-[13px] lg:text-[14px] opacity-75 leading-[16px]">{modalityDescription}</span>
               </div>
             </div>
             <div class="flex items-start gap-[8px] w-full sm:w-1/3">
               <div class="w-[45px] h-[45px] rounded-[53px] bg-gradient-to-br from-[#1b63de] to-[#0f3678] flex items-center justify-center shrink-0">
-                <img src="/course/horas.svg" alt="Horas" class="w-[3.25rem] h-[3.25rem] object-contain" />
+                <img src="/course/horas.svg" alt="Carga horária" class="w-[3.25rem] h-[3.25rem] object-contain" />
               </div>
               <div class="flex flex-col justify-center min-h-[45px]">
-                <span class="text-[#070707] text-[14px] lg:text-[15px] font-bold uppercase leading-[20px]">360 a 720 Horas</span>
-                <span class="text-[#070707] text-[13px] lg:text-[14px] opacity-75 leading-[16px]">Opções com prática ou sem prática</span>
+                <span class="text-[#070707] text-[14px] lg:text-[15px] font-bold uppercase leading-[20px]">{workloadTitle}</span>
+                <span class="text-[#070707] text-[13px] lg:text-[14px] opacity-75 leading-[16px]">{workloadDescription}</span>
               </div>
             </div>
             <div class="flex items-start gap-[8px] w-full sm:w-1/3">
@@ -86,24 +144,22 @@ const isPos = course.courseType === 'pos'
                 <img src="/course/carga-horaria.svg" alt="Duração" class="w-[3.25rem] h-[3.25rem] object-contain" />
               </div>
               <div class="flex flex-col justify-center min-h-[45px]">
-                <span class="text-[#070707] text-[14px] lg:text-[15px] font-bold uppercase leading-[20px]">De 3 a 12 meses</span>
-                <span class="text-[#070707] text-[13px] lg:text-[14px] opacity-75 leading-[16px]">Conforme a carga horária selecionada</span>
+                <span class="text-[#070707] text-[14px] lg:text-[15px] font-bold uppercase leading-[20px]">{durationTitle}</span>
+                <span class="text-[#070707] text-[13px] lg:text-[14px] opacity-75 leading-[16px]">{durationDescription}</span>
               </div>
             </div>
           </div>
 
-          <!-- Banner +1 Pós -->
           {isPos && (
             <div class="mb-8 lg:mb-[36px] w-full rounded-[20px] overflow-hidden relative">
               <picture>
                 <source media="(max-width: 768px)" srcset="/course/promocao-curso-pos-mobile.webp" />
-                <img src="/course/promocao-curso-pos.webp" alt="Ganhe +1 pós-Graduação para presentear um amigo ou familiar" class="w-full h-auto object-cover" />
+                <img src="/course/promocao-curso-pos.webp" alt="Ganhe +1 pós-graduação para presentear um amigo ou familiar" class="w-full h-auto object-cover" />
               </picture>
             </div>
           )}
         </div>
 
-        <!-- Right Column: Form -->
         <div class="flex justify-center lg:justify-end items-start w-full relative order-2 lg:row-span-2">
           <div class="w-full max-w-[552px] lg:sticky lg:top-[30px] relative">
             <CourseLeadForm
@@ -112,45 +168,39 @@ const isPos = course.courseType === 'pos'
               institutionSlug={course.institutionSlug}
               dark={course.courseType === 'graduacao'}
               image={course.image}
-              pricePix={course.currentInstallmentPrice}
+              pixText={course.pixText}
+              workloadOptions={course.workloadOptions}
+              priceItems={course.priceItems}
+              durationText={course.durationText}
             />
           </div>
         </div>
 
-        <!-- Legal Notice -->
         <div class="w-full order-3 lg:col-start-1 max-w-[662px]">
           <div class="bg-[#dbdbdb] lg:bg-[#cbd1d7] rounded-[15px] lg:rounded-[18px] px-[15px] lg:px-[25px] py-[10px] lg:py-[15px] flex flex-col gap-[15px] w-full">
             <p class="text-black text-[12px] lg:text-[14px] font-normal lg:font-medium leading-[18px] lg:leading-[20px] font-['Kumbh_Sans'] m-0 whitespace-pre-line">
-              O curso de {course.rawLabel || course.title} ofertado pela {course.institutionSlug || 'instituição'}, inscrita no CNPJ sob n° {isPos ? '00.000.000/0000-00' : '00.000.000/0000-00'}, Instituição de Ensino Superior devidamente credenciada pelo Ministério da Educação (MEC) para a oferta de cursos na modalidade a distância (EAD).
-
-              A Faculdade Paulista atua exclusivamente na divulgação e gestão comercial e educacional dos Cursos.
-
-              O Certificado de conclusão será emitido pela {course.institutionSlug || 'instituição'}, nos termos da Legislação vigente.
+              {legalNoticeText}
             </p>
 
-            <img src="/course/qr-code-instituicao.webp" alt="Consulte aqui o cadastro da Instituição no Sistema e-MEC" class="max-w-[254px] lg:max-w-[315px] w-full mt-2" />
+            <img src="/course/qr-code-instituicao.webp" alt="Consulte aqui o cadastro da instituição no sistema e-MEC" class="max-w-[254px] lg:max-w-[315px] w-full mt-2" />
           </div>
         </div>
-        
       </div>
     </div>
 
-    <!-- Full width Curriculum Section with extended blue background -->
     <div class="w-full bg-gradient-to-br from-[#091149] to-[#09419f] mt-12 lg:mt-16 rounded-t-[30px] lg:rounded-t-[85px] pt-8 lg:pt-[60px] pb-32 lg:pb-[140px] px-4 lg:px-8 flex flex-col items-center relative z-0">
       <div class="w-full max-w-[1240px]">
         <CurriculumSection client:load variants={course.curriculumVariants || []} />
       </div>
     </div>
-    
-    <!-- Seção: Para quem esse curso é indicado? -->
+
     <div class="w-full bg-white rounded-[40px] lg:rounded-[60px] relative z-10 -mt-24 lg:-mt-[100px] py-12 lg:py-[60px] px-4 lg:px-8 flex flex-col items-center shadow-[0_4px_21px_0_rgba(0,0,0,0.05)]">
       <div class="w-full max-w-[1240px] flex flex-col items-center">
         <h2 class="text-[#0a073c] text-[28px] lg:text-[35px] font-extrabold uppercase text-center mb-10 font-['Kumbh_Sans'] leading-tight">
           PARA QUEM ESSE CURSO <span class="text-[#1449a3]">É INDICADO?</span>
         </h2>
-        
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full mb-10">
-          <!-- Competências -->
           <div class="bg-[#f4f4f4] rounded-[25px] p-6 flex flex-col gap-4">
             <div class="flex items-center gap-3">
               <img src="/course/cognition.webp" alt="Competências" class="w-10 h-10 object-contain shrink-0" />
@@ -160,8 +210,7 @@ const isPos = course.courseType === 'pos'
               {courseBenefits[0] || 'Competências e ganhos em definição para esta oferta.'}
             </p>
           </div>
-          
-          <!-- Público-Alvo -->
+
           <div class="bg-[#f4f4f4] rounded-[25px] p-6 flex flex-col gap-4">
             <div class="flex items-center gap-3">
               <img src="/course/radar.webp" alt="Público-alvo" class="w-10 h-10 object-contain shrink-0" />
@@ -171,8 +220,7 @@ const isPos = course.courseType === 'pos'
               {targetAudience}
             </p>
           </div>
-          
-          <!-- Mercado de Trabalho -->
+
           <div class="bg-[#f4f4f4] rounded-[25px] p-6 flex flex-col gap-4">
             <div class="flex items-center gap-3">
               <img src="/course/work.webp" alt="Mercado de trabalho" class="w-10 h-10 object-contain shrink-0" />
@@ -183,20 +231,15 @@ const isPos = course.courseType === 'pos'
             </p>
           </div>
         </div>
-        
+
         <a href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;" class="bg-gradient-to-br from-[#1b63de] to-[#0f3678] text-white text-[16px] lg:text-[18px] font-extrabold uppercase px-[26px] py-[19px] rounded-[12px] hover:opacity-90 transition-opacity font-['Kumbh_Sans'] mt-2">
           INSCREVA-SE JÁ
         </a>
       </div>
     </div>
 
-    <!-- Seção: Depoimentos -->
     <TestimonialsSection client:load />
-
-    <!-- Seção: Cursos Relacionados -->
     <RelatedCoursesSection client:load courses={relatedCourses} />
-
-    <!-- Seção: FAQ -->
     <FaqCtaSection client:load />
   </main>
 

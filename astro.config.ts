@@ -17,7 +17,7 @@ function encodeHeaderAsUtf8Bytes(value: string): string {
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  site: process.env.SITE_URL || 'https://faculdadepsicologiaunicesp.com.br',
+  site: process.env.SITE_URL || 'https://faculdadepsicologia.com.br',
   adapter: node({
     mode: 'standalone',
   }),

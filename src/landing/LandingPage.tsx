@@ -7,6 +7,7 @@ import { DeferredSection } from './components/DeferredSection'
 import { FaqSection } from './components/FaqSection'
 import { Header } from './components/Header'
 import { HeroSection } from './components/HeroSection'
+import { PortariaSection } from './components/PortariaSection'
 
 const EnrollmentPopup = lazy(() =>
   import('./components/EnrollmentPopup').then((module) => ({ default: module.EnrollmentPopup })),
@@ -60,6 +61,7 @@ export function LandingPage() {
       <Header onOpenPopup={openHeroPopup} />
       <HeroSection onOpenPopup={openHeroPopup} />
       <CourseSection />
+      <PortariaSection />
       <FaqSection onOpenPopup={openHeroPopup} />
       <DeferredSection minHeight={760}>
         <Suspense fallback={null}>

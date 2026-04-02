@@ -23,7 +23,6 @@ type HealthCourse = {
   price: string
   hoursLabel: string
   imageSrc: string
-  featureLabel: string
   selection: CourseLeadSelection
 }
 
@@ -74,7 +73,6 @@ function buildFallbackCourse(target: PsychologyPostCourseCatalogItem): HealthCou
     price: DEFAULT_CURRENT_PRICE,
     hoursLabel: buildPostCourseHoursLabel(target.workloads),
     imageSrc: target.imageSrc ?? '',
-    featureLabel: target.featureLabel,
     selection: {
       courseType: 'pos',
       courseValue: target.fallbackValue,
@@ -99,7 +97,6 @@ function mapPostCourseToHealthCard(
     price,
     hoursLabel: buildPostCourseHoursLabel(target.workloads),
     imageSrc: target.imageSrc ?? '',
-    featureLabel: target.featureLabel,
     selection: {
       courseType: 'pos',
       courseValue: target.fallbackValue,
@@ -359,15 +356,6 @@ export function HealthCoursesSection({ onOpenCoursePopup }: HealthCoursesSection
                         loading="lazy"
                         decoding="async"
                       />
-                      <span
-                        className={`lp-health-ead-card__feature ${
-                          course.featureLabel.includes('VIDEOAULAS')
-                            ? 'lp-health-ead-card__feature--videoaulas'
-                            : ''
-                        }`}
-                      >
-                        {course.featureLabel}
-                      </span>
                     </div>
 
                     <div className="lp-health-ead-card__badges">

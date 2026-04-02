@@ -43,7 +43,6 @@ export function CurriculumSection({ variants }: Props) {
         >
           <div className="flex items-center gap-2 font-extrabold text-[12px] lg:text-[22px] uppercase font-['Kumbh_Sans'] leading-[1.13] lg:leading-normal">
             <span className="text-[#1b63de] lg:text-[#235dbe]">Disciplinas</span>
-            <span className="text-[#0b111f] font-extrabold lg:font-medium text-[12px] lg:text-[18px] lowercase">(plataforma conted)</span>
           </div>
           <div className="flex items-center justify-end gap-[5px] lg:gap-3 text-[rgba(0,2,5,0.4)] font-bold text-[12px] lg:text-[20px] uppercase font-['Kumbh_Sans'] leading-[1.13] lg:leading-normal">
             <span className="w-min lg:w-auto text-right">Carga Horária</span>

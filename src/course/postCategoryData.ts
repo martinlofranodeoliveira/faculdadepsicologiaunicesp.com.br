@@ -26,7 +26,7 @@ export async function getPostCategoryCourses(force = false): Promise<PostCategor
   return entries.map((course) => ({
     path: course.path,
     title: course.title,
-    courseLabel: course.rawLabel,
+    courseLabel: course.rawLabel || course.title,
     courseValue: course.value,
     courseId: course.courseId,
     institutionId: course.institutionId,

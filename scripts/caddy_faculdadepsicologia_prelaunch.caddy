@@ -1,0 +1,36 @@
+# URL principal da Faculdade de Psicologia em pre-lancamento.
+# Mantem o site fora da indexacao enquanto estiver em preparacao.
+#
+# Pre-requisitos:
+# - app Astro rodando em 127.0.0.1:4323
+# - variavel de ambiente do Caddy: CRMFASUL_BEARER_TOKEN
+
+faculdadepsicologia.com.br, www.faculdadepsicologia.com.br {
+  encode zstd gzip
+
+  header {
+    X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex"
+  }
+
+  @robots path /robots.txt /robots.txt/*
+  handle @robots {
+    header Content-Type "text/plain; charset=utf-8"
+    respond "User-agent: *\nDisallow: /\n" 200
+  }
+
+  handle_path /crm-api/* {
+    rewrite * /api{path}
+    reverse_proxy https://crmfasul.com.br {
+      header_up Host crmfasul.com.br
+      header_up Authorization "Bearer {$CRMFASUL_BEARER_TOKEN}"
+    }
+  }
+
+  handle_path /fasul-courses-api/* {
+    reverse_proxy https://www.fasuleducacional.edu.br {
+      header_up Host www.fasuleducacional.edu.br
+    }
+  }
+
+  reverse_proxy 127.0.0.1:4323
+}

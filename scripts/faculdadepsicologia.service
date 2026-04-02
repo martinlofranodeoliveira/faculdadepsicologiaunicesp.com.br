@@ -1,0 +1,19 @@
+[Unit]
+Description=Faculdade Psicologia Astro App
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/www/wwwroot/faculdadepsicologia.com.br
+Environment=HOST=127.0.0.1
+Environment=PORT=4323
+EnvironmentFile=-/www/wwwroot/faculdadepsicologia.com.br/.env
+ExecStart=/root/.nvm/versions/node/v23.9.0/bin/node /www/wwwroot/faculdadepsicologia.com.br/dist/server/entry.mjs
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
