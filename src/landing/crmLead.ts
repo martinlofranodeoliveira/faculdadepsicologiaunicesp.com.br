@@ -34,6 +34,7 @@ export type CourseLeadSelection = {
   courseValue: string
   courseLabel: string
   courseId?: number
+  coursePath?: string
   workloadValue?: string
   workloadLabel?: string
   priceLabel?: string

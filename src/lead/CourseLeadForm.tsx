@@ -1,10 +1,33 @@
-import { useEffect, useMemo, useState, type FormEventHandler } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 
+import {
+  clearCourseLeadDraft,
+  matchesCourseLeadDraft,
+  readCourseLeadDraft,
+  saveCourseLeadDraft,
+} from '@/course/courseLeadDraft'
+import {
+  clearJourneyProgress,
+  matchesJourneyProgress,
+  readJourneyProgress,
+  saveJourneyProgress,
+  type StoredJourneyProgress,
+} from '@/course/journeyProgress'
 import type { CatalogPriceItem } from '@/lib/catalogApi'
-import { createJourneyStep1 } from '@/lib/journeyClient'
+import { getCoursePath } from '@/lib/courseRoutes'
+import {
+  createJourneyStep1,
+  finalizeJourney,
+  getPendingJourneys,
+  resumeJourney,
+  updateJourneyStep2,
+  type JourneyPendingItem,
+  type JourneySnapshot,
+} from '@/lib/journeyClient'
 import {
   formatPhoneMask,
   normalizeName,
+  normalizePhone,
   sendLeadToCrm,
   validateEmail,
   validateFullName,
@@ -29,15 +52,189 @@ type FieldErrors = {
   fullName?: string
   email?: string
   phone?: string
+  agreement?: string
+  workload?: string
+  cpf?: string
+  paymentPlan?: string
+}
+
+type ResumeFieldErrors = {
+  email?: string
+  agreement?: string
+  courseId?: string
 }
 
 type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error'
+type ResumeMode = 'default' | 'lookup' | 'select'
 
-type WorkloadChoice = {
+type SelectOption = {
   value: string
   label: string
-  priceLabel: string
-  sortHours: number
+}
+
+type PaymentPlanOption = {
+  value: string
+  label: string
+  pricingId?: number
+  amountCents: number
+  installmentsMax: number
+}
+
+type PaymentPlanGroup = {
+  value: string
+  label: string
+  workloadVariantId?: number
+  totalHours: number
+  options: PaymentPlanOption[]
+}
+
+type ResumeCourseRoute = {
+  courseId: number
+  path: string
+  title: string
+  courseLabel: string
+  courseValue?: string
+}
+
+type ResumeCourseOption = {
+  journeyId: number
+  journeyUuid?: string
+  courseId: number
+  courseLabel: string
+  courseValue?: string
+  displayTitle: string
+  path: string
+  currentStep: number
+  canContinue: boolean
+  status?: string | null
+  fullName: string
+  email: string
+  phone: string
+  workloadVariantId?: number
+  workloadLabel?: string
+  cpf?: string
+  pricingId?: number
+  paymentPlanLabel?: string
+}
+
+type CourseFormSelectProps = {
+  value: string
+  options: SelectOption[]
+  placeholder: string
+  menuLabel: string
+  disabled?: boolean
+  invalid?: boolean
+  onChange: (value: string) => void
+}
+
+function ChevronDownIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>
+      <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ChevronLeftIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>
+      <path d="M11.5 5.5L7 10L11.5 14.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function SpinnerIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3" />
+      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function AlertIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>
+      <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10 6.25V10.25" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="10" cy="13.3" r="0.9" fill="currentColor" />
+    </svg>
+  )
+}
+
+function CourseFormSelect({
+  value,
+  options,
+  placeholder,
+  menuLabel,
+  disabled = false,
+  invalid = false,
+  onChange,
+}: CourseFormSelectProps) {
+  const [open, setOpen] = useState(false)
+  const selectedOption = options.find((option) => option.value === value)
+
+  return (
+    <div
+      className="relative"
+      onBlur={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+        setOpen(false)
+      }}
+    >
+      <button
+        type="button"
+        aria-label={menuLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-invalid={invalid}
+        disabled={disabled}
+        className={[
+          'flex h-12 w-full items-center justify-between rounded-[12px] border bg-[#eef1f5] px-4 text-left text-[15px] leading-none text-[#0b111f] outline-none transition',
+          invalid ? 'border-[#d53030]' : 'border-transparent',
+          disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-[#1e5ec8]/40 focus:border-[#1e5ec8]',
+          !selectedOption ? 'text-[#7b8190]' : '',
+        ].join(' ')}
+        onClick={() => {
+          if (disabled) return
+          setOpen((current) => !current)
+        }}
+      >
+        <span className="truncate pr-4">{selectedOption?.label ?? placeholder}</span>
+        <ChevronDownIcon className={['h-4 w-4 shrink-0 text-[#0f2e62] transition-transform', open ? 'rotate-180' : ''].join(' ')} />
+      </button>
+
+      {open && !disabled ? (
+        <div role="listbox" aria-label={menuLabel} className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-[14px] border border-[#d7dce5] bg-white shadow-[0_20px_50px_rgba(15,46,98,0.18)]">
+          <div className="max-h-64 overflow-y-auto py-2">
+            {options.map((option) => {
+              const isSelected = option.value === value
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  className={[
+                    'flex w-full items-center justify-between px-4 py-3 text-left text-[15px] text-[#0b111f] transition',
+                    isSelected ? 'bg-[#edf4ff] font-semibold text-[#14418d]' : 'hover:bg-[#f5f7fb]',
+                  ].join(' ')}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    onChange(option.value)
+                    setOpen(false)
+                  }}
+                >
+                  <span className="pr-4">{option.label}</span>
+                  {isSelected ? <span className="text-[#14418d]">✓</span> : null}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 function canUseJourney(selection: CourseLeadSelection, institutionSlug?: string) {
@@ -47,12 +244,15 @@ function canUseJourney(selection: CourseLeadSelection, institutionSlug?: string)
 }
 
 function normalizeWorkloadKey(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+function normalizeWorkloadText(value: string) {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\bhoras?\b/gi, 'h').replace(/[().]/g, ' ').replace(/\bsem pratica\b/gi, ' ').replace(/\bcom pratica\b/gi, ' ').replace(/\s+/g, ' ').toLowerCase().trim()
+}
+
+function extractWorkloadHours(value: string): number[] {
+  return [...new Set((value.match(/\d+/g) ?? []).map((item) => Number.parseInt(item, 10)).filter(Number.isFinite))]
 }
 
 function parseHours(value: string) {
@@ -60,66 +260,135 @@ function parseHours(value: string) {
   return match ? Number.parseInt(match[1], 10) : 0
 }
 
+function normalizeCurrentStep(value: number | string | null | undefined): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = Number.parseInt(value, 10)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return 0
+}
+function normalizePriceLabel(
+  value: string,
+  options?: {
+    includeDeAfterInstallments?: boolean
+  },
+) {
+  const normalized = value.replace(/\s+/g, ' ').replace(/R\$/gi, 'R$ ').replace(/\s+\/\s*M[ÊE]S/gi, '/MÊS').replace(/\/M[ÊE]S/gi, '/MÊS').trim()
+  if (!normalized) return ''
+
+  const withoutLeadingDe = normalized.replace(/^(\d+\s*x?)\s+de\s+/i, '$1 ').trim()
+  const withInstallments = withoutLeadingDe.replace(/^(\d+\s*x?)\s*/i, (_match, installments: string) => {
+    const base = installments.toUpperCase().replace(/\s+/g, '')
+    return options?.includeDeAfterInstallments ? `${base} DE ` : `${base} `
+  })
+
+  return withInstallments.replace(/\s{2,}/g, ' ').trim().toUpperCase()
+}
+
 function formatCurrencyBrl(amountCents: number) {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  })
-    .format(amountCents / 100)
-    .toUpperCase()
+  }).format(amountCents / 100).toUpperCase()
 }
 
 function formatInstallmentPriceLabel(amountCents: number, installmentsMax: number) {
   const installments = installmentsMax > 0 ? installmentsMax : 18
   const monthlyAmount = amountCents > 40000 ? Math.round(amountCents / installments) : amountCents
-  return `${installments}X ${formatCurrencyBrl(monthlyAmount)}/MÊS`
+  return `${installments}X DE ${formatCurrencyBrl(monthlyAmount)}/MÊS`
 }
 
-function buildWorkloadChoices(
+function buildPaymentPlanGroups(
   workloadOptions: string[] = [],
   priceItems: CatalogPriceItem[] = [],
   fallbackPriceLabel?: string,
 ) {
-  const choiceMap = new Map<string, WorkloadChoice & { rawAmountCents: number }>()
+  const groupMap = new Map<string, PaymentPlanGroup>()
 
   for (const item of priceItems) {
     const label = item.workloadName.trim() || (item.totalHours ? `${item.totalHours} Horas` : '')
     if (!label) continue
 
     const key = item.workloadVariantId ? String(item.workloadVariantId) : normalizeWorkloadKey(label)
-    const nextChoice = {
+    const currentGroup = groupMap.get(key)
+    const nextGroup: PaymentPlanGroup = currentGroup ?? {
       value: key,
       label,
-      priceLabel: formatInstallmentPriceLabel(item.amountCents, item.installmentsMax),
-      sortHours: item.totalHours || parseHours(label),
-      rawAmountCents: item.amountCents,
+      workloadVariantId: item.workloadVariantId ?? undefined,
+      totalHours: item.totalHours || parseHours(label),
+      options: [],
     }
 
-    const currentChoice = choiceMap.get(key)
-    if (!currentChoice || nextChoice.rawAmountCents < currentChoice.rawAmountCents) {
-      choiceMap.set(key, nextChoice)
+    if (!currentGroup) {
+      groupMap.set(key, nextGroup)
     }
-  }
 
-  for (const option of workloadOptions) {
-    const normalizedOption = option.trim()
-    if (!normalizedOption) continue
-
-    const key = normalizeWorkloadKey(normalizedOption)
-    if (!choiceMap.has(key)) {
-      choiceMap.set(key, {
-        value: key,
-        label: normalizedOption,
-        priceLabel: fallbackPriceLabel ?? '',
-        sortHours: parseHours(normalizedOption),
-        rawAmountCents: Number.MAX_SAFE_INTEGER,
+    if (!nextGroup.options.some((option) => option.pricingId === item.id)) {
+      nextGroup.options.push({
+        value: String(item.id),
+        label: formatInstallmentPriceLabel(item.amountCents, item.installmentsMax),
+        pricingId: item.id,
+        amountCents: item.amountCents,
+        installmentsMax: item.installmentsMax,
       })
     }
   }
 
-  return [...choiceMap.values()]
-    .sort((left, right) => left.sortHours - right.sortHours || left.label.localeCompare(right.label))
-    .map(({ rawAmountCents, ...choice }) => choice)
+  for (const option of workloadOptions) {
+    const label = option.trim()
+    if (!label) continue
+
+    const key = normalizeWorkloadKey(label)
+    if (!groupMap.has(key)) {
+      groupMap.set(key, {
+        value: key,
+        label,
+        totalHours: parseHours(label),
+        options: fallbackPriceLabel
+          ? [
+              {
+                value: `${key}-fallback`,
+                label: normalizePriceLabel(fallbackPriceLabel, { includeDeAfterInstallments: true }),
+                amountCents: 0,
+                installmentsMax: 18,
+              },
+            ]
+          : [],
+      })
+    }
+  }
+
+  return [...groupMap.values()]
+    .map((group) => ({
+      ...group,
+      options: [...group.options].sort((left, right) => left.amountCents - right.amountCents || left.installmentsMax - right.installmentsMax),
+    }))
+    .sort((left, right) => left.totalHours - right.totalHours || left.label.localeCompare(right.label))
+}
+
+function findMatchingPaymentPlanGroup(
+  groups: PaymentPlanGroup[],
+  progress: Pick<StoredJourneyProgress, 'workloadVariantId' | 'workloadLabel'>,
+) {
+  if (progress.workloadVariantId) {
+    const matchByVariant = groups.find((group) => group.workloadVariantId === progress.workloadVariantId)
+    if (matchByVariant) return matchByVariant
+  }
+
+  if (progress.workloadLabel?.trim()) {
+    const normalizedLabel = normalizeWorkloadText(progress.workloadLabel)
+    const matchByLabel = groups.find((group) => normalizeWorkloadText(group.label) === normalizedLabel)
+    if (matchByLabel) return matchByLabel
+
+    const hours = extractWorkloadHours(progress.workloadLabel)
+    if (hours.length) {
+      const matchByHours = groups.find((group) => hours.includes(group.totalHours))
+      if (matchByHours) return matchByHours
+    }
+  }
+
+  return groups.length === 1 ? groups[0] : null
 }
 
 function resolveCoverImage(image?: string) {
@@ -132,6 +401,163 @@ function resolvePixMessage(pixText?: string) {
   return normalizedPixText || 'Condições comerciais e descontos são confirmados no atendimento.'
 }
 
+function normalizeCpf(value: string) {
+  return value.replace(/\D/g, '').slice(0, 11)
+}
+
+function formatCpfMask(value: string) {
+  const digits = normalizeCpf(value)
+  if (!digits) return ''
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+}
+
+function validateCpf(value: string): string | undefined {
+  const digits = normalizeCpf(value)
+  if (!digits) return 'Informe o CPF.'
+  if (digits.length !== 11) return 'Digite um CPF válido.'
+  return undefined
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function readRecordString(record: Record<string, unknown> | undefined, keys: string[]) {
+  if (!record) return undefined
+
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'string' && value.trim()) return value.trim()
+  }
+
+  return undefined
+}
+
+function readRecordNumber(record: Record<string, unknown> | undefined, keys: string[]) {
+  if (!record) return undefined
+
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'number' && Number.isFinite(value)) return value
+    if (typeof value === 'string' && value.trim()) {
+      const parsed = Number.parseInt(value, 10)
+      if (Number.isFinite(parsed)) return parsed
+    }
+  }
+
+  return undefined
+}
+
+function buildResumeOption(
+  snapshot: JourneySnapshot | JourneyPendingItem,
+  courseType: CourseLeadSelection['courseType'],
+  fallbackCourseId: number | undefined,
+  fallbackCourseName: string | undefined,
+  fallbackEmail: string,
+): ResumeCourseOption | null {
+  const step1 = isRecord(snapshot.step_1) ? snapshot.step_1 : undefined
+  const step2 = isRecord(snapshot.step_2) ? snapshot.step_2 : undefined
+  const pendingItem = snapshot as JourneyPendingItem
+
+  const courseId =
+    readRecordNumber(step1, ['course_id']) ??
+    (typeof pendingItem.course_id === 'number' ? pendingItem.course_id : undefined) ??
+    fallbackCourseId
+
+  if (!courseId || courseId <= 0) return null
+
+  const rawCourseName =
+    (isRecord(pendingItem.course) ? readRecordString(pendingItem.course as Record<string, unknown>, ['name']) : undefined) ||
+    fallbackCourseName ||
+    `Curso ${courseId}`
+
+  return {
+    journeyId: snapshot.journey_id,
+    journeyUuid: snapshot.journey_uuid,
+    courseId,
+    courseLabel: rawCourseName,
+    displayTitle: rawCourseName,
+    path: getCoursePath({ courseType, courseLabel: rawCourseName }),
+    currentStep: normalizeCurrentStep(snapshot.current_step),
+    canContinue: snapshot.can_continue !== false,
+    status: snapshot.status ?? null,
+    fullName: readRecordString(step1, ['full_name', 'nome']) || '',
+    email: readRecordString(step1, ['email']) || fallbackEmail,
+    phone: readRecordString(step1, ['phone', 'whatsapp']) || '',
+    workloadVariantId: readRecordNumber(step2, ['workload_variant_id']) ?? readRecordNumber(step1, ['workload_variant_id']),
+    workloadLabel: readRecordString(step2, ['workload_label', 'workload_name']) ?? readRecordString(step1, ['workload_label', 'workload_name']) ?? (() => {
+      const workloadVariant = pendingItem.workload_variant
+      if (!isRecord(workloadVariant)) return undefined
+      const totalHours = readRecordNumber(workloadVariant as Record<string, unknown>, ['total_hours'])
+      if (totalHours && totalHours > 0) return `${totalHours} Horas`
+      return readRecordString(workloadVariant as Record<string, unknown>, ['name'])
+    })(),
+    cpf: readRecordString(step2, ['cpf']),
+    pricingId: readRecordNumber(step2, ['pricing_id']),
+    paymentPlanLabel: readRecordString(step2, ['payment_plan_label']),
+  }
+}
+
+async function fetchResumeCourseRoutes(
+  courseType: CourseLeadSelection['courseType'],
+  courseIds: number[],
+): Promise<Map<number, ResumeCourseRoute>> {
+  const uniqueIds = [...new Set(courseIds.filter((value) => Number.isInteger(value) && value > 0))]
+  if (!uniqueIds.length) return new Map()
+
+  const response = await fetch('/api/course-routes', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ courseType, courseIds: uniqueIds }),
+  })
+
+  const payload = (await response.json().catch(() => null)) as { data?: { items?: ResumeCourseRoute[] }; message?: string } | null
+  if (!response.ok) {
+    throw new Error(payload?.message || 'Não foi possível localizar os cursos da inscrição.')
+  }
+
+  const items = Array.isArray(payload?.data?.items) ? payload.data.items : []
+  return new Map(items.map((item) => [item.courseId, item]))
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null
+  return <p className="mt-1 text-[12px] font-medium text-[#d53030]">{message}</p>
+}
+
+function PostInfoRow({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex items-start gap-2 rounded-[12px] bg-[#eef5ff] px-3 py-2 text-[13px] font-semibold leading-[1.35] text-[#1e5ec8]">
+      <AlertIcon className="mt-[1px] h-4 w-4 shrink-0" />
+      <span>{children}</span>
+    </div>
+  )
+}
+
+function PostPriceCard({ priceLabel, pixMessage }: { priceLabel: string; pixMessage: string }) {
+  return (
+    <div className="mt-2 rounded-[18px] border border-[#d6e4ff] bg-[#f8fbff] p-4 shadow-[0_10px_25px_rgba(15,46,98,0.08)]">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full max-w-[240px] items-center overflow-hidden rounded-[14px] bg-[#0a8f1f] text-white shadow-[0_12px_24px_rgba(10,143,31,0.16)]">
+          <div className="flex min-w-[78px] flex-col items-center justify-center px-3 py-3 text-center font-['Kumbh_Sans'] text-[13px] font-black uppercase leading-[1.05]"><span>30%</span><span className="font-light">OFF</span></div>
+          <div className="h-10 w-px bg-white/35" />
+          <div className="px-3 py-3 font-['Kumbh_Sans'] text-[13px] leading-[1.1]"><strong className="block font-extrabold">Desconto</strong><span>Pontualidade</span></div>
+        </div>
+
+        <div className="flex-1 font-['Kumbh_Sans'] text-[#0b111f]">
+          <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#4d5f86]">Por:</p>
+          <p className="text-[24px] font-extrabold leading-none text-[#0b111f]">{priceLabel}</p>
+          <p className="mt-2 text-[13px] leading-[1.35] text-[#4d5f86]">{pixMessage}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
 export function CourseLeadForm({
   selection,
   institutionSlug,
@@ -140,298 +566,851 @@ export function CourseLeadForm({
   pixText,
   workloadOptions = [],
   priceItems = [],
-  durationText,
 }: Props) {
+  const isGraduation = selection.courseType === 'graduacao'
+  const currentCoursePath = selection.coursePath || (typeof window !== 'undefined' ? window.location.pathname : '')
+  const courseCoverImage = resolveCoverImage(image)
+  const pixMessage = resolvePixMessage(pixText)
+
+  const paymentPlanGroups = buildPaymentPlanGroups(workloadOptions, priceItems, selection.priceLabel)
+  const workloadSelectOptions = paymentPlanGroups.map((group) => ({ value: group.value, label: group.label }))
+
+  const [step, setStep] = useState<1 | 2>(1)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [cpf, setCpf] = useState('')
   const [selectedWorkloadValue, setSelectedWorkloadValue] = useState('')
+  const [selectedPaymentPlanValue, setSelectedPaymentPlanValue] = useState('')
+  const [voucherOpen, setVoucherOpen] = useState(false)
+  const [voucherCode, setVoucherCode] = useState('')
   const [errors, setErrors] = useState<FieldErrors>({})
-  const [status, setStatus] = useState<SubmitStatus>('idle')
-  const [statusMessage, setStatusMessage] = useState('')
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatus>('idle')
+  const [submitMessage, setSubmitMessage] = useState('')
+  const [advanceLoading, setAdvanceLoading] = useState(false)
+  const [crmLeadSubmitted, setCrmLeadSubmitted] = useState(false)
+  const [crmInscritoSubmitted, setCrmInscritoSubmitted] = useState(false)
+  const [resumeMode, setResumeMode] = useState<ResumeMode>('default')
+  const [resumeEmail, setResumeEmail] = useState('')
+  const [resumeAgreementAccepted, setResumeAgreementAccepted] = useState(false)
+  const [resumeErrors, setResumeErrors] = useState<ResumeFieldErrors>({})
+  const [resumeLoading, setResumeLoading] = useState(false)
+  const [resumeMessage, setResumeMessage] = useState('')
+  const [resumeOptions, setResumeOptions] = useState<ResumeCourseOption[]>([])
+  const [selectedResumeJourneyId, setSelectedResumeJourneyId] = useState('')
 
-  const isGraduation = selection.courseType === 'graduacao'
-  const workloadChoices = useMemo(
-    () => buildWorkloadChoices(workloadOptions, priceItems, selection.priceLabel),
-    [priceItems, selection.priceLabel, workloadOptions],
-  )
-  const selectedWorkload = workloadChoices.find((choice) => choice.value === selectedWorkloadValue)
-  const effectiveWorkloadChoice = selectedWorkload ?? workloadChoices[0]
-  const currentPriceLabel = effectiveWorkloadChoice?.priceLabel || selection.priceLabel || ''
-  const pixMessage = resolvePixMessage(pixText)
-  const courseCoverImage = resolveCoverImage(image)
+  const nameInputRef = useRef<HTMLInputElement | null>(null)
+  const cpfInputRef = useRef<HTMLInputElement | null>(null)
+  const resumeEmailInputRef = useRef<HTMLInputElement | null>(null)
+
+  const selectedWorkloadGroup = paymentPlanGroups.find((group) => group.value === selectedWorkloadValue) ?? null
+  const paymentPlanSelectOptions = (selectedWorkloadGroup?.options ?? []).map((option) => ({ value: option.value, label: option.label }))
+  const selectedPaymentPlan = selectedWorkloadGroup?.options.find((option) => option.value === selectedPaymentPlanValue) ?? null
+  const currentPriceLabel =
+    selectedPaymentPlan?.label ||
+    selectedWorkloadGroup?.options[0]?.label ||
+    normalizePriceLabel(selection.priceLabel || '', { includeDeAfterInstallments: true })
 
   useEffect(() => {
-    if (isGraduation || workloadChoices.length === 0) return
+    if (isGraduation || paymentPlanGroups.length === 0) return
 
     setSelectedWorkloadValue((currentValue) => {
-      if (workloadChoices.some((choice) => choice.value === currentValue)) {
-        return currentValue
-      }
-      return workloadChoices[0].value
+      if (paymentPlanGroups.some((group) => group.value === currentValue)) return currentValue
+      return paymentPlanGroups[0].value
     })
-  }, [isGraduation, workloadChoices])
+  }, [isGraduation, paymentPlanGroups])
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
-    event.preventDefault()
+  useEffect(() => {
+    if (isGraduation) return
 
-    const nextErrors: FieldErrors = {
-      fullName: validateFullName(fullName),
-      email: validateEmail(email),
-      phone: validatePhone(phone),
+    setSelectedPaymentPlanValue((currentValue) => {
+      const options = selectedWorkloadGroup?.options ?? []
+      if (!options.length) return ''
+      if (options.some((option) => option.value === currentValue)) return currentValue
+      return options[0].value
+    })
+  }, [isGraduation, selectedWorkloadGroup])
+
+  useEffect(() => {
+    const draft = readCourseLeadDraft()
+    const storedJourney = readJourneyProgress()
+    const matchesCurrentDraft = draft && matchesCourseLeadDraft(draft, {
+      courseType: selection.courseType,
+      courseId: selection.courseId,
+      courseValue: selection.courseValue,
+      courseLabel: selection.courseLabel,
+    }) ? draft : null
+    const matchesCurrentJourney = storedJourney && matchesJourneyProgress(storedJourney, {
+      courseType: selection.courseType,
+      courseId: selection.courseId,
+      courseValue: selection.courseValue,
+      courseLabel: selection.courseLabel,
+    }) ? storedJourney : null
+
+    if (matchesCurrentDraft) {
+      setFullName(matchesCurrentDraft.fullName)
+      setEmail(matchesCurrentDraft.email)
+      setPhone(matchesCurrentDraft.phone)
+      setResumeEmail(matchesCurrentDraft.email)
+    } else if (matchesCurrentJourney?.email) {
+      setResumeEmail(matchesCurrentJourney.email)
     }
-    setErrors(nextErrors)
 
-    if (Object.values(nextErrors).some(Boolean)) {
-      setStatus('error')
-      setStatusMessage('')
-      return
+    if (matchesCurrentJourney) {
+      setCrmLeadSubmitted(true)
+      if (normalizeCurrentStep(matchesCurrentJourney.currentStep) >= 2) {
+        setCrmInscritoSubmitted(true)
+      }
     }
 
-    if (!acceptedTerms) {
-      setStatus('error')
-      setStatusMessage('Você precisa concordar com os termos.')
-      return
+    if (!matchesCurrentJourney || isGraduation) return
+
+    const searchParams = new URLSearchParams(window.location.search)
+    if (searchParams.get('resume') !== '1') return
+
+    hydrateResumeIntoCurrentCourse(matchesCurrentJourney)
+    window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
+  }, [isGraduation, selection.courseId, selection.courseLabel, selection.courseType, selection.courseValue])
+
+  function hydrateResumeIntoCurrentCourse(progress: StoredJourneyProgress) {
+    if (progress.fullName) setFullName(progress.fullName)
+    if (progress.email) {
+      setEmail(progress.email)
+      setResumeEmail(progress.email)
+    }
+    if (progress.phone) setPhone(formatPhoneMask(progress.phone))
+    if (progress.cpf) setCpf(formatCpfMask(progress.cpf))
+    setAcceptedTerms(true)
+    setResumeMode('default')
+    setResumeMessage('')
+    setResumeOptions([])
+    setSelectedResumeJourneyId('')
+
+    const matchedGroup = findMatchingPaymentPlanGroup(paymentPlanGroups, progress)
+    if (matchedGroup) {
+      setSelectedWorkloadValue(matchedGroup.value)
+      const matchedPaymentPlan =
+        (progress.pricingId ? matchedGroup.options.find((option) => option.pricingId === progress.pricingId) : undefined) ??
+        (progress.paymentPlanLabel ? matchedGroup.options.find((option) => option.label === progress.paymentPlanLabel) : undefined) ??
+        matchedGroup.options[0] ??
+        null
+
+      setSelectedPaymentPlanValue(matchedPaymentPlan?.value ?? '')
     }
 
-    setStatus('submitting')
-    setStatusMessage(isGraduation ? 'Preparando sua inscrição...' : 'Enviando seus dados...')
+    setStep(2)
+    window.setTimeout(() => {
+      cpfInputRef.current?.focus()
+    }, 60)
+  }
+
+  function buildStoredJourneyProgress(option: ResumeCourseOption): Omit<StoredJourneyProgress, 'createdAt'> {
+    return {
+      journeyId: option.journeyId,
+      journeyUuid: option.journeyUuid,
+      courseType: selection.courseType,
+      courseId: option.courseId,
+      courseLabel: option.courseLabel,
+      courseValue: option.courseValue,
+      fullName: option.fullName,
+      email: option.email,
+      phone: option.phone,
+      workloadVariantId: option.workloadVariantId,
+      workloadLabel: option.workloadLabel,
+      cpf: option.cpf,
+      pricingId: option.pricingId,
+      paymentPlanLabel: option.paymentPlanLabel,
+      currentStep: option.currentStep,
+      status: option.status,
+    }
+  }
+
+  async function submitCrmStage(stage: 'lead' | 'inscrito') {
+    if (stage === 'lead' && crmLeadSubmitted) return
+    if (stage === 'inscrito' && crmInscritoSubmitted) return
 
     const selectionToSend: CourseLeadSelection = isGraduation
       ? selection
       : {
           ...selection,
-          workloadLabel: effectiveWorkloadChoice?.label || selection.workloadLabel,
-          priceLabel: currentPriceLabel || selection.priceLabel,
+          workloadLabel: selectedWorkloadGroup?.label || selection.workloadLabel,
+          priceLabel: stage === 'inscrito'
+            ? selectedPaymentPlan?.label || currentPriceLabel || selection.priceLabel
+            : currentPriceLabel || selection.priceLabel,
         }
+
+    await sendLeadToCrm({ fullName, email, phone, selection: selectionToSend, stage })
+
+    if (stage === 'lead') {
+      setCrmLeadSubmitted(true)
+      return
+    }
+
+    setCrmInscritoSubmitted(true)
+  }
+
+  async function ensureJourney() {
+    const matchingJourney = readJourneyProgress()
+    if (matchingJourney && matchesJourneyProgress(matchingJourney, {
+      courseType: selection.courseType,
+      courseId: selection.courseId,
+      courseValue: selection.courseValue,
+      courseLabel: selection.courseLabel,
+    })) {
+      return matchingJourney.journeyId
+    }
+
+    if (!selection.courseId || selection.courseId <= 0) {
+      throw new Error('Curso indisponível para iniciar a jornada agora.')
+    }
+
+    const payload = isGraduation
+      ? {
+          course_id: selection.courseId,
+          full_name: fullName.trim(),
+          email: email.trim(),
+          phone: normalizePhone(phone),
+        }
+      : {
+          course_id: selection.courseId,
+          nome: fullName.trim(),
+          email: email.trim(),
+          whatsapp: normalizePhone(phone),
+          workload_variant_id: selectedWorkloadGroup?.workloadVariantId ?? undefined,
+          voucher_code: voucherCode.trim() || undefined,
+        }
+
+    const response = await createJourneyStep1(payload)
+    saveJourneyProgress({
+      journeyId: response.journey_id,
+      journeyUuid: response.journey_uuid,
+      courseType: selection.courseType,
+      courseId: selection.courseId,
+      courseValue: selection.courseValue,
+      courseLabel: selection.courseLabel,
+      fullName: fullName.trim(),
+      email: email.trim(),
+      phone: normalizePhone(phone),
+      workloadVariantId: selectedWorkloadGroup?.workloadVariantId ?? undefined,
+      workloadLabel: selectedWorkloadGroup?.label,
+      currentStep: response.current_step ?? 1,
+    })
+
+    return response.journey_id
+  }
+
+  function validatePostStep1() {
+    return {
+      fullName: validateFullName(fullName),
+      email: validateEmail(email),
+      phone: validatePhone(phone),
+      workload: selectedWorkloadGroup ? undefined : 'Selecione a carga horária.',
+      agreement: acceptedTerms ? undefined : 'Você precisa aceitar os termos para continuar.',
+    } satisfies FieldErrors
+  }
+
+  function validatePostStep2() {
+    return {
+      cpf: validateCpf(cpf),
+      paymentPlan: selectedPaymentPlan ? undefined : 'Selecione o plano de pagamento.',
+    } satisfies FieldErrors
+  }
+  async function goToSecondStep() {
+    const nextErrors = validatePostStep1()
+    setErrors(nextErrors)
+    setSubmitStatus('idle')
+    setSubmitMessage('')
+
+    if (nextErrors.fullName || nextErrors.email || nextErrors.phone || nextErrors.workload || nextErrors.agreement) {
+      return
+    }
+
+    setAdvanceLoading(true)
 
     try {
-      await sendLeadToCrm({
-        fullName,
-        email,
+      await submitCrmStage('lead')
+      await ensureJourney()
+      saveCourseLeadDraft({
+        courseType: selection.courseType,
+        courseValue: selection.courseValue,
+        courseLabel: selection.courseLabel,
+        courseId: selection.courseId,
+        fullName: fullName.trim(),
+        email: email.trim(),
         phone,
-        selection: selectionToSend,
       })
 
-      if (isGraduation) {
-        let journeyId: number | undefined
-        let currentStep = 1
-
-        if (canUseJourney(selection, institutionSlug)) {
-          try {
-            const step1 = await createJourneyStep1({
-              course_id: selection.courseId,
-              full_name: fullName.trim(),
-              email: email.trim(),
-              phone: phone.replace(/\D/g, ''),
-            })
-
-            journeyId = step1.journey_id
-            currentStep = step1.current_step ?? 1
-          } catch {
-            journeyId = undefined
-            currentStep = 1
-          }
-        }
-
-        storeGraduationVestibularLead({
-          fullName,
-          email,
-          phone,
-          journeyId,
-          courseId: selection.courseId,
-          courseLabel: selection.courseLabel,
-          courseValue: selection.courseValue,
-          currentStep,
-        })
-
-        setStatus('success')
-        setStatusMessage('Dados recebidos. Redirecionando para o vestibular...')
-        window.setTimeout(() => {
-          window.location.assign('/graduacao/vestibular')
-        }, 120)
-        return
-      }
-
-      storePostThankYouLead({
-        fullName,
-        email,
-      })
-      setStatus('success')
-      setStatusMessage('Dados recebidos. Redirecionando...')
+      setStep(2)
       window.setTimeout(() => {
-        window.location.assign('/pos-graduacao/inscricao-finalizada')
-      }, 120)
+        cpfInputRef.current?.focus()
+      }, 60)
     } catch (error) {
-      setStatus('error')
-      setStatusMessage(
-        error instanceof Error
-          ? error.message
-          : 'Não foi possível enviar agora. Tente novamente em instantes.',
+      setSubmitStatus('error')
+      setSubmitMessage(
+        error instanceof Error ? error.message : 'Não foi possível iniciar sua inscrição agora. Tente novamente em instantes.',
       )
+    } finally {
+      setAdvanceLoading(false)
     }
   }
 
+  function openResumeFlow() {
+    const draft = readCourseLeadDraft()
+    const storedJourney = readJourneyProgress()
+    const matchesCurrentDraft = draft && matchesCourseLeadDraft(draft, {
+      courseType: selection.courseType,
+      courseId: selection.courseId,
+      courseValue: selection.courseValue,
+      courseLabel: selection.courseLabel,
+    }) ? draft : null
+    const matchesCurrentJourney = storedJourney && matchesJourneyProgress(storedJourney, {
+      courseType: selection.courseType,
+      courseId: selection.courseId,
+      courseValue: selection.courseValue,
+      courseLabel: selection.courseLabel,
+    }) ? storedJourney : null
+
+    setResumeMode('lookup')
+    setResumeErrors({})
+    setResumeMessage('')
+    setResumeOptions([])
+    setSelectedResumeJourneyId('')
+    setResumeAgreementAccepted(false)
+    setResumeEmail(matchesCurrentDraft?.email || matchesCurrentJourney?.email || email.trim())
+
+    window.setTimeout(() => {
+      resumeEmailInputRef.current?.focus()
+    }, 30)
+  }
+
+  function closeResumeFlow() {
+    setResumeMode('default')
+    setResumeErrors({})
+    setResumeMessage('')
+    setResumeOptions([])
+    setSelectedResumeJourneyId('')
+    setResumeAgreementAccepted(false)
+  }
+
+  async function continueWithResumeOption(option: ResumeCourseOption) {
+    if (!option.courseId || option.courseId <= 0) {
+      throw new Error('Curso indisponível para continuar a inscrição.')
+    }
+
+    const refreshedSnapshot = await resumeJourney({ course_id: option.courseId, email: resumeEmail.trim() })
+    const refreshedOption = buildResumeOption(
+      refreshedSnapshot,
+      selection.courseType,
+      option.courseId,
+      option.courseLabel,
+      resumeEmail.trim(),
+    )
+
+    if (!refreshedOption) {
+      throw new Error('Não foi possível retomar esta inscrição agora.')
+    }
+
+    refreshedOption.displayTitle = option.displayTitle
+    refreshedOption.path = option.path
+    refreshedOption.courseLabel = option.courseLabel
+    refreshedOption.courseValue = option.courseValue
+
+    if (refreshedOption.fullName || refreshedOption.email || refreshedOption.phone) {
+      saveCourseLeadDraft({
+        courseType: selection.courseType,
+        courseValue: refreshedOption.courseValue,
+        courseLabel: refreshedOption.courseLabel,
+        courseId: refreshedOption.courseId,
+        fullName: refreshedOption.fullName,
+        email: refreshedOption.email,
+        phone: formatPhoneMask(refreshedOption.phone),
+      })
+    }
+
+    saveJourneyProgress(buildStoredJourneyProgress(refreshedOption))
+    setCrmLeadSubmitted(true)
+    if (normalizeCurrentStep(refreshedOption.currentStep) >= 2) {
+      setCrmInscritoSubmitted(true)
+    }
+
+    if (refreshedOption.courseId !== selection.courseId) {
+      window.location.assign(`${refreshedOption.path}?resume=1`)
+      return
+    }
+
+    hydrateResumeIntoCurrentCourse(buildStoredJourneyProgress(refreshedOption) as StoredJourneyProgress)
+  }
+
+  async function handleResumeLookup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const nextErrors: ResumeFieldErrors = {
+      email: validateEmail(resumeEmail),
+      agreement: resumeAgreementAccepted ? undefined : 'Você precisa aceitar os termos para continuar.',
+    }
+    setResumeErrors(nextErrors)
+    setResumeMessage('')
+
+    if (nextErrors.email || nextErrors.agreement) return
+
+    setResumeLoading(true)
+
+    try {
+      const normalizedEmail = resumeEmail.trim()
+      const pendingResponse = await getPendingJourneys({ email: normalizedEmail })
+      const filteredPendingItems = (pendingResponse.items ?? []).filter((item) => {
+        if ((item.course_level ?? '') !== selection.courseType) return false
+        return item.can_continue !== false
+      })
+
+      const optionMap = new Map<number, ResumeCourseOption>()
+      for (const item of filteredPendingItems) {
+        const option = buildResumeOption(
+          item,
+          selection.courseType,
+          typeof item.course_id === 'number' ? item.course_id : undefined,
+          isRecord(item.course) ? readRecordString(item.course as Record<string, unknown>, ['name']) : undefined,
+          normalizedEmail,
+        )
+        if (option) optionMap.set(option.journeyId, option)
+      }
+
+      try {
+        if (selection.courseId && selection.courseId > 0) {
+          const currentCourseResume = await resumeJourney({ course_id: selection.courseId, email: normalizedEmail })
+          if (currentCourseResume.can_continue !== false) {
+            const currentOption = buildResumeOption(
+              currentCourseResume,
+              selection.courseType,
+              selection.courseId,
+              selection.courseLabel,
+              normalizedEmail,
+            )
+            if (currentOption) optionMap.set(currentOption.journeyId, currentOption)
+          }
+        }
+      } catch {
+        // Ignora quando este curso não tem jornada retomável para o e-mail informado.
+      }
+
+      const options = [...optionMap.values()]
+      if (!options.length) {
+        setResumeMessage('Não encontramos uma inscrição em andamento para este e-mail.')
+        return
+      }
+
+      const routeMap = await fetchResumeCourseRoutes(selection.courseType, options.map((option) => option.courseId))
+      const mappedOptions = options.map((option) => {
+        const route = routeMap.get(option.courseId)
+        const isCurrentCourse = option.courseId === selection.courseId
+
+        return {
+          ...option,
+          displayTitle: route?.title || option.displayTitle,
+          courseLabel: route?.courseLabel || (isCurrentCourse ? selection.courseLabel : option.courseLabel),
+          courseValue: route?.courseValue || (isCurrentCourse ? selection.courseValue : option.courseValue),
+          path: route?.path || (isCurrentCourse ? currentCoursePath : getCoursePath({ courseType: selection.courseType, courseLabel: option.courseLabel, courseValue: option.courseValue })),
+        }
+      })
+
+      if (mappedOptions.length === 1) {
+        await continueWithResumeOption(mappedOptions[0])
+        return
+      }
+
+      setResumeOptions(mappedOptions)
+      setSelectedResumeJourneyId(String(mappedOptions[0]?.journeyId ?? ''))
+      setResumeMode('select')
+      setResumeMessage('')
+    } catch (error) {
+      setResumeMessage(error instanceof Error ? error.message : 'Não foi possível localizar sua inscrição agora. Tente novamente em instantes.')
+    } finally {
+      setResumeLoading(false)
+    }
+  }
+
+  async function handleResumeSelection(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const selectedOption = resumeOptions.find((option) => String(option.journeyId) === selectedResumeJourneyId)
+    if (!selectedOption) {
+      setResumeErrors({ courseId: 'Selecione um curso para continuar.' })
+      return
+    }
+
+    setResumeErrors({})
+    setResumeLoading(true)
+    setResumeMessage('')
+
+    try {
+      await continueWithResumeOption(selectedOption)
+    } catch (error) {
+      setResumeMessage(error instanceof Error ? error.message : 'Não foi possível retomar sua inscrição agora. Tente novamente em instantes.')
+    } finally {
+      setResumeLoading(false)
+    }
+  }
+
+  async function handleGraduationSubmit() {
+    const nextErrors: FieldErrors = {
+      fullName: validateFullName(fullName),
+      email: validateEmail(email),
+      phone: validatePhone(phone),
+      agreement: acceptedTerms ? undefined : 'Você precisa concordar com os termos.',
+    }
+    setErrors(nextErrors)
+
+    if (Object.values(nextErrors).some(Boolean)) {
+      setSubmitStatus('error')
+      setSubmitMessage('')
+      return
+    }
+
+    setSubmitStatus('submitting')
+    setSubmitMessage('Preparando sua inscrição...')
+
+    try {
+      await sendLeadToCrm({ fullName, email, phone, selection })
+
+      let journeyId: number | undefined
+      let currentStep = 1
+
+      if (canUseJourney(selection, institutionSlug)) {
+        try {
+          const step1 = await createJourneyStep1({
+            course_id: selection.courseId,
+            full_name: fullName.trim(),
+            email: email.trim(),
+            phone: normalizePhone(phone),
+          })
+
+          journeyId = step1.journey_id
+          currentStep = step1.current_step ?? 1
+        } catch {
+          journeyId = undefined
+          currentStep = 1
+        }
+      }
+
+      storeGraduationVestibularLead({
+        fullName,
+        email,
+        phone,
+        journeyId,
+        courseId: selection.courseId,
+        courseLabel: selection.courseLabel,
+        courseValue: selection.courseValue,
+        currentStep,
+      })
+
+      setSubmitStatus('success')
+      setSubmitMessage('Dados recebidos. Redirecionando para o vestibular...')
+      window.setTimeout(() => {
+        window.location.assign('/graduacao/vestibular')
+      }, 120)
+    } catch (error) {
+      setSubmitStatus('error')
+      setSubmitMessage(error instanceof Error ? error.message : 'Não foi possível enviar agora. Tente novamente em instantes.')
+    }
+  }
+
+  async function handlePostFinalSubmit() {
+    const nextErrors = { ...validatePostStep1(), ...validatePostStep2() }
+    setErrors(nextErrors)
+    if (Object.values(nextErrors).some(Boolean)) return
+
+    setSubmitStatus('submitting')
+    setSubmitMessage('Processando sua inscrição...')
+
+    try {
+      const journeyId = await ensureJourney()
+      if (!selectedWorkloadGroup?.workloadVariantId || !selectedPaymentPlan?.pricingId) {
+        throw new Error('Carga horária ou plano de pagamento indisponíveis para este curso.')
+      }
+
+      const defaultPoleId = Number.parseInt(import.meta.env.VITE_JOURNEY_DEFAULT_POLE_ID ?? '', 10)
+      const step2Payload: Record<string, unknown> = {
+        cpf: normalizeCpf(cpf),
+        workload_variant_id: selectedWorkloadGroup.workloadVariantId,
+        pricing_id: selectedPaymentPlan.pricingId,
+        payment_plan_label: selectedPaymentPlan.label,
+        voucher_code: voucherCode.trim() || undefined,
+      }
+
+      if (Number.isInteger(defaultPoleId) && defaultPoleId > 0) {
+        step2Payload.pole_id = defaultPoleId
+      }
+
+      const step2Response = await updateJourneyStep2(journeyId, step2Payload)
+      await submitCrmStage('inscrito')
+
+      saveJourneyProgress({
+        journeyId,
+        courseType: selection.courseType,
+        courseId: selection.courseId || 0,
+        courseValue: selection.courseValue,
+        courseLabel: selection.courseLabel,
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone: normalizePhone(phone),
+        workloadVariantId: selectedWorkloadGroup.workloadVariantId,
+        workloadLabel: selectedWorkloadGroup.label,
+        cpf: normalizeCpf(cpf),
+        pricingId: selectedPaymentPlan.pricingId,
+        paymentPlanLabel: selectedPaymentPlan.label,
+        currentStep: step2Response.current_step ?? 2,
+      })
+
+      const finalizeResponse = await finalizeJourney(journeyId, { voucher_code: voucherCode.trim() || undefined })
+
+      clearCourseLeadDraft()
+      clearJourneyProgress()
+      storePostThankYouLead({ fullName: fullName.trim(), email: email.trim() })
+      setSubmitStatus('success')
+      setSubmitMessage(finalizeResponse.message || 'Inscrição concluída. Redirecionando...')
+      window.setTimeout(() => {
+        window.location.assign('/pos-graduacao/inscricao-finalizada')
+      }, 100)
+    } catch (error) {
+      setSubmitStatus('error')
+      setSubmitMessage(error instanceof Error ? error.message : 'Não foi possível concluir sua inscrição agora. Tente novamente em instantes.')
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (isGraduation) {
+      await handleGraduationSubmit()
+      return
+    }
+
+    if (step === 1) {
+      await goToSecondStep()
+      return
+    }
+
+    await handlePostFinalSubmit()
+  }
+  if (!isGraduation) {
+    const isLookupMode = resumeMode === 'lookup'
+    const isSelectMode = resumeMode === 'select'
+    const showResumeHint = resumeMode === 'default' || isSelectMode
+    const postAgreementCopy = (
+      <span>
+        Ao continuar você concorda com nossos{' '}
+        <a href="/termos-de-uso" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Termos de Uso</a>{' '}
+        e{' '}
+        <a href="/politica-de-privacidade" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Política de Privacidade</a>.
+      </span>
+    )
+
+    return (
+      <section className="w-full max-w-[552px] rounded-[30px] bg-white p-[15px] shadow-[0_4px_21px_rgba(0,0,0,0.25)] lg:p-5">
+        <div className="overflow-hidden rounded-[14px] bg-[#d7dbe4]">
+          <img src={courseCoverImage} alt={selection.courseLabel} className="block h-[220px] w-full object-cover lg:h-[287px]" />
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-1 text-[12px] font-semibold text-[#4d5f86] lg:text-[13px]">
+          {showResumeHint ? (
+            <>
+              <span>Já iniciou sua inscrição?</span>
+              <button type="button" className="text-[#1e5ec8] underline underline-offset-2" onClick={openResumeFlow}>Clique aqui para continuar</button>
+            </>
+          ) : (
+            <>
+              <span>Ainda não se inscreveu?</span>
+              <button type="button" className="text-[#1e5ec8] underline underline-offset-2" onClick={closeResumeFlow}>Clique aqui e inscreva-se</button>
+            </>
+          )}
+        </div>
+
+        <div className="mt-3">
+          <h2 className="font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase leading-[1.15] text-[#0b111f] lg:text-[22px]">
+            {isLookupMode ? 'Informe seu e-mail para continuar' : isSelectMode ? 'Selecione o curso' : 'Preencha o formulário para se inscrever'}
+          </h2>
+        </div>
+
+        <form className="mt-4 flex flex-col gap-3" onSubmit={isLookupMode ? handleResumeLookup : isSelectMode ? handleResumeSelection : handleSubmit} noValidate>
+          {isLookupMode ? (
+            <>
+              <div>
+                <input
+                  ref={resumeEmailInputRef}
+                  type="email"
+                  placeholder="Email"
+                  autoComplete="email"
+                  maxLength={120}
+                  value={resumeEmail}
+                  onChange={(event) => setResumeEmail(event.target.value)}
+                  className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', resumeErrors.email ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')}
+                />
+                <FieldError message={resumeErrors.email} />
+              </div>
+
+              <label className="flex items-start gap-3 rounded-[12px] bg-[#f7f9fc] px-3 py-3 text-[12px] leading-[1.35] text-[#273245]">
+                <input type="checkbox" checked={resumeAgreementAccepted} onChange={(event) => setResumeAgreementAccepted(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#1e5ec8]" />
+                {postAgreementCopy}
+              </label>
+              <FieldError message={resumeErrors.agreement} />
+
+              <button type="submit" className="mt-1 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={resumeLoading}>
+                {resumeLoading ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
+              </button>
+            </>
+          ) : isSelectMode ? (
+            <>
+              <div>
+                <CourseFormSelect value={selectedResumeJourneyId} options={resumeOptions.map((option) => ({ value: String(option.journeyId), label: option.displayTitle }))} placeholder="Selecione o curso" menuLabel="Selecione o curso" invalid={Boolean(resumeErrors.courseId)} onChange={setSelectedResumeJourneyId} />
+                <FieldError message={resumeErrors.courseId} />
+              </div>
+
+              <button type="submit" className="mt-1 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={resumeLoading}>
+                {resumeLoading ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
+              </button>
+            </>
+          ) : step === 1 ? (
+            <>
+              <div>
+                <input ref={nameInputRef} type="text" placeholder="Nome" autoComplete="name" maxLength={120} value={fullName} onChange={(event) => setFullName(normalizeName(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.fullName ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                <FieldError message={errors.fullName} />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <input type="email" placeholder="Email" autoComplete="email" maxLength={120} value={email} onChange={(event) => setEmail(event.target.value)} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.email ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                  <FieldError message={errors.email} />
+                </div>
+
+                <div>
+                  <input type="tel" inputMode="numeric" placeholder="WhatsApp" autoComplete="tel-national" maxLength={15} value={phone} onChange={(event) => setPhone(formatPhoneMask(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.phone ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                  <FieldError message={errors.phone} />
+                </div>
+              </div>
+
+              <div>
+                <CourseFormSelect value={selectedWorkloadValue} options={workloadSelectOptions} placeholder="Selecione a carga horária" menuLabel="Selecione a carga horária" invalid={Boolean(errors.workload)} onChange={setSelectedWorkloadValue} />
+                <FieldError message={errors.workload} />
+              </div>
+
+              {!advanceLoading ? <PostInfoRow>Saiba mais sobre o Estágio e a Prática Obrigatória</PostInfoRow> : null}
+
+              <label className="flex items-start gap-3 rounded-[12px] bg-[#f7f9fc] px-3 py-3 text-[12px] leading-[1.35] text-[#273245]">
+                <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#1e5ec8]" />
+                {postAgreementCopy}
+              </label>
+              <FieldError message={errors.agreement} />
+
+              <button type="submit" className="mt-1 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={advanceLoading} aria-busy={advanceLoading}>
+                {advanceLoading ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
+              </button>
+
+              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} />
+
+              <div className="mt-1">
+                <button type="button" className="inline-flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.02em] text-[#1e5ec8]" onClick={() => setVoucherOpen((current) => !current)}>
+                  <span>Código voucher</span>
+                  <ChevronDownIcon className={['h-3.5 w-3.5 transition-transform', voucherOpen ? 'rotate-180' : ''].join(' ')} />
+                </button>
+              </div>
+
+              {voucherOpen ? (
+                <div className="flex gap-2 rounded-[12px] border border-[#d7dce5] bg-white p-2">
+                  <input type="text" placeholder="Digite aqui o voucher caso tenha" value={voucherCode} onChange={(event) => setVoucherCode(event.target.value)} className="h-10 flex-1 rounded-[10px] bg-[#eef1f5] px-3 text-[14px] text-[#0b111f] outline-none" />
+                  <button type="button" className="shrink-0 rounded-[10px] px-3 text-[13px] font-semibold text-[#1e5ec8]" onClick={() => setVoucherCode('')}>Remover</button>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <div>
+                <input ref={cpfInputRef} type="text" inputMode="numeric" placeholder="CPF" autoComplete="off" maxLength={14} value={cpf} onChange={(event) => setCpf(formatCpfMask(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.cpf ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                <FieldError message={errors.cpf} />
+              </div>
+
+              <div>
+                <CourseFormSelect value={selectedPaymentPlanValue} options={paymentPlanSelectOptions} placeholder="Plano de pagamento" menuLabel="Selecione o plano de pagamento" invalid={Boolean(errors.paymentPlan)} onChange={setSelectedPaymentPlanValue} />
+                <FieldError message={errors.paymentPlan} />
+              </div>
+
+              <PostInfoRow>Saiba mais sobre o Estágio e a Prática Obrigatória</PostInfoRow>
+
+              <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button type="button" className="inline-flex h-[50px] items-center justify-center gap-1 rounded-[14px] border border-[#d9e0ea] px-5 font-['Kumbh_Sans'] text-[15px] font-bold text-[#0f2e62] transition hover:border-[#1e5ec8] hover:text-[#1e5ec8]" onClick={() => { setErrors({}); setSubmitStatus('idle'); setSubmitMessage(''); setStep(1) }}>
+                  <ChevronLeftIcon className="h-4 w-4" />
+                  <span>Voltar</span>
+                </button>
+
+                <button type="submit" className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-6 font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60 sm:w-auto" disabled={submitStatus === 'submitting'} aria-busy={submitStatus === 'submitting'}>
+                  {submitStatus === 'submitting' ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar inscrição</span>}
+                </button>
+              </div>
+
+              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} />
+
+              <div className="mt-1">
+                <button type="button" className="inline-flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.02em] text-[#1e5ec8]" onClick={() => setVoucherOpen((current) => !current)}>
+                  <span>Código voucher</span>
+                  <ChevronDownIcon className={['h-3.5 w-3.5 transition-transform', voucherOpen ? 'rotate-180' : ''].join(' ')} />
+                </button>
+              </div>
+
+              {voucherOpen ? (
+                <div className="flex gap-2 rounded-[12px] border border-[#d7dce5] bg-white p-2">
+                  <input type="text" placeholder="Digite aqui o voucher caso tenha" value={voucherCode} onChange={(event) => setVoucherCode(event.target.value)} className="h-10 flex-1 rounded-[10px] bg-[#eef1f5] px-3 text-[14px] text-[#0b111f] outline-none" />
+                  <button type="button" className="shrink-0 rounded-[10px] px-3 text-[13px] font-semibold text-[#1e5ec8]" onClick={() => setVoucherCode('')}>Remover</button>
+                </div>
+              ) : null}
+            </>
+          )}
+
+          {resumeMessage ? <p className="text-[13px] font-medium text-[#d53030]">{resumeMessage}</p> : null}
+          {submitMessage ? <p className={['text-[13px] font-medium', submitStatus === 'error' ? 'text-[#d53030]' : 'text-[#1f8b43]'].join(' ')}>{submitMessage}</p> : null}
+        </form>
+      </section>
+    )
+  }
+
   return (
-    <section className="bg-white flex flex-col gap-[11.5px] lg:gap-4 p-[15px] lg:p-5 rounded-[22px] lg:rounded-[30px] shadow-[0px_4px_21px_0px_rgba(0,0,0,0.25)] w-full max-w-[552px] font-['Liberation_Sans']">
-      <div className="bg-[#606060] h-[206px] lg:h-[287px] overflow-hidden rounded-[10px] lg:rounded-[14px] w-full relative">
-        <img src={courseCoverImage} alt={selection.courseLabel} className="w-full h-full object-cover" />
+    <section className="w-full max-w-[552px] rounded-[30px] bg-white p-[15px] shadow-[0_4px_21px_rgba(0,0,0,0.25)] lg:p-5">
+      <div className="overflow-hidden rounded-[14px] bg-[#d7dbe4]">
+        <img src={courseCoverImage} alt={selection.courseLabel} className="block h-[220px] w-full object-cover lg:h-[287px]" />
       </div>
 
-      <p className="font-semibold text-[11.5px] lg:text-[16px] text-[#212121] font-['Kumbh_Sans'] leading-snug">
-        Conheça a {isGraduation ? 'Graduação' : 'Pós-Graduação'} em {selection.courseLabel || 'Psicologia'} e continue sua inscrição.
-      </p>
+      <p className="mt-4 font-['Kumbh_Sans'] text-[13px] font-semibold leading-snug text-[#212121] lg:text-[16px]">Conheça a Graduação em {selection.courseLabel || 'Psicologia'} e continue sua inscrição.</p>
+      <h3 className="mt-2 font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase leading-[1.15] text-[#0b111f] lg:text-[22px]">Preencha o formulário para se inscrever</h3>
 
-      <h3 className="font-extrabold text-[13px] lg:text-[18px] text-[#0b111f] uppercase leading-[18px] lg:leading-[25px] font-['Kumbh_Sans'] mt-1 lg:mt-0">
-        Preencha o formulário para se inscrever
-      </h3>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-[10px] lg:gap-[14px]">
+      <form className="mt-4 flex flex-col gap-3" onSubmit={handleSubmit} noValidate>
         <div>
-          <input
-            id={`course-lead-name-${selection.courseValue}`}
-            name="name"
-            value={fullName}
-            onChange={(event) => setFullName(normalizeName(event.target.value))}
-            placeholder="Nome completo"
-            className={`bg-[#e8e9ea] border ${errors.fullName ? 'border-red-500' : 'border-black/15'} rounded-[6px] lg:rounded-lg p-[8.6px] lg:p-3 h-[34.5px] lg:h-12 w-full text-[11.5px] lg:text-base text-black outline-none focus:border-[#14418d]`}
-          />
-          {errors.fullName && <span className="text-red-500 text-[10px] lg:text-sm mt-1">{errors.fullName}</span>}
+          <input ref={nameInputRef} type="text" placeholder="Nome completo" value={fullName} onChange={(event) => setFullName(normalizeName(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.fullName ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+          <FieldError message={errors.fullName} />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-[10px] lg:gap-[14px]">
-          <div className="w-full">
-            <input
-              id={`course-lead-email-${selection.courseValue}`}
-              name="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="E-mail"
-              className={`bg-[#e8e9ea] border ${errors.email ? 'border-red-500' : 'border-black/15'} rounded-[6px] lg:rounded-lg p-[8.6px] lg:p-3 h-[34.5px] lg:h-12 w-full text-[11.5px] lg:text-base text-black outline-none focus:border-[#14418d]`}
-            />
-            {errors.email && <span className="text-red-500 text-[10px] lg:text-sm mt-1">{errors.email}</span>}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <input type="email" placeholder="E-mail" value={email} onChange={(event) => setEmail(event.target.value)} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.email ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+            <FieldError message={errors.email} />
           </div>
-          <div className="w-full">
-            <input
-              id={`course-lead-phone-${selection.courseValue}`}
-              name="phone"
-              inputMode="tel"
-              value={phone}
-              onChange={(event) => setPhone(formatPhoneMask(event.target.value))}
-              placeholder="Telefone"
-              className={`bg-[#e8e9ea] border ${errors.phone ? 'border-red-500' : 'border-black/15'} rounded-[6px] lg:rounded-lg p-[8.6px] lg:p-3 h-[34.5px] lg:h-12 w-full text-[11.5px] lg:text-base text-black outline-none focus:border-[#14418d]`}
-            />
-            {errors.phone && <span className="text-red-500 text-[10px] lg:text-sm mt-1">{errors.phone}</span>}
+
+          <div>
+            <input type="tel" placeholder="Telefone" value={phone} onChange={(event) => setPhone(formatPhoneMask(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.phone ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+            <FieldError message={errors.phone} />
           </div>
         </div>
 
-        {!isGraduation && workloadChoices.length > 0 ? (
-          <div className="relative">
-            <select
-              value={selectedWorkloadValue}
-              onChange={(event) => setSelectedWorkloadValue(event.target.value)}
-              className="appearance-none bg-[#eeeeee] border border-black/25 rounded-[6px] lg:rounded-lg px-[8.5px] lg:px-3 pr-8 h-[34.5px] lg:h-[50px] w-full text-[11.4px] lg:text-[16px] text-black leading-tight outline-none focus:border-[#14418d]"
-            >
-              {workloadChoices.map((choice) => (
-                <option key={choice.value} value={choice.value}>
-                  {choice.label}
-                  {durationText ? ` | ${durationText}` : ''}
-                </option>
-              ))}
-            </select>
-            <svg
-              width="12"
-              height="8"
-              viewBox="0 0 12 8"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-[8.4px] lg:w-[12px]"
-              aria-hidden="true"
-            >
-              <path d="M10.59 0.589966L6 5.16997L1.41 0.589966L0 1.99997L6 7.99997L12 1.99997L10.59 0.589966Z" fill="black" />
-            </svg>
-          </div>
-        ) : null}
-
-        {!isGraduation ? (
-          <div className="flex items-center gap-[5px] lg:gap-[7px]">
-            <div className="w-[16px] lg:w-[21px] h-[16px] lg:h-[21px] rounded-full border border-red-500 flex items-center justify-center shrink-0 text-red-500 font-bold text-[10px] lg:text-sm">
-              !
-            </div>
-            <p className="text-[#066aff] text-[12px] leading-[1.35] m-0">
-              A carga horária e o investimento acompanham a oferta atual publicada no catálogo.
-            </p>
-          </div>
-        ) : null}
-
-        <label className="flex gap-[5px] lg:gap-[7px] items-center mt-1 lg:mt-2">
-          <input
-            type="checkbox"
-            checked={acceptedTerms}
-            onChange={(event) => setAcceptedTerms(event.target.checked)}
-            className="w-[17px] lg:w-6 h-[17px] lg:h-6 rounded border-black/25 shrink-0 accent-[#14418d]"
-          />
-          <span className="text-[10px] lg:text-[14px] text-black leading-[11.5px] lg:leading-[16px]">
-            Ao continuar você concorda com nossos{' '}
-            <a href="/termos-de-uso" className="text-[#066aff] underline underline-offset-2">
-              Termos de Uso
-            </a>{' '}
-            e{' '}
-            <a href="/politica-de-privacidade" className="text-[#066aff] underline underline-offset-2">
-              Política de Privacidade
-            </a>
-            .
-          </span>
+        <label className="flex items-start gap-3 rounded-[12px] bg-[#f7f9fc] px-3 py-3 text-[12px] leading-[1.35] text-[#273245]">
+          <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#1e5ec8]" />
+          <span>Ao continuar você concorda com nossos <a href="/termos-de-uso" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Política de Privacidade</a>.</span>
         </label>
+        <FieldError message={errors.agreement} />
 
-        {statusMessage && (
-          <p className={`text-[10px] lg:text-sm ${status === 'error' ? 'text-red-500' : 'text-green-600'}`}>
-            {statusMessage}
-          </p>
-        )}
+        {submitMessage ? <p className={['text-[13px] font-medium', submitStatus === 'error' ? 'text-[#d53030]' : 'text-[#1f8b43]'].join(' ')}>{submitMessage}</p> : null}
 
-        <button
-          type="submit"
-          disabled={status === 'submitting'}
-          className="bg-gradient-to-r from-[#14418d] to-[#0c033c] text-white font-extrabold text-[13px] lg:text-[18px] py-[12px] lg:py-[17px] rounded-[8.6px] lg:rounded-[12px] uppercase leading-[17px] lg:leading-[24px] font-['Kumbh_Sans'] hover:opacity-90 disabled:opacity-50 mt-1"
-        >
-          {status === 'submitting' ? 'Enviando...' : 'Continuar'}
+        <button type="submit" disabled={submitStatus === 'submitting'} className="mt-1 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60">
+          {submitStatus === 'submitting' ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
         </button>
       </form>
-
-      {!isGraduation ? (
-        <div className="flex flex-col sm:flex-row gap-[16px] lg:gap-4 items-center mt-1 lg:mt-2 w-full">
-          <div className="bg-[#04930e] text-white px-[12px] lg:px-3 py-[6px] lg:py-1.5 rounded-[8px] lg:rounded-lg flex items-center justify-between w-[146px] lg:w-auto shrink-0">
-            <div className="font-black text-[12px] lg:text-[14px] uppercase leading-[1.05] font-['Kumbh_Sans']">
-              30% <br />
-              <span className="font-light">OFF</span>
-            </div>
-            <div className="w-[1px] h-[26px] bg-white/50 shrink-0 mx-2"></div>
-            <div className="text-[12px] lg:text-[14px] leading-[1.2] font-['Kumbh_Sans']">
-              <strong className="font-extrabold">Desconto</strong>
-              <br />
-              Pontualidade
-            </div>
-          </div>
-          <div className="flex flex-col justify-center font-['Kumbh_Sans'] w-full">
-            <p className="text-black text-[16px] lg:text-[20px] leading-[1.14]">
-              A partir de <strong className="font-bold">{currentPriceLabel || selection.priceLabel}</strong>
-            </p>
-            <p className="text-black/75 text-[12px] lg:text-[14px] font-medium leading-[1.14]">{pixMessage}</p>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="flex justify-start mt-1 lg:mt-2">
-        <button type="button" className="text-[#007bf5] text-[12px] font-extrabold uppercase flex items-center gap-1 font-['Kumbh_Sans']">
-          Código voucher
-          <svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg" className="rotate-[-90deg]" aria-hidden="true">
-            <path d="M4 4.5L0 0.5H8L4 4.5Z" fill="#007bf5" />
-          </svg>
-        </button>
-      </div>
     </section>
   )
 }

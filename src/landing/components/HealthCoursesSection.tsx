@@ -2,6 +2,8 @@
 
 import type { MouseEvent } from 'react'
 
+import { getCoursePath } from '@/lib/courseRoutes'
+
 import type { CourseLeadSelection } from '../crmLead'
 import {
   FEATURED_PSYCHOLOGY_POST_COURSES,
@@ -65,6 +67,22 @@ function formatOldPriceForCard(oldValue: string, currentValueWithSuffix: string)
   return normalizedOld
 }
 
+function resolveCoursePath(course: { url?: string; value: string; label: string }) {
+  if (course.url) {
+    try {
+      return new URL(course.url).pathname
+    } catch {
+      // Mantém fallback para a rota interna quando a URL da API vier malformada.
+    }
+  }
+
+  return getCoursePath({
+    courseType: 'pos',
+    courseValue: course.value,
+    courseLabel: course.label,
+  })
+}
+
 function buildFallbackCourse(target: PsychologyPostCourseCatalogItem): HealthCourse {
   return {
     id: target.fallbackValue,
@@ -78,6 +96,11 @@ function buildFallbackCourse(target: PsychologyPostCourseCatalogItem): HealthCou
       courseValue: target.fallbackValue,
       courseLabel: target.title,
       courseId: target.fallbackCourseId,
+      coursePath: getCoursePath({
+        courseType: 'pos',
+        courseValue: target.fallbackValue,
+        courseLabel: target.title,
+      }),
       priceLabel: DEFAULT_CURRENT_PRICE,
     },
   }
@@ -102,6 +125,7 @@ function mapPostCourseToHealthCard(
       courseValue: target.fallbackValue,
       courseLabel: course.label,
       courseId: course.courseId,
+      coursePath: resolveCoursePath(course),
       priceLabel: price,
     },
   }

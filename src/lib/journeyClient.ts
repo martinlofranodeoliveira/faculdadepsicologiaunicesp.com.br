@@ -24,6 +24,47 @@ export type JourneyFinalizeResponse = {
 
 export type JourneyStepPayload = Record<string, unknown>
 
+export type JourneySnapshot = {
+  journey_id: number
+  journey_uuid?: string
+  course_level?: string
+  status?: string | null
+  current_step?: number
+  next_step?: number | string | null
+  can_continue?: boolean
+  converted_admission_id?: number | null
+  step_1?: JourneyStepPayload
+  step_2?: JourneyStepPayload
+  step_3?: JourneyStepPayload
+}
+
+export type JourneyPendingItem = JourneySnapshot & {
+  institution_id?: number
+  course_id?: number
+  last_activity_at?: string | null
+  course?: {
+    id?: number
+    code?: string | null
+    name?: string | null
+  }
+  workload_variant?: {
+    id?: number | null
+    name?: string | null
+    total_hours?: number | null
+    duration_months?: number | null
+  } | null
+  pole?: {
+    id?: number | null
+    name?: string | null
+  } | null
+}
+
+export type JourneyPendingResponse = {
+  email?: string
+  pending_total?: number
+  items?: JourneyPendingItem[]
+}
+
 type JourneyEnvelope<T> = {
   data?: T
   errors?: Array<{
@@ -82,6 +123,18 @@ async function requestJourney<T>(
 
 export function createJourneyStep1(payload: Record<string, unknown>) {
   return requestJourney<JourneyStep1Response>('/api/journeys/step-1', 'POST', payload)
+}
+
+export function resumeJourney(payload: Record<string, unknown>) {
+  return requestJourney<JourneySnapshot>('/api/journeys/resume', 'POST', payload)
+}
+
+export function getPendingJourneys(payload: Record<string, unknown>) {
+  return requestJourney<JourneyPendingResponse>('/api/journeys/pending', 'POST', payload)
+}
+
+export function updateJourneyStep2(journeyId: number, payload: Record<string, unknown>) {
+  return requestJourney<JourneyStepProgressResponse>(`/api/journeys/${journeyId}/step-2`, 'PATCH', payload)
 }
 
 export function updateJourneyStep3(journeyId: number, payload: Record<string, unknown>) {
