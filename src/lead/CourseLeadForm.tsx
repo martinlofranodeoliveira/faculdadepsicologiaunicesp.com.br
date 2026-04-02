@@ -19,6 +19,8 @@ type Props = {
   selection: CourseLeadSelection
   institutionSlug?: string
   dark?: boolean
+  image?: string
+  pricePix?: string
 }
 
 type FieldErrors = {
@@ -35,15 +37,15 @@ function canUseJourney(selection: CourseLeadSelection, institutionSlug?: string)
   return Boolean(selection.courseId && selection.courseId > 0)
 }
 
-export function CourseLeadForm({ selection, institutionSlug, dark = false }: Props) {
+export function CourseLeadForm({ selection, institutionSlug, dark = false, image, pricePix }: Props) {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [errors, setErrors] = useState<FieldErrors>({})
   const [status, setStatus] = useState<SubmitStatus>('idle')
   const [statusMessage, setStatusMessage] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
-  const formClassName = `lead-card ${dark ? 'lead-card--dark' : ''}`
   const isGraduation = selection.courseType === 'graduacao'
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
@@ -56,7 +58,11 @@ export function CourseLeadForm({ selection, institutionSlug, dark = false }: Pro
     }
     setErrors(nextErrors)
 
-    if (Object.values(nextErrors).some(Boolean)) {
+    if (Object.values(nextErrors).some(Boolean) || !acceptedTerms) {
+      if (!acceptedTerms) {
+         setStatus('error')
+         setStatusMessage('Você precisa concordar com os termos.')
+      }
       return
     }
 
@@ -131,74 +137,130 @@ export function CourseLeadForm({ selection, institutionSlug, dark = false }: Pro
   }
 
   return (
-    <section className={formClassName} aria-label={`Formulário do curso ${selection.courseLabel}`}>
-      <header className="lead-card__header">
-        <h3>{isGraduation ? 'Começar inscrição' : 'Receber proposta'}</h3>
-        <p>
-          {isGraduation
-            ? 'Preencha seus dados para continuar no fluxo do vestibular desta graduação.'
-            : 'Preencha seus dados e siga para a confirmação da sua inscrição na pós-graduação.'}
-        </p>
-      </header>
+    <section className="bg-white flex flex-col gap-[11.5px] lg:gap-4 p-[15px] lg:p-5 rounded-[22px] lg:rounded-[30px] shadow-[0px_4px_21px_0px_rgba(0,0,0,0.25)] w-full max-w-[552px] font-['Liberation_Sans']">
+      <div className="bg-[#606060] h-[206px] lg:h-[287px] overflow-hidden rounded-[10px] lg:rounded-[14px] w-full relative">
+        <img 
+          src={(!image || image === '/landing/posgraduacao-banner.webp' || image.includes('neuropsicologia.jpg')) ? "/course/image_fx_19_1.webp" : image} 
+          alt="Course cover" 
+          className="w-full h-full object-cover" 
+        />
+      </div>
+      
+      <p className="font-semibold text-[11.5px] lg:text-[16px] text-[#212121] font-['Kumbh_Sans'] leading-snug">
+        Conheça a {isGraduation ? 'Graduação' : 'Pós-Graduação'} em {selection.courseLabel || 'Psicologia'} e <a href="/login" className="text-[#066aff] underline underline-offset-2">continue sua inscrição</a>
+      </p>
+      
+      <h3 className="font-extrabold text-[13px] lg:text-[18px] text-[#0b111f] uppercase leading-[18px] lg:leading-[25px] font-['Kumbh_Sans'] mt-1 lg:mt-0">
+        Preencha o formulário PARA SE INSCREVER
+      </h3>
+      
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[10px] lg:gap-[14px]">
+        <div>
+          <input
+            id={`course-lead-name-${selection.courseValue}`}
+            name="name"
+            value={fullName}
+            onChange={(event) => setFullName(normalizeName(event.target.value))}
+            placeholder="Nome completo" 
+            className={`bg-[#e8e9ea] border ${errors.fullName ? 'border-red-500' : 'border-black/15'} rounded-[6px] lg:rounded-lg p-[8.6px] lg:p-3 h-[34.5px] lg:h-12 w-full text-[11.5px] lg:text-base text-black outline-none focus:border-[#14418d]`} 
+          />
+          {errors.fullName && <span className="text-red-500 text-[10px] lg:text-sm mt-1">{errors.fullName}</span>}
+        </div>
 
-      <form className="lead-card__form" onSubmit={handleSubmit}>
-        <div className="lead-card__grid">
-          <div className={`lead-card__field lead-card__field--full ${errors.fullName ? 'is-invalid' : ''}`}>
-            <label htmlFor={`course-lead-name-${selection.courseValue}`}>Nome completo</label>
-            <input
-              id={`course-lead-name-${selection.courseValue}`}
-              name="name"
-              value={fullName}
-              onChange={(event) => setFullName(normalizeName(event.target.value))}
-              placeholder="Digite seu nome"
-            />
-            {errors.fullName ? <span className="lead-card__error">{errors.fullName}</span> : null}
-          </div>
-
-          <div className={`lead-card__field ${errors.email ? 'is-invalid' : ''}`}>
-            <label htmlFor={`course-lead-email-${selection.courseValue}`}>E-mail</label>
+        <div className="flex flex-col sm:flex-row gap-[10px] lg:gap-[14px]">
+          <div className="w-full">
             <input
               id={`course-lead-email-${selection.courseValue}`}
               name="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="voce@exemplo.com"
+              placeholder="Email" 
+              className={`bg-[#e8e9ea] border ${errors.email ? 'border-red-500' : 'border-black/15'} rounded-[6px] lg:rounded-lg p-[8.6px] lg:p-3 h-[34.5px] lg:h-12 w-full text-[11.5px] lg:text-base text-black outline-none focus:border-[#14418d]`} 
             />
-            {errors.email ? <span className="lead-card__error">{errors.email}</span> : null}
+            {errors.email && <span className="text-red-500 text-[10px] lg:text-sm mt-1">{errors.email}</span>}
           </div>
-
-          <div className={`lead-card__field ${errors.phone ? 'is-invalid' : ''}`}>
-            <label htmlFor={`course-lead-phone-${selection.courseValue}`}>WhatsApp</label>
-            <input
+          <div className="w-full">
+             <input
               id={`course-lead-phone-${selection.courseValue}`}
               name="phone"
               inputMode="tel"
               value={phone}
               onChange={(event) => setPhone(formatPhoneMask(event.target.value))}
-              placeholder="(00) 00000-0000"
+              placeholder="Telefone" 
+              className={`bg-[#e8e9ea] border ${errors.phone ? 'border-red-500' : 'border-black/15'} rounded-[6px] lg:rounded-lg p-[8.6px] lg:p-3 h-[34.5px] lg:h-12 w-full text-[11.5px] lg:text-base text-black outline-none focus:border-[#14418d]`} 
             />
-            {errors.phone ? <span className="lead-card__error">{errors.phone}</span> : null}
+            {errors.phone && <span className="text-red-500 text-[10px] lg:text-sm mt-1">{errors.phone}</span>}
           </div>
         </div>
+        
+        <div className="bg-[#eee] border border-black/25 rounded-[6px] lg:rounded-lg p-[8.5px] lg:p-3 flex justify-between items-center min-h-[34.5px] lg:min-h-[50px]">
+          <span className="text-[11.4px] lg:text-[16px] text-black leading-tight truncate">720 Horas | 12 a 18 meses (Com prática + estágio obrigatório)</span>
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 ml-2 w-[8.4px] lg:w-[12px]">
+            <path d="M10.59 0.589966L6 5.16997L1.41 0.589966L0 1.99997L6 7.99997L12 1.99997L10.59 0.589966Z" fill="black"/>
+          </svg>
+        </div>
 
-        <p className="lead-card__agreement">
-          Curso selecionado: <strong>{selection.courseLabel}</strong>
-        </p>
+        <div className="flex items-center gap-[5px] lg:gap-[7px]">
+          <div className="w-[16px] lg:w-[21px] h-[16px] lg:h-[21px] rounded-full border border-red-500 flex items-center justify-center shrink-0 text-red-500 font-bold text-[10px] lg:text-sm">!</div>
+          <a href="#" className="text-[#066aff] text-[12px] underline underline-offset-2">Saiba mais sobre o Estágio e a Prática Obrigatória</a>
+        </div>
 
-        <div className="lead-card__footer">
-          <p
-            className={`lead-card__status ${
-              status === 'error' ? 'is-error' : status === 'success' ? 'is-success' : ''
-            }`}
-          >
+        <div className="flex gap-[5px] lg:gap-[7px] items-center mt-1 lg:mt-2">
+          <input 
+            type="checkbox" 
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            className="w-[17px] lg:w-6 h-[17px] lg:h-6 rounded border-black/25 shrink-0 accent-[#14418d]" 
+          />
+          <span className="text-[10px] lg:text-[14px] text-black leading-[11.5px] lg:leading-[16px]">
+            Ao continuar você concorda com nossos <a href="/termos-de-uso" className="text-[#066aff] underline underline-offset-2">Termos de uso e Politicas de Privacidade</a>
+          </span>
+        </div>
+
+        {statusMessage && (
+          <p className={`text-[10px] lg:text-sm ${status === 'error' ? 'text-red-500' : 'text-green-600'}`}>
             {statusMessage}
           </p>
-          <button className="button-primary" type="submit" disabled={status === 'submitting'}>
-            {status === 'submitting' ? 'Enviando...' : isGraduation ? 'Ir para o vestibular' : 'Finalizar inscrição'}
-          </button>
-        </div>
+        )}
+
+        <button 
+          type="submit" 
+          disabled={status === 'submitting'}
+          className="bg-gradient-to-r from-[#14418d] to-[#0c033c] text-white font-extrabold text-[13px] lg:text-[18px] py-[12px] lg:py-[17px] rounded-[8.6px] lg:rounded-[12px] uppercase leading-[17px] lg:leading-[24px] font-['Kumbh_Sans'] hover:opacity-90 disabled:opacity-50 mt-1"
+        >
+          {status === 'submitting' ? 'Enviando...' : 'Continuar'}
+        </button>
       </form>
+      
+      {!isGraduation && (
+        <div className="flex flex-col sm:flex-row gap-[16px] lg:gap-4 items-center mt-1 lg:mt-2 w-full">
+          <div className="bg-[#04930e] text-white px-[12px] lg:px-3 py-[6px] lg:py-1.5 rounded-[8px] lg:rounded-lg flex items-center justify-between w-[146px] lg:w-auto shrink-0">
+            <div className="font-black text-[12px] lg:text-[14px] uppercase leading-[1.05] font-['Kumbh_Sans']">30% <br/><span className="font-light">OFF</span></div>
+            <div className="w-[1px] h-[26px] bg-white/50 shrink-0 mx-2"></div>
+            <div className="text-[12px] lg:text-[14px] leading-[1.2] font-['Kumbh_Sans']">
+              <strong className="font-extrabold">Desconto</strong><br/>Pontualidade
+            </div>
+          </div>
+          <div className="flex flex-col justify-center font-['Kumbh_Sans'] w-full">
+            <p className="text-black text-[16px] lg:text-[20px] leading-[1.14]">
+              Por: 18x DE <strong className="font-bold">{selection.priceLabel}</strong>
+            </p>
+            <p className="text-black/75 text-[12px] lg:text-[14px] font-medium leading-[1.14]">
+              Á vista no PIX: {pricePix || selection.priceLabel}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-start mt-1 lg:mt-2">
+        <button className="text-[#007bf5] text-[12px] font-extrabold uppercase flex items-center gap-1 font-['Kumbh_Sans']">
+          Código VOUCHER 
+          <svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg" className="rotate-[-90deg]">
+             <path d="M4 4.5L0 0.5H8L4 4.5Z" fill="#007bf5"/>
+          </svg>
+        </button>
+      </div>
     </section>
   )
 }
