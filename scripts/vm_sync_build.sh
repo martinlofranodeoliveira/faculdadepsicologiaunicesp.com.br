@@ -7,11 +7,11 @@ set -euo pipefail
 #
 # Optional overrides:
 #   REPO_URL=https://github.com/martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git
-#   TARGET_DIR=/www/wwwroot/faculdadepsicologia.com.br
+#   TARGET_DIR=/www/wwwroot/faculdadepsicologiaunicesp.com.br
 #   BRANCH=main
 
 REPO_URL="${REPO_URL:-https://github.com/martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git}"
-TARGET_DIR="${TARGET_DIR:-/www/wwwroot/faculdadepsicologia.com.br}"
+TARGET_DIR="${TARGET_DIR:-/www/wwwroot/faculdadepsicologiaunicesp.com.br}"
 BRANCH="${BRANCH:-main}"
 
 echo "==> Repo:   $REPO_URL"
