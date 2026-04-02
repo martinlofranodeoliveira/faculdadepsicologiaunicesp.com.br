@@ -3,8 +3,8 @@ export const siteConfig = {
   shortName: 'Psicologia UNICESP',
   description:
     'Graduação presencial em Psicologia e pós-graduações em Psicologia com estrutura acadêmica preparada para captação, SEO e integração com API.',
-  domain: 'faculdadepsicologia.com.br',
-  siteUrl: 'https://faculdadepsicologia.com.br',
+  domain: 'faculdadepsicologiaunicesp.com.br',
+  siteUrl: 'https://faculdadepsicologiaunicesp.com.br',
   email: 'contato@faculdadepsicologiaunicesp.com.br',
   phoneLabel: '(35) 9806-0604',
   phoneHref: 'tel:+553598060604',

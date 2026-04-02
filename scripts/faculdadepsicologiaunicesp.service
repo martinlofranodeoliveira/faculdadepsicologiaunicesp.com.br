@@ -1,5 +1,5 @@
 [Unit]
-Description=Faculdade Psicologia Astro App
+Description=Faculdade Psicologia UNICESP Astro App
 After=network.target
 
 [Service]
