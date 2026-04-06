@@ -3915,7 +3915,7 @@
 
 .lp-enroll-popup__agreement {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -3927,6 +3927,10 @@
   height: 19px;
   flex: 0 0 19px;
   accent-color: #1e5ec8;
+}
+
+.lp-enroll-popup__agreement-copy {
+  display: inline;
 }
 
 .lp-enroll-popup__agreement span {

@@ -845,10 +845,10 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
 
   const firstErrorMessage = errors.fullName ?? errors.email ?? errors.phone ?? errors.agreement ?? errors.cpf ?? errors.stateUf ?? errors.city ?? errors.poleId ?? errors.pcd ?? errors.pcdDetails ?? poleMessage ?? ''
   const agreementCopy = (
-    <span>
+    <span className="lp-enroll-popup__agreement-copy">
       {'LI E CONCORDO COM OS '}
-      <button
-        type="button"
+      <a
+        href="/termos-de-uso"
         className="lp-enroll-popup__agreement-button"
         onClick={(event) => {
           event.preventDefault()
@@ -857,7 +857,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
         }}
       >
         TERMOS DO CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS.
-      </button>
+      </a>
     </span>
   )
   const contractModal = isContractModalOpen ? (
