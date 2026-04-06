@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 
 import { getGraduationCoursePageBySlug } from '@/lib/courseCatalog'
+import { PRIMARY_GRADUATION_JOURNEY_COURSE_ID } from '@/lib/graduation'
 import { siteConfig } from '@/site/config'
 
 export const prerender = false
@@ -26,6 +27,7 @@ export const GET: APIRoute = async () => {
     return jsonResponse({
       data: {
         courseId: course.courseId,
+        journeyCourseId: PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
         courseValue: course.value,
         courseLabel: course.rawLabel || course.title,
         coursePath: course.path,

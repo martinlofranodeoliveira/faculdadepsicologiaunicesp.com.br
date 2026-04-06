@@ -3655,12 +3655,16 @@
 }
 
 .lp-enroll-popup__promo {
-  display: flex;
-  align-items: stretch;
+  display: block;
   border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(90deg, #071a4a 0%, #0b255f 48%, #0a1d4c 100%);
-  min-height: 82px;
+  background: transparent;
+}
+
+.lp-enroll-popup__promo-image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .lp-enroll-popup__promo-badge {

@@ -11,6 +11,7 @@ export type GraduationVestibularLead = {
   pcdDetails?: string
   journeyId?: number
   courseId?: number
+  journeyCourseId?: number
   courseLabel?: string
   courseValue?: string
   currentStep?: number
@@ -42,6 +43,7 @@ export function storeGraduationVestibularLead(lead: GraduationVestibularLead) {
       pcdDetails: lead.pcdDetails?.trim(),
       journeyId: lead.journeyId,
       courseId: lead.courseId,
+      journeyCourseId: lead.journeyCourseId,
       courseLabel: lead.courseLabel?.trim(),
       courseValue: lead.courseValue?.trim(),
       currentStep: lead.currentStep,
@@ -78,6 +80,8 @@ export function readGraduationVestibularLead(): GraduationVestibularLead | null 
       pcdDetails: typeof parsed.pcdDetails === 'string' ? parsed.pcdDetails : undefined,
       journeyId: typeof parsed.journeyId === 'number' ? parsed.journeyId : undefined,
       courseId: typeof parsed.courseId === 'number' ? parsed.courseId : undefined,
+      journeyCourseId:
+        typeof parsed.journeyCourseId === 'number' ? parsed.journeyCourseId : undefined,
       courseLabel: typeof parsed.courseLabel === 'string' ? parsed.courseLabel : undefined,
       courseValue: typeof parsed.courseValue === 'string' ? parsed.courseValue : undefined,
       currentStep: typeof parsed.currentStep === 'number' ? parsed.currentStep : undefined,

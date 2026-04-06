@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEven
 
 import { saveCourseLeadDraft } from '@/course/courseLeadDraft'
 import { getCoursePath } from '@/lib/courseRoutes'
+import { PRIMARY_GRADUATION_JOURNEY_COURSE_ID } from '@/lib/graduation'
 import {
   createJourneyStep1,
   getPendingJourneys,
@@ -64,6 +65,7 @@ type PopupSelectOption = {
 
 type ResolvedGraduationCourse = {
   courseId: number
+  journeyCourseId: number
   courseLabel: string
   coursePath?: string
 }
@@ -322,19 +324,39 @@ async function fetchJson<T>(url: string): Promise<T[]> {
 async function resolveGraduationCourse(selection: CourseLeadSelection): Promise<ResolvedGraduationCourse> {
   const normalizedLabel = normalizeGraduationCourseLabel(selection)
   if (typeof selection.courseId === 'number' && selection.courseId > 0) {
-    return { courseId: selection.courseId, courseLabel: normalizedLabel, coursePath: selection.coursePath }
+    return {
+      courseId: selection.courseId,
+      journeyCourseId: PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
+      courseLabel: normalizedLabel,
+      coursePath: selection.coursePath,
+    }
   }
 
   const response = await fetch('/api/graduation-primary-course', { method: 'GET', headers: { Accept: 'application/json' } })
-  const payload = (await response.json().catch(() => null)) as { data?: { courseId?: number; courseLabel?: string; coursePath?: string }; message?: string } | null
+  const payload = (await response.json().catch(() => null)) as { data?: { courseId?: number; journeyCourseId?: number; courseLabel?: string; coursePath?: string }; message?: string } | null
   if (!response.ok || !payload?.data?.courseId) {
     throw new Error(payload?.message || 'Não foi possível localizar o curso principal da graduação.')
   }
 
-  return { courseId: payload.data.courseId, courseLabel: payload.data.courseLabel?.trim() || normalizedLabel, coursePath: payload.data.coursePath }
+  return {
+    courseId: payload.data.courseId,
+    journeyCourseId:
+      typeof payload.data.journeyCourseId === 'number' && payload.data.journeyCourseId > 0
+        ? payload.data.journeyCourseId
+        : PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
+    courseLabel: payload.data.courseLabel?.trim() || normalizedLabel,
+    coursePath: payload.data.coursePath,
+  }
 }
 
-function buildGraduationResumeLead(snapshot: JourneySnapshot, selection: CourseLeadSelection, fallbackEmail: string, fallbackCourseId?: number, fallbackCourseLabel?: string): GraduationVestibularLead | null {
+function buildGraduationResumeLead(
+  snapshot: JourneySnapshot,
+  selection: CourseLeadSelection,
+  fallbackEmail: string,
+  fallbackCourseId?: number,
+  fallbackCourseLabel?: string,
+  fallbackJourneyCourseId?: number,
+): GraduationVestibularLead | null {
   const step1 = isRecord(snapshot.step_1) ? snapshot.step_1 : undefined
   const step2 = isRecord(snapshot.step_2) ? snapshot.step_2 : undefined
   const step3 = isRecord(snapshot.step_3) ? snapshot.step_3 : undefined
@@ -354,7 +376,11 @@ function buildGraduationResumeLead(snapshot: JourneySnapshot, selection: CourseL
     pcd: readRecordBoolean(step2, ['pcd']),
     pcdDetails: readRecordString(step2, ['quais_necessidades', 'pcd_details']),
     journeyId: snapshot.journey_id,
-    courseId: readRecordNumber(step1, ['course_id']) ?? fallbackCourseId,
+    courseId: fallbackCourseId,
+    journeyCourseId:
+      readRecordNumber(step1, ['course_id']) ??
+      fallbackJourneyCourseId ??
+      PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
     courseLabel: readRecordString(step1, ['course_label', 'course_name', 'curso']) ?? fallbackCourseLabel ?? normalizeGraduationCourseLabel(selection),
     courseValue: selection.courseValue,
     currentStep: normalizeCurrentStep(snapshot.current_step),
@@ -561,6 +587,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
   const [cpf, setCpf] = useState('')
   const [journeyId, setJourneyId] = useState<number | null>(null)
   const [resolvedCourseId, setResolvedCourseId] = useState<number | null>(selection?.courseId ?? null)
+  const [resolvedJourneyCourseId, setResolvedJourneyCourseId] = useState<number | null>(null)
   const [stateUf, setStateUf] = useState('')
   const [stateId, setStateId] = useState('')
   const [city, setCity] = useState('')
@@ -614,6 +641,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
     setCpf(matchingStoredLead?.cpf ? formatCpfMask(matchingStoredLead.cpf) : '')
     setJourneyId(matchingStoredLead?.journeyId ?? null)
     setResolvedCourseId(matchingStoredLead?.courseId ?? selection.courseId ?? null)
+    setResolvedJourneyCourseId(matchingStoredLead?.journeyCourseId ?? null)
     setStateUf(matchingStoredLead?.stateUf ?? '')
     setStateId('')
     setCity(matchingStoredLead?.city ?? '')
@@ -789,6 +817,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
     setCpf(lead.cpf ? formatCpfMask(lead.cpf) : '')
     setJourneyId(lead.journeyId ?? null)
     setResolvedCourseId(lead.courseId ?? activeSelection.courseId ?? null)
+    setResolvedJourneyCourseId(lead.journeyCourseId ?? null)
     setStateUf(lead.stateUf ?? '')
     setStateId('')
     setCity(lead.city ?? '')
@@ -828,9 +857,14 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
           return rightTime - leftTime
         })
 
-      const matchingCourseItem = graduationItems.find((item) => item.course_id === resolvedCourse.courseId)
+      const matchingCourseItem = graduationItems.find(
+        (item) => item.course_id === resolvedCourse.journeyCourseId,
+      )
       const chosenItem = matchingCourseItem ?? graduationItems[0]
-      const targetCourseId = (typeof chosenItem?.course_id === 'number' && chosenItem.course_id > 0 ? chosenItem.course_id : undefined) ?? resolvedCourse.courseId
+      const targetCourseId =
+        (typeof chosenItem?.course_id === 'number' && chosenItem.course_id > 0
+          ? chosenItem.course_id
+          : undefined) ?? resolvedCourse.journeyCourseId
       if (!targetCourseId || targetCourseId <= 0) {
         throw new Error('Não encontramos uma inscrição em andamento para este e-mail.')
       }
@@ -841,7 +875,14 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
       }
 
       const fallbackCourseLabel = (isRecord(chosenItem?.course) ? readRecordString(chosenItem?.course as Record<string, unknown>, ['name']) : undefined) ?? resolvedCourse.courseLabel
-      const lead = buildGraduationResumeLead(snapshot, activeSelection, normalizedEmail, targetCourseId, fallbackCourseLabel)
+      const lead = buildGraduationResumeLead(
+        snapshot,
+        activeSelection,
+        normalizedEmail,
+        resolvedCourse.courseId,
+        fallbackCourseLabel,
+        targetCourseId,
+      )
       if (!lead) throw new Error('Não encontramos uma inscrição em andamento para este e-mail.')
 
       storeGraduationVestibularLead(lead)
@@ -880,7 +921,12 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
 
     try {
       const resolvedCourse = await resolveGraduationCourse(activeSelection)
-      const canReuseSavedJourney = Boolean(savedLead?.journeyId) && savedLead?.courseId === resolvedCourse.courseId && savedLead?.fullName.trim().toLowerCase() === fullName.trim().toLowerCase() && savedLead?.email.trim().toLowerCase() === email.trim().toLowerCase() && normalizePhone(savedLead?.phone ?? '') === normalizePhone(phone)
+      const canReuseSavedJourney =
+        Boolean(savedLead?.journeyId) &&
+        (savedLead?.journeyCourseId ?? savedLead?.courseId) === resolvedCourse.journeyCourseId &&
+        savedLead?.fullName.trim().toLowerCase() === fullName.trim().toLowerCase() &&
+        savedLead?.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+        normalizePhone(savedLead?.phone ?? '') === normalizePhone(phone)
 
       await sendLeadToCrm({
         fullName,
@@ -892,6 +938,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
       if (canReuseSavedJourney) {
         setJourneyId(savedLead?.journeyId ?? null)
         setResolvedCourseId(resolvedCourse.courseId)
+        setResolvedJourneyCourseId(resolvedCourse.journeyCourseId)
         setCurrentStep(2)
         setSubmitStatus('idle')
         setSubmitMessage('')
@@ -900,7 +947,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
       }
 
       const response = await createJourneyStep1({
-        course_id: resolvedCourse.courseId,
+        course_id: resolvedCourse.journeyCourseId,
         full_name: fullName.trim(),
         email: email.trim(),
         phone: normalizePhone(phone),
@@ -912,6 +959,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
         phone: normalizePhone(phone),
         journeyId: response.journey_id,
         courseId: resolvedCourse.courseId,
+        journeyCourseId: resolvedCourse.journeyCourseId,
         courseLabel: resolvedCourse.courseLabel,
         courseValue: activeSelection.courseValue,
         currentStep: response.current_step ?? 1,
@@ -921,6 +969,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
       storeGraduationVestibularLead(leadSnapshot)
       setJourneyId(response.journey_id)
       setResolvedCourseId(resolvedCourse.courseId)
+      setResolvedJourneyCourseId(resolvedCourse.journeyCourseId)
       setCurrentStep(2)
       setSubmitStatus('idle')
       setSubmitMessage('')
@@ -1006,6 +1055,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
         pcdDetails: pcd === 'sim' ? pcdDetails.trim() || undefined : undefined,
         journeyId,
         courseId: resolvedCourseId,
+        journeyCourseId: resolvedJourneyCourseId ?? undefined,
         courseLabel: normalizedCourseLabel,
         courseValue: activeSelection.courseValue,
         currentStep: storedStep,
@@ -1029,17 +1079,11 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
         </button>
 
         <div className="lp-enroll-popup__promo" aria-hidden="true">
-          <div className="lp-enroll-popup__promo-badge">
-            <img src="/landing/faculdade-de-psicologia-logo.webp" alt="" width={50} height={50} />
-          </div>
-          <div className="lp-enroll-popup__promo-content">
-            <div className="lp-enroll-popup__promo-left">
-              <strong>GANHE +1</strong>
-              <span>GRADUAÇÃO EAD</span>
-            </div>
-            <span className="lp-enroll-popup__promo-divider" />
-            <p>PARA PRESENTEAR UM AMIGO OU FAMILIAR</p>
-          </div>
+          <img
+            className="lp-enroll-popup__promo-image"
+            src="/landing/graduacao-presencial-psicologia-topo-popup.webp"
+            alt=""
+          />
         </div>
 
         <div className="lp-enroll-popup__content">
