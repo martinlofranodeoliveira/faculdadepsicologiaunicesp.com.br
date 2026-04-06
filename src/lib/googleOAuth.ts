@@ -40,6 +40,7 @@ type GmailSendSuccess = {
 
 const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send'
 const DEFAULT_FROM_NAME = 'Faculdade de Psicologia'
+const DEFAULT_SITE_URL = 'https://faculdadepsicologiaunicesp.com.br'
 
 function readServerEnv(name: keyof ImportMetaEnv | string): string | undefined {
   const viteEnv = (import.meta.env as Record<string, string | boolean | undefined> | undefined) ?? undefined
@@ -198,7 +199,11 @@ export function getGoogleOAuthSenderAddress(mailbox: GoogleOAuthMailbox): string
 }
 
 export function getGoogleOAuthRedirectUri() {
-  return readEnv('GOOGLE_OAUTH_REDIRECT_URI')
+  const explicitRedirectUri = readServerEnv('GOOGLE_OAUTH_REDIRECT_URI')
+  if (explicitRedirectUri) return explicitRedirectUri
+
+  const siteUrl = readServerEnv('SITE_URL') || DEFAULT_SITE_URL
+  return new URL('/oauth2callback', siteUrl).toString()
 }
 
 export function getGoogleRefreshTokenEnvName(mailbox: GoogleOAuthMailbox) {
