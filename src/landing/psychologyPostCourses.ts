@@ -1,4 +1,4 @@
-export type PostWorkloadOption = {
+﻿export type PostWorkloadOption = {
   value: string
   label: string
 }
@@ -165,3 +165,4 @@ export function formatWorkloadLabelForDisplay(value: string): string {
 export function getDefaultWorkloadValue(workloads: PostWorkloadOption[]): string {
   return workloads.length === 1 ? workloads[0].value : ''
 }
+

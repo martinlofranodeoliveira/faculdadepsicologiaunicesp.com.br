@@ -826,10 +826,10 @@ function resolveCourseImage(
 
 function buildGeneratedDescription(courseType: CourseType, title: string) {
   if (courseType === 'pos') {
-    return `ConheÃ§a a PÃ³s-graduaÃ§Ã£o em ${title} e continue sua inscriÃ§Ã£o.`
+    return `Conheça a Pós-graduação em ${title} e continue sua inscrição.`
   }
 
-  return `ConheÃ§a a GraduaÃ§Ã£o em ${title} e continue sua inscriÃ§Ã£o.`
+  return `Conheça a Graduação em ${title} e continue sua inscrição.`
 }
 
 function summarizeCourse(course: CatalogCourse): CatalogCourseSummary {
@@ -921,11 +921,11 @@ function buildCourseFromApi(
   const currentInstallmentPrice =
     courseType === 'pos'
       ? `18X DE ${formatCurrency(postMonthlyAmount)}`.toUpperCase()
-      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÃŠS`
+      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÊS`
   const currentInstallmentPriceMonthly =
     courseType === 'pos'
-      ? `18X ${formatCurrency(postMonthlyAmount).toUpperCase()}/MÃŠS`
-      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÃŠS`
+      ? `18X ${formatCurrency(postMonthlyAmount).toUpperCase()}/MÊS`
+      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÊS`
   const oldInstallmentPrice =
     courseType === 'pos'
       ? `18X ${formatCurrency(Math.round(postMonthlyAmount * 1.53)).toUpperCase()}`
@@ -1207,4 +1207,5 @@ export function splitDifferentials(text: string): string[] {
 
   return parsed.length ? parsed : [normalizeText(text)].filter(Boolean)
 }
+
 
