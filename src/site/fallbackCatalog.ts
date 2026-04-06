@@ -269,6 +269,9 @@ const fallbackGraduationCourse: CatalogCourse = {
   titulation: 'Bacharelado',
   laborMarket:
     'Clínicas, consultórios, hospitais, escolas, organizações, assistência social, RH, políticas públicas e atuação em contextos comunitários.',
+  institutionMecOrdinance: '',
+  institutionMecOrdinanceQrCodeImageUrl: '',
+  institutionMecOrdinanceQrCodeHref: '',
 }
 
 function siteName() {
@@ -353,6 +356,9 @@ function buildPostCourse(
     tccRequired: false,
     titulation: 'Especialista',
     laborMarket: content.laborMarket,
+    institutionMecOrdinance: '',
+    institutionMecOrdinanceQrCodeImageUrl: '',
+    institutionMecOrdinanceQrCodeHref: '',
   } satisfies CatalogCourse
 }
 

@@ -16,6 +16,11 @@ import {
 import type { CatalogPriceItem } from '@/lib/catalogApi'
 import { getCoursePath } from '@/lib/courseRoutes'
 import {
+  fetchInstitutionContract,
+  type InstitutionContractPayload,
+  type InstitutionContractType,
+} from '@/lib/institutionContractsClient'
+import {
   createJourneyStep1,
   finalizeJourney,
   getPendingJourneys,
@@ -599,6 +604,11 @@ export function CourseLeadForm({
   const [resumeMessage, setResumeMessage] = useState('')
   const [resumeOptions, setResumeOptions] = useState<ResumeCourseOption[]>([])
   const [selectedResumeJourneyId, setSelectedResumeJourneyId] = useState('')
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false)
+  const [contractLoading, setContractLoading] = useState(false)
+  const [contractError, setContractError] = useState('')
+  const [contractContent, setContractContent] = useState<InstitutionContractPayload | null>(null)
+  const [loadedContractType, setLoadedContractType] = useState<InstitutionContractType | null>(null)
 
   const nameInputRef = useRef<HTMLInputElement | null>(null)
   const cpfInputRef = useRef<HTMLInputElement | null>(null)
@@ -607,6 +617,7 @@ export function CourseLeadForm({
   const selectedWorkloadGroup = paymentPlanGroups.find((group) => group.value === selectedWorkloadValue) ?? null
   const paymentPlanSelectOptions = (selectedWorkloadGroup?.options ?? []).map((option) => ({ value: option.value, label: option.label }))
   const selectedPaymentPlan = selectedWorkloadGroup?.options.find((option) => option.value === selectedPaymentPlanValue) ?? null
+  const contractType: InstitutionContractType = isGraduation ? 'graduation' : 'pos'
   const currentPriceLabel =
     selectedPaymentPlan?.label ||
     selectedWorkloadGroup?.options[0]?.label ||
@@ -726,6 +737,36 @@ export function CourseLeadForm({
     }
   }
 
+  async function loadContract(type: InstitutionContractType) {
+    setContractLoading(true)
+    setContractError('')
+
+    try {
+      const nextContract = await fetchInstitutionContract(type)
+      setContractContent(nextContract)
+      setLoadedContractType(type)
+    } catch (error) {
+      setContractContent(null)
+      setLoadedContractType(type)
+      setContractError(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível carregar o contrato agora. Tente novamente em instantes.',
+      )
+    } finally {
+      setContractLoading(false)
+    }
+  }
+
+  function openContractModal() {
+    setIsContractModalOpen(true)
+
+    if (contractLoading) return
+    if (loadedContractType === contractType && (contractContent || contractError)) return
+
+    void loadContract(contractType)
+  }
+
   async function submitCrmStage(stage: 'lead' | 'inscrito') {
     if (stage === 'lead' && crmLeadSubmitted) return
     if (stage === 'inscrito' && crmInscritoSubmitted) return
@@ -740,7 +781,16 @@ export function CourseLeadForm({
             : currentPriceLabel || selection.priceLabel,
         }
 
-    await sendLeadToCrm({ fullName, email, phone, selection: selectionToSend, stage })
+    await sendLeadToCrm({
+      fullName,
+      email,
+      phone,
+      selection: selectionToSend,
+      stage,
+      context: isGraduation ? 'default' : 'course-page',
+      voucherCode: isGraduation ? undefined : voucherCode,
+      cpf: stage === 'inscrito' ? normalizeCpf(cpf) : undefined,
+    })
 
     if (stage === 'lead') {
       setCrmLeadSubmitted(true)
@@ -763,6 +813,10 @@ export function CourseLeadForm({
 
     if (!selection.courseId || selection.courseId <= 0) {
       throw new Error('Curso indisponível para iniciar a jornada agora.')
+    }
+
+    if (!isGraduation && !selectedWorkloadGroup?.workloadVariantId) {
+      throw new Error('Carga horária indisponível para iniciar a inscrição deste curso.')
     }
 
     const payload = isGraduation
@@ -1143,7 +1197,11 @@ export function CourseLeadForm({
       }
 
       const step2Response = await updateJourneyStep2(journeyId, step2Payload)
-      await submitCrmStage('inscrito')
+      try {
+        await submitCrmStage('inscrito')
+      } catch (error) {
+        console.warn('Não foi possível enviar a etapa de inscrito da pós para o CRM:', error)
+      }
 
       saveJourneyProgress({
         journeyId,
@@ -1199,15 +1257,93 @@ export function CourseLeadForm({
     const showResumeHint = resumeMode === 'default' || isSelectMode
     const postAgreementCopy = (
       <span>
-        Ao continuar você concorda com nossos{' '}
-        <a href="/termos-de-uso" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Termos de Uso</a>{' '}
-        e{' '}
-        <a href="/politica-de-privacidade" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Política de Privacidade</a>.
+        Li e concordo com os{' '}
+        <a
+          href="#course-contract"
+          className="font-semibold text-[#1e5ec8] underline underline-offset-2"
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            openContractModal()
+          }}
+        >
+          Termos do Contrato de Prestação de Serviços Educacionais
+        </a>
+        .
       </span>
     )
+    const contractModal = isContractModalOpen ? (
+      <div
+        className="fixed inset-0 z-[80] flex items-center justify-center bg-[#07122d]/70 px-4 py-6"
+        role="presentation"
+        onClick={() => setIsContractModalOpen(false)}
+      >
+        <div
+          className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="course-contract-title"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-center justify-between gap-4 border-b border-[#e4e8f0] px-5 py-4 lg:px-6">
+            <h3 id="course-contract-title" className="font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase leading-tight text-[#0b111f]">
+              {contractContent?.title || 'Contrato de prestação de serviços educacionais'}
+            </h3>
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d9e0ea] text-[24px] leading-none text-[#0f2e62] transition hover:border-[#1e5ec8] hover:text-[#1e5ec8]"
+              aria-label="Fechar contrato"
+              onClick={() => setIsContractModalOpen(false)}
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 lg:px-6 lg:py-5">
+            {contractLoading ? (
+              <div className="flex items-center gap-3 text-[14px] font-medium text-[#0f2e62]">
+                <SpinnerIcon className="h-5 w-5 animate-spin" />
+                <span>Carregando contrato...</span>
+              </div>
+            ) : contractError ? (
+              <div className="flex flex-col gap-3 text-[14px] text-[#273245]">
+                <p>{contractError}</p>
+                <button
+                  type="button"
+                  className="inline-flex w-fit items-center justify-center rounded-[12px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-4 py-3 font-['Kumbh_Sans'] text-[14px] font-extrabold uppercase text-white"
+                  onClick={() => void loadContract(contractType)}
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            ) : contractContent?.html ? (
+              <div
+                className="prose prose-sm max-w-none text-[#273245]"
+                dangerouslySetInnerHTML={{ __html: contractContent.html }}
+              />
+            ) : (
+              <div className="whitespace-pre-line text-[14px] leading-[1.55] text-[#273245]">
+                {contractContent?.text || 'Contrato não encontrado para a instituição informada.'}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-[#e4e8f0] px-5 py-4 lg:px-6">
+            <button
+              type="button"
+              className="inline-flex h-[48px] items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-6 font-['Kumbh_Sans'] text-[15px] font-extrabold uppercase text-white transition hover:opacity-95"
+              onClick={() => setIsContractModalOpen(false)}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null
 
     return (
-      <section className="w-full max-w-[552px] rounded-[30px] bg-white p-[15px] shadow-[0_4px_21px_rgba(0,0,0,0.25)] lg:p-5">
+      <>
+        <section className="w-full max-w-[552px] rounded-[30px] bg-white p-[15px] shadow-[0_4px_21px_rgba(0,0,0,0.25)] lg:p-5">
         <div className="overflow-hidden rounded-[14px] bg-[#d7dbe4]">
           <img src={courseCoverImage} alt={selection.courseLabel} className="block h-[220px] w-full object-cover lg:h-[287px]" />
         </div>
@@ -1368,7 +1504,9 @@ export function CourseLeadForm({
           {resumeMessage ? <p className="text-[13px] font-medium text-[#d53030]">{resumeMessage}</p> : null}
           {submitMessage ? <p className={['text-[13px] font-medium', submitStatus === 'error' ? 'text-[#d53030]' : 'text-[#1f8b43]'].join(' ')}>{submitMessage}</p> : null}
         </form>
-      </section>
+        </section>
+        {contractModal}
+      </>
     )
   }
 

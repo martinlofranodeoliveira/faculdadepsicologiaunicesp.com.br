@@ -76,6 +76,9 @@ export type CatalogCourse = {
   tccRequired: boolean | null
   titulation: string
   laborMarket: string
+  institutionMecOrdinance: string
+  institutionMecOrdinanceQrCodeImageUrl: string
+  institutionMecOrdinanceQrCodeHref: string
 }
 
 export type CatalogCourseSummary = Pick<
@@ -193,6 +196,12 @@ type ApiCourseMedia = {
   gallery_items?: Array<{ image_path?: string | null }> | null
   main_image_url?: string | null
   gallery_urls?: string[] | null
+}
+
+type ApiCourseTexts = {
+  institution_mec_ordinance?: string | null
+  institution_mec_ordinance_qrcode_path?: string | null
+  institution_mec_ordinance_qrcode_url?: string | null
 }
 
 type ApiPricingItem = {
@@ -842,6 +851,7 @@ function buildCourseFromApi(
   media: ApiCourseMedia | null,
   pricingItems: CatalogPriceItem[],
   curriculumVariants: CatalogCurriculumVariant[],
+  texts: ApiCourseTexts | null,
 ): CatalogCourse {
   const seo = pickSeoFields(detail?.seo ?? listItem.seo)
   const rawLabel = firstNonEmpty(detail?.name, listItem.name)
@@ -914,6 +924,13 @@ function buildCourseFromApi(
   const seoDescription =
     normalizeRichText(firstNonEmpty(seo.description, detail?.description, listItem.description)) ||
     description
+  const institutionMecOrdinance = normalizeRichText(texts?.institution_mec_ordinance)
+  const institutionMecOrdinanceQrCodeImageUrl = toAbsoluteMediaUrl(
+    texts?.institution_mec_ordinance_qrcode_path,
+  )
+  const institutionMecOrdinanceQrCodeHref = toAbsoluteMediaUrl(
+    texts?.institution_mec_ordinance_qrcode_url,
+  )
 
   return {
     institutionId: getInstitutionId(),
@@ -971,11 +988,22 @@ function buildCourseFromApi(
     tccRequired: resolveTccRequired(listItem, detail),
     titulation: normalizeText(detail?.titulation ?? listItem.titulation),
     laborMarket: normalizeRichText(detail?.labor_market ?? listItem.labor_market),
+    institutionMecOrdinance,
+    institutionMecOrdinanceQrCodeImageUrl,
+    institutionMecOrdinanceQrCodeHref,
   }
 }
 
 function buildCourseSummaryFromApi(courseType: CourseType, listItem: ApiCourseListItem): CatalogCourseSummary {
-  const summaryCourse = buildCourseFromApi(courseType, listItem, null, null, normalizePricingItems(listItem.featured_pricing_options), [])
+  const summaryCourse = buildCourseFromApi(
+    courseType,
+    listItem,
+    null,
+    null,
+    normalizePricingItems(listItem.featured_pricing_options),
+    [],
+    null,
+  )
   return summarizeCourse(summaryCourse)
 }
 
@@ -1024,14 +1052,16 @@ async function getCourseBundle(courseId: number, force = false) {
         media: null,
         pricingItems: [] as CatalogPriceItem[],
         curriculumVariants: [] as CatalogCurriculumVariant[],
+        texts: null as ApiCourseTexts | null,
       }
     }
 
-    const [detailEnvelope, mediaEnvelope, pricingEnvelope, curriculumEnvelope] = await Promise.all([
+    const [detailEnvelope, mediaEnvelope, pricingEnvelope, curriculumEnvelope, textsEnvelope] = await Promise.all([
       optionalApiFetch<ApiCourseDetail>(`courses/${courseId}`),
       optionalApiFetch<ApiCourseMedia>(`courses/${courseId}/media`),
       optionalApiFetch<{ items?: ApiPricingItem[] }>(`courses/${courseId}/pricing-by-workload`),
       optionalApiFetch<{ variants?: ApiCurriculumVariant[] }>(`courses/${courseId}/curriculum`),
+      optionalApiFetch<{ texts?: ApiCourseTexts | null }>(`courses/${courseId}/texts`),
     ])
 
     return {
@@ -1039,6 +1069,7 @@ async function getCourseBundle(courseId: number, force = false) {
       media: mediaEnvelope?.data ?? null,
       pricingItems: normalizePricingItems(pricingEnvelope?.data?.items),
       curriculumVariants: normalizeCurriculumVariants(curriculumEnvelope?.data?.variants),
+      texts: textsEnvelope?.data?.texts ?? null,
     }
   }, force)
 }
@@ -1049,7 +1080,15 @@ async function getCatalogCourses(courseType: CourseType, force = false): Promise
     const list = await getCourseList(courseType, force)
     const courses = await mapWithConcurrency(list, 6, async (item) => {
       const bundle = await getCourseBundle(Number(item.id ?? 0), force)
-      return buildCourseFromApi(courseType, item, bundle.detail, bundle.media, bundle.pricingItems, bundle.curriculumVariants)
+      return buildCourseFromApi(
+        courseType,
+        item,
+        bundle.detail,
+        bundle.media,
+        bundle.pricingItems,
+        bundle.curriculumVariants,
+        bundle.texts,
+      )
     })
     return dedupeCourses(courses)
   }, force)
@@ -1076,7 +1115,15 @@ async function getCatalogCourseBySlug(
     if (!match) return null
 
     const bundle = await getCourseBundle(Number(match.id ?? 0), force)
-    return buildCourseFromApi(courseType, match, bundle.detail, bundle.media, bundle.pricingItems, bundle.curriculumVariants)
+    return buildCourseFromApi(
+      courseType,
+      match,
+      bundle.detail,
+      bundle.media,
+      bundle.pricingItems,
+      bundle.curriculumVariants,
+      bundle.texts,
+    )
   }, force)
 }
 
@@ -1093,7 +1140,15 @@ async function getCatalogCourseById(
     if (!match) return null
 
     const bundle = await getCourseBundle(courseId, force)
-    return buildCourseFromApi(courseType, match, bundle.detail, bundle.media, bundle.pricingItems, bundle.curriculumVariants)
+    return buildCourseFromApi(
+      courseType,
+      match,
+      bundle.detail,
+      bundle.media,
+      bundle.pricingItems,
+      bundle.curriculumVariants,
+      bundle.texts,
+    )
   }, force)
 }
 

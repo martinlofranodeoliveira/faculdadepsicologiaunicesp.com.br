@@ -3,14 +3,17 @@ import type { CatalogCurriculumVariant } from '@/lib/catalogApi'
 
 type Props = {
   variants: CatalogCurriculumVariant[]
+  downloadHref?: string
+  downloadFilename?: string
 }
 
 const imgChevronLeft = "https://www.figma.com/api/mcp/asset/d92f5e94-4eae-4735-b6b3-7afc9b7ef638"
 const imgDownload = "https://www.figma.com/api/mcp/asset/788079c9-0c57-4b68-8345-3ceef33a8333"
 
-export function CurriculumSection({ variants }: Props) {
+export function CurriculumSection({ variants, downloadHref = '', downloadFilename }: Props) {
   const [activeVariant, setActiveVariant] = useState(variants[0])
   const [isOpen, setIsOpen] = useState(true)
+  const trimmedDownloadHref = downloadHref.trim()
 
   if (!activeVariant || !activeVariant.disciplines) return null
 
@@ -79,10 +82,18 @@ export function CurriculumSection({ variants }: Props) {
         <button onClick={(e) => { e.preventDefault(); window.scrollTo({top:0, behavior:'smooth'}); }} className="bg-white text-[#091149] text-[14px] lg:text-[18px] font-extrabold uppercase rounded-[10px] lg:rounded-[12px] hover:opacity-90 transition-opacity font-['Kumbh_Sans'] w-full sm:w-[197px] flex items-center justify-center h-[50px] lg:h-[57px] text-center px-[25px] py-[17px]">
           INSCREVA-SE JÁ
         </button>
-        <a href="#" className="border-2 border-[#7af] lg:border-[#77aaff] text-white text-[14px] lg:text-[18px] font-extrabold lg:font-bold uppercase rounded-[10px] lg:rounded-[12px] hover:bg-white/10 transition-colors font-['Kumbh_Sans'] flex items-center justify-center gap-[10px] lg:gap-[15px] w-full sm:w-auto h-[50px] lg:h-[57px] px-[20px] py-[18px]">
-          <img src={imgDownload} alt="" className="w-6 h-6 object-contain shrink-0" />
-          <span className="shrink-0 whitespace-nowrap">BAIXAR MATRIZ COMPLETA</span>
-        </a>
+        {trimmedDownloadHref ? (
+          <a
+            href={trimmedDownloadHref}
+            download={downloadFilename}
+            target="_blank"
+            rel="noreferrer"
+            className="border-2 border-[#7af] lg:border-[#77aaff] text-white text-[14px] lg:text-[18px] font-extrabold lg:font-bold uppercase rounded-[10px] lg:rounded-[12px] hover:bg-white/10 transition-colors font-['Kumbh_Sans'] flex items-center justify-center gap-[10px] lg:gap-[15px] w-full sm:w-auto h-[50px] lg:h-[57px] px-[20px] py-[18px]"
+          >
+            <img src={imgDownload} alt="" className="w-6 h-6 object-contain shrink-0" />
+            <span className="shrink-0 whitespace-nowrap">BAIXAR MATRIZ COMPLETA</span>
+          </a>
+        ) : null}
       </div>
     </section>
   )

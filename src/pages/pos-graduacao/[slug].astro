@@ -9,9 +9,14 @@ export const prerender = false
 
 const { slug = '' } = Astro.params
 const course = await getPostCoursePageBySlug(slug)
-const relatedCourses = course
-  ? (await getPostCoursePageSummaries()).filter((item) => item.path !== course.path).slice(0, 3)
-  : []
+let relatedCourses: Awaited<ReturnType<typeof getPostCoursePageSummaries>> = []
+
+if (course) {
+  const pool = await getPostCoursePageSummaries()
+  const sameArea = pool.filter((item) => item.path !== course.path && item.areaSlug === course.areaSlug)
+  const fallback = sameArea.length > 0 ? sameArea : pool.filter((item) => item.path !== course.path)
+  relatedCourses = fallback.slice(0, 3)
+}
 
 if (!course) {
   Astro.response.status = 404
