@@ -5,7 +5,7 @@
 
 .post-thankyou__header {
   background: #ffffff;
-  border-bottom: 3px solid #f61010;
+  border-bottom: 3px solid #ffffff;
 }
 
 .post-thankyou__header-inner {
@@ -25,9 +25,9 @@
 }
 
 .post-thankyou__brand img {
-  display: block;
   width: auto;
-  height: 56px;
+  height: auto;
+  display: block;
 }
 
 .post-thankyou__profile {

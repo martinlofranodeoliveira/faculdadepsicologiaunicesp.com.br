@@ -84,7 +84,7 @@ export function PostCourseThankYouPage() {
 
             <div className="post-thankyou__message-card">
               <strong>Próximo passo:</strong>
-              <p>Nossos Tutores estarão Corrigindo seu Vestibular e em 10 minutos entrarão em contato!!!</p>
+              <p>Nossa Consultora entrará em contato em breve para dar continuidade à sua inscrição.</p>
             </div>
 
             <a className="post-thankyou__cta" href="/">
