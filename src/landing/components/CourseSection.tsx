@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type UIEventHandler } from 'react'
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type UIEventHandler,
+} from 'react'
 
 import {
   formatPhoneMask,
@@ -7,22 +14,14 @@ import {
   validateEmail,
   validateFullName,
   validatePhone,
+  type CourseLeadSelection,
   type CourseType,
 } from '../crmLead'
-import { formCourseGroups } from '../data'
+import type { LandingPostCourse, LandingPostCourseWorkload } from '../landingModels'
 import { OverlaySelect } from './OverlaySelect'
-import {
-  PSYCHOLOGY_POST_COURSES,
-  getDefaultWorkloadValue,
-  getPsychologyPostCourseByValue,
-  normalizeComparableCourseText,
-  psychologyPostCourseMatches,
-} from '../psychologyPostCourses'
-import { POS_COURSES_ENDPOINT, parsePostGraduationCourses } from '../postCourses'
 
 type FormStep = 1 | 2
 type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error'
-type PostCourseStatus = 'idle' | 'loading' | 'success' | 'error'
 type StepTransitionPhase = 'idle' | 'exit' | 'enter'
 type StepTransitionDirection = 'forward' | 'backward'
 
@@ -30,6 +29,14 @@ type CourseOption = {
   value: string
   label: string
   courseId?: number
+  coursePath?: string
+  priceLabel?: string
+  workloadOptions?: LandingPostCourseWorkload[]
+}
+
+type CourseSectionProps = {
+  graduationSelection: CourseLeadSelection
+  postCourses: LandingPostCourse[]
 }
 
 type FieldName = 'courseType' | 'course' | 'workload' | 'fullName' | 'email' | 'phone'
@@ -41,9 +48,11 @@ const COURSE_TYPE_OPTIONS: Array<{ value: CourseType; label: string }> = [
   { value: 'pos', label: 'Pós-Graduação EAD' },
 ]
 
-const DEFAULT_GRADUATION_OPTION: CourseOption = {
-  value: 'graduacao-psicologia',
-  label: 'Graduação em Psicologia Presencial',
+const DEFAULT_GRADUATION_SELECTION: CourseLeadSelection = {
+  courseType: 'graduacao',
+  courseValue: 'graduacao-psicologia',
+  courseLabel: 'Graduação em Psicologia Presencial',
+  coursePath: '/graduacao/psicologia',
 }
 
 const EMPTY_TOUCHED: Touched = {
@@ -57,6 +66,19 @@ const EMPTY_TOUCHED: Touched = {
 
 const COURSE_SCROLL_PAGE_SIZE = 24
 const STEP_TRANSITION_DURATION_MS = 240
+
+function normalizeComparableCourseText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+}
+
+function getDefaultWorkloadValue(workloadOptions: LandingPostCourseWorkload[]): string {
+  return workloadOptions[0]?.value ?? ''
+}
 
 function validateCourseType(value: string): string | undefined {
   if (!value) return 'Selecione para continuar'
@@ -87,25 +109,46 @@ function inferCourseTypeFromValue(value: string): CourseType {
   return value.toLowerCase().startsWith('pos-') ? 'pos' : 'graduacao'
 }
 
-export function CourseSection() {
+function buildGraduationOption(selection: CourseLeadSelection): CourseOption {
+  return {
+    value: selection.courseValue || DEFAULT_GRADUATION_SELECTION.courseValue,
+    label: selection.courseLabel || DEFAULT_GRADUATION_SELECTION.courseLabel,
+    courseId: selection.courseId,
+    coursePath: selection.coursePath || DEFAULT_GRADUATION_SELECTION.coursePath,
+    priceLabel: selection.priceLabel,
+  }
+}
+
+function buildPostCourseOptions(courses: LandingPostCourse[]): CourseOption[] {
+  return courses.map((course) => ({
+    value: course.selection.courseValue || course.id,
+    label: course.selection.courseLabel || course.title,
+    courseId: course.selection.courseId,
+    coursePath: course.selection.coursePath,
+    priceLabel: course.selection.priceLabel,
+    workloadOptions: course.workloadOptions,
+  }))
+}
+
+export function CourseSection({
+  graduationSelection = DEFAULT_GRADUATION_SELECTION,
+  postCourses = [],
+}: CourseSectionProps) {
+  const graduationOption = useMemo(
+    () => buildGraduationOption(graduationSelection),
+    [graduationSelection],
+  )
+  const postCourseOptions = useMemo(() => buildPostCourseOptions(postCourses), [postCourses])
+
   const [step, setStep] = useState<FormStep>(1)
   const [courseType, setCourseType] = useState<CourseType | ''>('graduacao')
-  const [course, setCourse] = useState(DEFAULT_GRADUATION_OPTION.value)
-  const [courseSearch, setCourseSearch] = useState(DEFAULT_GRADUATION_OPTION.label)
+  const [course, setCourse] = useState(graduationOption.value)
+  const [courseSearch, setCourseSearch] = useState(graduationOption.label)
   const [workload, setWorkload] = useState('')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [isCourseSearchOpen, setIsCourseSearchOpen] = useState(false)
-  const [postCourseOptions, setPostCourseOptions] = useState<CourseOption[]>(
-    () =>
-      PSYCHOLOGY_POST_COURSES.map((targetCourse) => ({
-        value: targetCourse.fallbackValue,
-        label: targetCourse.title,
-      })),
-  )
-  const [postCourseStatus, setPostCourseStatus] = useState<PostCourseStatus>('idle')
-  const [postCourseErrorMessage, setPostCourseErrorMessage] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [touched, setTouched] = useState<Touched>(EMPTY_TOUCHED)
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>('idle')
@@ -115,67 +158,22 @@ export function CourseSection() {
   const [stepTransitionDirection, setStepTransitionDirection] =
     useState<StepTransitionDirection>('forward')
   const [queuedStep, setQueuedStep] = useState<FormStep | null>(null)
-
-  const loadPostCourses = useCallback(async () => {
-    setPostCourseStatus('loading')
-    setPostCourseErrorMessage('')
-
-    try {
-      const response = await fetch(POS_COURSES_ENDPOINT, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/plain, */*',
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`Post courses request failed with status ${response.status}`)
-      }
-
-      const rawText = await response.text()
-      const parsedCourses = parsePostGraduationCourses(rawText)
-
-      if (!parsedCourses.length) {
-        throw new Error('No post-graduation courses were parsed from the API response')
-      }
-
-      const usedCourseValues = new Set<string>()
-      const resolvedPsychologyPostCourses = PSYCHOLOGY_POST_COURSES.map((targetCourse) => {
-        const matchedCourse = parsedCourses.find((courseItem) => {
-          if (usedCourseValues.has(courseItem.value)) return false
-          return psychologyPostCourseMatches(courseItem.label, targetCourse)
-        })
-
-        if (!matchedCourse) {
-          return {
-            value: targetCourse.fallbackValue,
-            label: targetCourse.title,
-            courseId: targetCourse.fallbackCourseId,
-          }
-        }
-
-        usedCourseValues.add(matchedCourse.value)
-        return {
-          value: targetCourse.fallbackValue,
-          label: matchedCourse.label,
-          courseId: matchedCourse.courseId,
-        }
-      })
-
-      setPostCourseOptions(resolvedPsychologyPostCourses)
-      setPostCourseStatus('success')
-    } catch (error) {
-      console.error('Erro ao carregar cursos de pós-graduação da API:', error)
-      setPostCourseStatus('error')
-      setPostCourseErrorMessage('Não foi possível carregar os cursos de Pós-Graduação no momento.')
-    }
-  }, [])
+  const deferredCourseSearch = useDeferredValue(courseSearch)
 
   useEffect(() => {
-    if (courseType !== 'pos') return
-    if (postCourseStatus === 'loading' || postCourseStatus === 'success') return
-    void loadPostCourses()
-  }, [courseType, loadPostCourses, postCourseStatus])
+    if (courseType !== 'graduacao') return
+    setCourse(graduationOption.value)
+    setCourseSearch(graduationOption.label)
+  }, [courseType, graduationOption.label, graduationOption.value])
+
+  useEffect(() => {
+    if (courseType !== 'pos' || !course) return
+    if (postCourseOptions.some((option) => option.value === course)) return
+
+    setCourse('')
+    setCourseSearch('')
+    setWorkload('')
+  }, [course, courseType, postCourseOptions])
 
   useEffect(() => {
     if (stepTransitionPhase !== 'exit' || queuedStep === null) {
@@ -207,16 +205,12 @@ export function CourseSection() {
     }
   }, [stepTransitionPhase])
 
-  const allCourseOptions = useMemo<CourseOption[]>(() => {
-    return formCourseGroups.flatMap((group) => group.options)
-  }, [])
-
   const courseOptionsByType = useMemo<Record<CourseType, CourseOption[]>>(() => {
     return {
-      graduacao: allCourseOptions,
+      graduacao: [graduationOption],
       pos: postCourseOptions,
     }
-  }, [allCourseOptions, postCourseOptions])
+  }, [graduationOption, postCourseOptions])
 
   const availableCourses = useMemo(() => {
     if (!courseType) return []
@@ -224,15 +218,35 @@ export function CourseSection() {
   }, [courseType, courseOptionsByType])
 
   const filteredCourses = useMemo(() => {
-    const normalized = normalizeComparableCourseText(courseSearch)
-    return availableCourses.filter((item) => {
-      return normalizeComparableCourseText(item.label).includes(normalized)
-    })
-  }, [availableCourses, courseSearch])
+    const normalized = normalizeComparableCourseText(deferredCourseSearch)
+    if (!normalized) return availableCourses
+
+    return availableCourses.filter((item) =>
+      normalizeComparableCourseText(item.label).includes(normalized),
+    )
+  }, [availableCourses, deferredCourseSearch])
 
   useEffect(() => {
     setVisibleCourseCount(COURSE_SCROLL_PAGE_SIZE)
-  }, [courseType, courseSearch])
+  }, [courseType, deferredCourseSearch])
+
+  const courseOptionsLookup = useMemo(() => {
+    const lookup = new Map<string, CourseOption>()
+
+    lookup.set(graduationOption.value, graduationOption)
+    postCourseOptions.forEach((option) => {
+      lookup.set(option.value, option)
+    })
+
+    return lookup
+  }, [graduationOption, postCourseOptions])
+
+  const selectedPostCourse = useMemo(() => {
+    if (courseType !== 'pos') return undefined
+    return courseOptionsLookup.get(course)
+  }, [course, courseOptionsLookup, courseType])
+
+  const selectedPostCourseWorkloads = selectedPostCourse?.workloadOptions ?? []
 
   useEffect(() => {
     if (courseType !== 'pos') {
@@ -240,58 +254,22 @@ export function CourseSection() {
       return
     }
 
-    const currentPostCourse = getPsychologyPostCourseByValue(course)
-    const defaultWorkloadValue = getDefaultWorkloadValue(currentPostCourse?.workloads ?? [])
-
     setWorkload((current) => {
-      if (!currentPostCourse) return ''
-      if (currentPostCourse.workloads.some((item) => item.value === current)) return current
-      return defaultWorkloadValue
+      if (!selectedPostCourseWorkloads.length) return ''
+      if (selectedPostCourseWorkloads.some((item) => item.value === current)) return current
+      return getDefaultWorkloadValue(selectedPostCourseWorkloads)
     })
-  }, [course, courseType])
+  }, [courseType, selectedPostCourseWorkloads])
 
   const visibleCourses = useMemo(() => {
     return filteredCourses.slice(0, visibleCourseCount)
   }, [filteredCourses, visibleCourseCount])
 
   const canLoadMoreVisibleCourses = visibleCourses.length < filteredCourses.length
-
-  const courseOptionsLookup = useMemo(() => {
-    const lookup = new Map<string, CourseOption>()
-
-    allCourseOptions.forEach((option) => {
-      lookup.set(option.value, option)
-    })
-
-    postCourseOptions.forEach((option) => {
-      lookup.set(option.value, option)
-    })
-
-    return lookup
-  }, [allCourseOptions, postCourseOptions])
-
-  const courseLookup = useMemo(() => {
-    const lookup = new Map<string, string>()
-
-    courseOptionsLookup.forEach((option, key) => {
-      lookup.set(key, option.label)
-    })
-
-    return lookup
-  }, [courseOptionsLookup])
-
-  const selectedPostCourse = useMemo(() => {
-    if (courseType !== 'pos') return undefined
-    return getPsychologyPostCourseByValue(course)
-  }, [course, courseType])
-
-  const selectedPostCourseWorkloads = selectedPostCourse?.workloads ?? []
   const isWorkloadRequired = courseType === 'pos'
   const isWorkloadDisabled = !isWorkloadRequired || !course || !selectedPostCourseWorkloads.length
   const shouldShowWorkloadField = step === 1 && courseType === 'pos'
-
-  const isPostCoursesLoading = courseType === 'pos' && postCourseStatus === 'loading'
-  const isCourseSearchDisabled = !courseType || isPostCoursesLoading
+  const isCourseSearchDisabled = !courseType
   const isGraduationCourseLocked = courseType === 'graduacao'
 
   const courseTypeInvalid = Boolean(touched.courseType && fieldErrors.courseType)
@@ -446,7 +424,7 @@ export function CourseSection() {
 
     try {
       const selectedCourseOption = courseOptionsLookup.get(course)
-      const courseLabel = (courseLookup.get(course) ?? courseSearch.trim()) || course
+      const courseLabel = (selectedCourseOption?.label ?? courseSearch.trim()) || course
       const resolvedCourseType = (courseType || inferCourseTypeFromValue(course)) as CourseType
 
       await sendLeadToCrm({
@@ -458,6 +436,8 @@ export function CourseSection() {
           courseValue: course,
           courseLabel,
           courseId: selectedCourseOption?.courseId,
+          coursePath: selectedCourseOption?.coursePath,
+          priceLabel: selectedCourseOption?.priceLabel,
           workloadValue: resolvedCourseType === 'pos' ? workload : undefined,
           workloadLabel:
             resolvedCourseType === 'pos'
@@ -530,9 +510,9 @@ export function CourseSection() {
                       onValueChange={(value) => {
                         const nextType = value as CourseType
                         const nextCourseValue =
-                          nextType === 'graduacao' ? DEFAULT_GRADUATION_OPTION.value : ''
+                          nextType === 'graduacao' ? graduationOption.value : ''
                         const nextCourseLabel =
-                          nextType === 'graduacao' ? DEFAULT_GRADUATION_OPTION.label : ''
+                          nextType === 'graduacao' ? graduationOption.label : ''
 
                         setCourseType(nextType)
                         setCourse(nextCourseValue)
@@ -598,10 +578,10 @@ export function CourseSection() {
                         setIsCourseSearchOpen(false)
 
                         if (isGraduationCourseLocked) {
-                          setCourse(DEFAULT_GRADUATION_OPTION.value)
-                          setCourseSearch(DEFAULT_GRADUATION_OPTION.label)
+                          setCourse(graduationOption.value)
+                          setCourseSearch(graduationOption.label)
                           setWorkload('')
-                          applyFieldValidation('course', DEFAULT_GRADUATION_OPTION.value)
+                          applyFieldValidation('course', graduationOption.value)
                           return
                         }
 
@@ -631,7 +611,7 @@ export function CourseSection() {
                       setIsCourseSearchOpen(Boolean(courseType))
 
                       const normalizedValue = normalizeComparableCourseText(value)
-                      const selectedCourseLabel = course ? (courseLookup.get(course) ?? '') : ''
+                      const selectedCourseLabel = course ? (courseOptionsLookup.get(course)?.label ?? '') : ''
 
                       if (!normalizedValue) {
                         if (course) {
@@ -670,27 +650,7 @@ export function CourseSection() {
                     aria-label="Cursos disponíveis"
                     onScroll={handleCourseSearchMenuScroll}
                   >
-                    {postCourseStatus === 'loading' ? (
-                      <span className="lp-lead__course-search-empty">
-                        Carregando cursos de Pós-graduação...
-                      </span>
-                    ) : postCourseStatus === 'error' ? (
-                      <div className="lp-lead__course-search-error">
-                        <span className="lp-lead__course-search-empty">{postCourseErrorMessage}</span>
-                        <button
-                          type="button"
-                          className="lp-lead__course-search-retry"
-                          onMouseDown={(mouseEvent) => {
-                            mouseEvent.preventDefault()
-                          }}
-                          onClick={() => {
-                            void loadPostCourses()
-                          }}
-                        >
-                          Tentar novamente
-                        </button>
-                      </div>
-                    ) : visibleCourses.length > 0 ? (
+                    {visibleCourses.length > 0 ? (
                       visibleCourses.map((item) => (
                         <button
                           key={item.value}
@@ -704,7 +664,7 @@ export function CourseSection() {
                           onClick={() => {
                             setCourse(item.value)
                             setCourseSearch(item.label)
-                            setWorkload(getDefaultWorkloadValue(getPsychologyPostCourseByValue(item.value)?.workloads ?? []))
+                            setWorkload(getDefaultWorkloadValue(item.workloadOptions ?? []))
                             setIsCourseSearchOpen(false)
                             markTouched('course')
                             setFieldErrors((previous) => ({ ...previous, workload: undefined }))
@@ -746,8 +706,8 @@ export function CourseSection() {
                         value={workload}
                         disabled={isWorkloadDisabled}
                         options={selectedPostCourseWorkloads}
-                        placeholder={'Selecione a carga hor\u00E1ria'}
-                        ariaLabel={'Selecione a carga hor\u00E1ria'}
+                        placeholder="Selecione a carga horária"
+                        ariaLabel="Selecione a carga horária"
                         ariaInvalid={workloadInvalid}
                         ariaDescribedBy={workloadInvalid ? 'lead-workload-error' : undefined}
                         triggerClassName="ui-select-trigger"

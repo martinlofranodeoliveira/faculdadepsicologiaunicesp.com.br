@@ -8,6 +8,7 @@ import { FaqSection } from './components/FaqSection'
 import { Header } from './components/Header'
 import { HeroSection } from './components/HeroSection'
 import { PortariaSection } from './components/PortariaSection'
+import type { LandingPostCourse } from './landingModels'
 
 const EnrollmentPopup = lazy(() =>
   import('./components/EnrollmentPopup').then((module) => ({ default: module.EnrollmentPopup })),
@@ -35,18 +36,27 @@ const FooterBottomSection = lazy(() =>
   })),
 )
 
-const HERO_COURSE_SELECTION: CourseLeadSelection = {
+const DEFAULT_HERO_COURSE_SELECTION: CourseLeadSelection = {
   courseType: 'graduacao',
   courseValue: 'graduacao-psicologia',
   courseLabel: 'Graduação em Psicologia Presencial',
+  coursePath: '/graduacao/psicologia',
 }
 
-export function LandingPage() {
+type LandingPageProps = {
+  heroSelection?: CourseLeadSelection
+  postCourses?: LandingPostCourse[]
+}
+
+export function LandingPage({
+  heroSelection = DEFAULT_HERO_COURSE_SELECTION,
+  postCourses = [],
+}: LandingPageProps) {
   const [popupSelection, setPopupSelection] = useState<CourseLeadSelection | null>(null)
 
   const openHeroPopup = useCallback(() => {
-    setPopupSelection(HERO_COURSE_SELECTION)
-  }, [])
+    setPopupSelection(heroSelection)
+  }, [heroSelection])
 
   const openCoursePopup = useCallback((selection: CourseLeadSelection) => {
     setPopupSelection(selection)
@@ -60,7 +70,7 @@ export function LandingPage() {
     <main className="lp-page">
       <Header onOpenPopup={openHeroPopup} />
       <HeroSection onOpenPopup={openHeroPopup} />
-      <CourseSection />
+      <CourseSection graduationSelection={heroSelection} postCourses={postCourses} />
       <PortariaSection />
       <FaqSection onOpenPopup={openHeroPopup} />
       <DeferredSection minHeight={760}>
@@ -80,7 +90,7 @@ export function LandingPage() {
       </DeferredSection>
       <DeferredSection minHeight={860}>
         <Suspense fallback={null}>
-          <HealthCoursesSection onOpenCoursePopup={openCoursePopup} />
+          <HealthCoursesSection courses={postCourses} onOpenCoursePopup={openCoursePopup} />
         </Suspense>
       </DeferredSection>
       <DeferredSection minHeight={760}>

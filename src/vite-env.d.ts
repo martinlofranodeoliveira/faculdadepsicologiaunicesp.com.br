@@ -26,7 +26,15 @@ interface ImportMetaEnv {
   readonly COURSES_API_KEY?: string
   readonly COURSES_API_INSTITUTION_ID?: string
   readonly COURSES_API_CACHE_TTL_MS?: string
-  readonly VITE_POS_COURSES_ENDPOINT?: string
+  readonly GOOGLE_CLIENT_ID?: string
+  readonly GOOGLE_CLIENT_SECRET?: string
+  readonly GOOGLE_OAUTH_REDIRECT_URI?: string
+  readonly GOOGLE_GMAIL_GRAD_ADDRESS?: string
+  readonly GOOGLE_GMAIL_POS_ADDRESS?: string
+  readonly GOOGLE_REFRESH_TOKEN_GRADUACAO?: string
+  readonly GOOGLE_REFRESH_TOKEN_POSGRADUACAO?: string
+  readonly EMAIL_DISPATCH_WEBHOOK_TOKEN?: string
+  readonly EMAIL_DISPATCH_STORE_DIR?: string
 }
 
 interface ImportMeta {

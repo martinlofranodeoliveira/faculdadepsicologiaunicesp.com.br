@@ -1,4 +1,5 @@
 ---
+import { getLandingPageData } from '@/landing/landingData.server'
 import { LandingPage } from '@/landing/LandingPage'
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/site/config'
@@ -6,6 +7,7 @@ import { siteConfig } from '@/site/config'
 const title = `${siteConfig.name} | Graduação e Pós-graduação`
 const description =
   'Conheça a graduação presencial e os cursos de pós-graduação da Faculdade de Psicologia UNICESP.'
+const landingData = await getLandingPageData()
 ---
 
 <BaseLayout title={title} description={description} canonicalPath="/" siteTheme={false}>
@@ -28,5 +30,5 @@ const description =
     />
   </Fragment>
 
-  <LandingPage client:load />
+  <LandingPage client:load {...landingData} />
 </BaseLayout>

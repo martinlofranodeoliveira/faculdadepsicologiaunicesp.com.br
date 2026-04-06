@@ -2,6 +2,13 @@ export type GraduationVestibularLead = {
   fullName: string
   email: string
   phone?: string
+  cpf?: string
+  stateUf?: string
+  city?: string
+  poleId?: number
+  poleName?: string
+  pcd?: boolean
+  pcdDetails?: string
   journeyId?: number
   courseId?: number
   courseLabel?: string
@@ -26,6 +33,13 @@ export function storeGraduationVestibularLead(lead: GraduationVestibularLead) {
       fullName: lead.fullName.trim(),
       email: lead.email.trim(),
       phone: lead.phone?.trim(),
+      cpf: lead.cpf?.trim(),
+      stateUf: lead.stateUf?.trim(),
+      city: lead.city?.trim(),
+      poleId: lead.poleId,
+      poleName: lead.poleName?.trim(),
+      pcd: lead.pcd,
+      pcdDetails: lead.pcdDetails?.trim(),
       journeyId: lead.journeyId,
       courseId: lead.courseId,
       courseLabel: lead.courseLabel?.trim(),
@@ -55,6 +69,13 @@ export function readGraduationVestibularLead(): GraduationVestibularLead | null 
       fullName: parsed.fullName,
       email: typeof parsed.email === 'string' ? parsed.email : '',
       phone: typeof parsed.phone === 'string' ? parsed.phone : undefined,
+      cpf: typeof parsed.cpf === 'string' ? parsed.cpf : undefined,
+      stateUf: typeof parsed.stateUf === 'string' ? parsed.stateUf : undefined,
+      city: typeof parsed.city === 'string' ? parsed.city : undefined,
+      poleId: typeof parsed.poleId === 'number' ? parsed.poleId : undefined,
+      poleName: typeof parsed.poleName === 'string' ? parsed.poleName : undefined,
+      pcd: typeof parsed.pcd === 'boolean' ? parsed.pcd : undefined,
+      pcdDetails: typeof parsed.pcdDetails === 'string' ? parsed.pcdDetails : undefined,
       journeyId: typeof parsed.journeyId === 'number' ? parsed.journeyId : undefined,
       courseId: typeof parsed.courseId === 'number' ? parsed.courseId : undefined,
       courseLabel: typeof parsed.courseLabel === 'string' ? parsed.courseLabel : undefined,

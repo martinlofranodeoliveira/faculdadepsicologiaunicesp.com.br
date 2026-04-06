@@ -1,0 +1,133 @@
+---
+import {
+  getGoogleOAuthRedirectUri,
+  getGoogleOAuthSenderAddress,
+} from '@/lib/googleOAuth'
+
+export const prerender = false
+
+const redirectUri = getGoogleOAuthRedirectUri()
+const graduationAddress = getGoogleOAuthSenderAddress('graduacao')
+const postAddress = getGoogleOAuthSenderAddress('posgraduacao')
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Google OAuth - Faculdade de Psicologia</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      body {
+        background: linear-gradient(180deg, #0b1730 0%, #073a35 100%);
+        color: #f7f8fb;
+        font-family: "Kumbh Sans", Arial, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      main {
+        box-sizing: border-box;
+        margin: 0 auto;
+        max-width: 880px;
+        padding: 48px 24px 80px;
+      }
+
+      h1 {
+        font-size: 36px;
+        margin: 0 0 12px;
+      }
+
+      p,
+      li {
+        color: rgba(247, 248, 251, 0.88);
+        line-height: 1.6;
+      }
+
+      .card {
+        background: #ffffff;
+        border-radius: 20px;
+        color: #101828;
+        margin-top: 24px;
+        padding: 24px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        margin-top: 20px;
+      }
+
+      .item {
+        border: 1px solid rgba(16, 24, 40, 0.12);
+        border-radius: 16px;
+        padding: 20px;
+      }
+
+      .item strong,
+      code {
+        word-break: break-word;
+      }
+
+      .button {
+        align-items: center;
+        background: #0b6b61;
+        border-radius: 12px;
+        color: #fff;
+        display: inline-flex;
+        font-weight: 700;
+        justify-content: center;
+        margin-top: 16px;
+        min-height: 48px;
+        padding: 0 20px;
+        text-decoration: none;
+      }
+
+      ul {
+        margin: 16px 0 0;
+        padding-left: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Google OAuth 2.0</h1>
+      <p>Use esta pagina para gerar os refresh tokens das duas caixas Gmail.</p>
+
+      <div class="card">
+        <strong>Redirect URI configurada:</strong>
+        <p><code>{redirectUri}</code></p>
+
+        <div class="grid">
+          <section class="item">
+            <strong>Graduacao</strong>
+            <p><code>{graduationAddress}</code></p>
+            <a class="button" href="/api/google-oauth/start?mailbox=graduacao">
+              Autorizar graduacao
+            </a>
+          </section>
+
+          <section class="item">
+            <strong>Pos-graduacao</strong>
+            <p><code>{postAddress}</code></p>
+            <a class="button" href="/api/google-oauth/start?mailbox=posgraduacao">
+              Autorizar pos-graduacao
+            </a>
+          </section>
+        </div>
+
+        <ul>
+          <li>Ao finalizar, o callback vai mostrar o refresh token e o nome da variavel de ambiente.</li>
+          <li>Use uma conta por vez, logada na caixa correta do Google Workspace.</li>
+          <li>Depois que os tokens forem gerados, nao deixe esta pagina publica por mais tempo que o necessario.</li>
+        </ul>
+      </div>
+    </main>
+  </body>
+</html>

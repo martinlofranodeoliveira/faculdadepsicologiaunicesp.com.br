@@ -1,7 +1,3 @@
-import {
-  PSYCHOLOGY_POST_COURSES,
-  psychologyPostCourseMatches,
-} from '@/landing/psychologyPostCourses'
 import { siteConfig } from '@/site/config'
 import {
   fallbackGraduationCourses,
@@ -42,24 +38,7 @@ function filterGraduationCourses<T extends CatalogCourse | CatalogCourseSummary>
 }
 
 function filterPostCourses<T extends CatalogCourse | CatalogCourseSummary>(courses: T[]) {
-  const usedCourseIds = new Set<number>()
-  const matched: T[] = []
-
-  for (const targetCourse of PSYCHOLOGY_POST_COURSES) {
-    const match = courses.find((course) => {
-      const uniqueId = course.courseId || 0
-      if (uniqueId > 0 && usedCourseIds.has(uniqueId)) return false
-      return psychologyPostCourseMatches(course.rawLabel || course.title, targetCourse)
-    })
-
-    if (!match) continue
-    if (match.courseId > 0) {
-      usedCourseIds.add(match.courseId)
-    }
-    matched.push(match)
-  }
-
-  return matched
+  return courses
 }
 
 function useFallbackCourses<T>(courses: T[], fallbackCourses: T[]) {

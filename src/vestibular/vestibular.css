@@ -1,0 +1,1147 @@
+.is-spinning {
+  animation: vestibular-spin 0.9s linear infinite;
+}
+
+@keyframes vestibular-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.vestibular-page {
+  --vestibular-blue: #1e5ec8;
+  --vestibular-blue-dark: #1a4ea7;
+  --vestibular-purple: #7e1ec8;
+  --vestibular-border: #d9e2f1;
+  --vestibular-muted: #eef1f5;
+  --vestibular-text: #0b111f;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.vestibular-header {
+  background: #ffffff;
+  border-bottom: 1px solid #ebeff5;
+}
+
+.vestibular-header__inner {
+  width: min(1240px, calc(100% - 2rem));
+  min-height: 78px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.vestibular-header__brand,
+.vestibular-header__profile {
+  display: inline-flex;
+  align-items: center;
+}
+
+.vestibular-header__brand img {
+  display: block;
+  width: auto;
+  height: auto;
+}
+
+.vestibular-header__profile {
+  gap: 12px;
+  min-width: 0;
+}
+
+.vestibular-header__profile-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.vestibular-header__profile-name,
+.vestibular-header__profile-email {
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.vestibular-header__profile-name {
+  color: var(--vestibular-text);
+}
+
+.vestibular-header__profile-email {
+  max-width: 190px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgba(11, 17, 31, 0.5);
+}
+
+.vestibular-header__profile-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.vestibular-page__body {
+  min-height: calc(100vh - 79px);
+}
+
+.vestibular-hero {
+  background: linear-gradient(90deg, var(--vestibular-blue) 0%, var(--vestibular-purple) 100%);
+  padding: 18px 0 28px;
+}
+
+.vestibular-hero__inner,
+.vestibular-admission__inner,
+.vestibular-step__inner,
+.vestibular-essay__inner,
+.vestibular-offer__inner {
+  width: min(1240px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.vestibular-hero__banner {
+  display: block;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.vestibular-hero__banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.vestibular-admission,
+.vestibular-step,
+.vestibular-essay,
+.vestibular-offer {
+  padding: 32px 0 72px;
+}
+
+.vestibular-admission h2,
+.vestibular-step__title,
+.vestibular-essay__title,
+.vestibular-offer__title {
+  margin: 0;
+  color: #050505;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.vestibular-step__title strong,
+.vestibular-essay__title strong,
+.vestibular-offer__title strong {
+  color: var(--vestibular-blue);
+}
+
+.vestibular-step__title strong,
+.vestibular-essay__title strong,
+.vestibular-offer__title strong {
+  margin-left: 10px;
+}
+
+.vestibular-step__title span,
+.vestibular-step__title strong {
+  display: inline;
+}
+
+.vestibular-admission__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.vestibular-admission__option,
+.vestibular-essay__theme {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 14px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: #f3f4f6;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.vestibular-admission__option.is-selected,
+.vestibular-essay__theme.is-selected {
+  border-color: rgba(30, 94, 200, 0.22);
+  box-shadow: 0 10px 24px rgba(30, 94, 200, 0.08);
+  background: #f6f9ff;
+}
+
+.vestibular-admission__radio,
+.vestibular-essay__radio {
+  width: 14px;
+  height: 14px;
+  border: 1.8px solid #111111;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  position: relative;
+  margin-top: 2px;
+}
+
+.vestibular-admission__radio.is-selected,
+.vestibular-essay__radio.is-selected {
+  border-color: var(--vestibular-blue);
+}
+
+.vestibular-admission__radio.is-selected::after,
+.vestibular-essay__radio.is-selected::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: var(--vestibular-blue);
+}
+
+.vestibular-admission__option-copy h3,
+.vestibular-essay__theme-copy strong,
+.vestibular-essay__theme-copy span {
+  margin: 0;
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.vestibular-admission__option-copy p {
+  margin: 7px 0 0;
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.vestibular-admission__enem {
+  display: none;
+  margin-top: 12px;
+  padding: 14px 12px 16px;
+  border-radius: 0;
+  background: #f3f4f6;
+}
+
+.vestibular-admission__enem.is-active {
+  display: block;
+}
+
+.vestibular-admission__enem h3 {
+  margin: 0 0 12px;
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.vestibular-admission__field input,
+.vestibular-step__field input,
+.vestibular-step__field textarea {
+  width: 100%;
+  border: 1px solid #c9ced6;
+  border-radius: 8px;
+  background: #e8e9eb;
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.3;
+  outline: none;
+}
+
+.vestibular-admission__field input {
+  height: 44px;
+  padding: 0 12px;
+}
+
+.vestibular-step__field input {
+  height: 56px;
+  padding: 0 16px;
+}
+
+.vestibular-step__field textarea {
+  min-height: 250px;
+  resize: vertical;
+  padding: 18px 16px;
+}
+
+.vestibular-step__field input::placeholder,
+.vestibular-step__field textarea::placeholder,
+.vestibular-admission__field input::placeholder {
+  color: rgba(11, 17, 31, 0.75);
+  opacity: 1;
+}
+
+.vestibular-step__field input[aria-invalid='true'],
+.vestibular-step__field textarea[aria-invalid='true'] {
+  border-color: #d53030;
+}
+
+.vestibular-admission__notice-link {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0a66ff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.vestibular-admission__actions,
+.vestibular-step__actions,
+.vestibular-essay__actions,
+.vestibular-offer__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.vestibular-admission__actions {
+  margin-top: 8px;
+}
+
+.vestibular-admission__continue,
+.vestibular-step__continue,
+.vestibular-essay__continue,
+.vestibular-offer__finish,
+.vestibular-empty__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(90deg, var(--vestibular-blue-dark) 0%, var(--vestibular-blue) 100%);
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.vestibular-admission__continue:disabled,
+.vestibular-step__continue:disabled,
+.vestibular-essay__continue:disabled,
+.vestibular-offer__finish:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.vestibular-admission__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.vestibular-admission__modal {
+  width: min(100%, 620px);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+}
+
+.vestibular-admission__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.vestibular-admission__modal-header h3 {
+  margin: 0;
+  color: #050505;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.vestibular-admission__modal-close {
+  border: 0;
+  background: transparent;
+  color: rgba(11, 17, 31, 0.5);
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.vestibular-admission__modal-body {
+  padding: 20px 28px;
+}
+
+.vestibular-admission__modal-body p {
+  margin: 0;
+  color: rgba(11, 17, 31, 0.82);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.vestibular-admission__modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 28px 24px;
+}
+
+.vestibular-admission__modal-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 120px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--vestibular-blue-dark) 0%, var(--vestibular-blue) 100%);
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.vestibular-step__inner,
+.vestibular-essay__inner,
+.vestibular-offer__inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.vestibular-offer__shell {
+  min-height: calc(100vh - 131px);
+}
+
+.vestibular-step__back,
+.vestibular-essay__back,
+.vestibular-offer__back {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+  margin: 0 0 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(11, 17, 31, 0.55);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vestibular-step__description,
+.vestibular-essay__content,
+.vestibular-offer__headline,
+.vestibular-offer__help {
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+}
+
+.vestibular-step__description {
+  margin: 12px 0 18px;
+  max-width: 1240px;
+}
+
+.vestibular-step__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vestibular-step__label {
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.vestibular-step__field--compact {
+  margin-top: -6px;
+}
+
+.vestibular-step__validation-error {
+  margin: 2px 0 0;
+  color: #d53030;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.vestibular-step__actions {
+  align-items: flex-end;
+  margin-top: 14px;
+  gap: 12px;
+}
+
+.vestibular-step__actions p {
+  margin: 0;
+  color: rgba(11, 17, 31, 0.7);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.vestibular-step--essay .vestibular-step__field textarea {
+  min-height: 260px;
+}
+
+.vestibular-essay__themes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.vestibular-essay__theme-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vestibular-essay__content {
+  margin-top: 18px;
+}
+
+.vestibular-essay__paragraph {
+  margin: 0;
+}
+
+.vestibular-essay__paragraph + .vestibular-essay__paragraph {
+  margin-top: 18px;
+}
+
+.vestibular-essay__figure {
+  width: min(420px, 100%);
+  margin: 0 0 12px;
+}
+
+.vestibular-essay__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.vestibular-essay__source {
+  display: block;
+  margin-top: 8px;
+  color: rgba(11, 17, 31, 0.76);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.vestibular-essay__actions {
+  margin-top: 18px;
+}
+
+.vestibular-offer__card {
+  margin-top: 18px;
+  padding: 20px 20px 16px;
+  border-radius: 7px;
+  background: #f4f4f4;
+}
+
+.vestibular-offer__headline {
+  margin: 0;
+  color: #0b111f;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.vestibular-offer__table-box {
+  width: min(100%, 454px);
+  min-height: 369px;
+  max-height: 369px;
+  margin: 10px auto 0;
+  overflow: auto;
+  border: 1px solid #111111;
+  border-radius: 24px;
+  padding: 16px 14px 14px;
+  background: transparent;
+}
+
+.vestibular-offer__loading {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.vestibular-offer__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vestibular-offer__table td {
+  border: 1px solid #8d8d8d;
+  padding: 6px 10px;
+  color: #161616;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.vestibular-offer__table-error {
+  margin: 0;
+  text-align: center;
+}
+
+.vestibular-offer__contract {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px auto 0;
+  text-align: center;
+}
+
+.vestibular-offer__contract input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #111111;
+  flex: 0 0 auto;
+}
+
+.vestibular-offer__contract span {
+  color: #0b111f;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.vestibular-offer__contract-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #0d52f3;
+  cursor: pointer;
+  font: inherit;
+  text-transform: uppercase;
+  text-decoration: underline;
+}
+
+.vestibular-offer__footer {
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.vestibular-offer__finish {
+  min-width: 111px;
+  min-height: 51px;
+  padding: 0 25px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.vestibular-offer__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.52);
+}
+
+.vestibular-offer__modal {
+  width: min(100%, 760px);
+  max-height: min(82vh, 760px);
+  overflow: auto;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.22);
+}
+
+.vestibular-offer__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid rgba(11, 17, 31, 0.08);
+}
+
+.vestibular-offer__modal-header h3 {
+  margin: 0;
+  color: #050505;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.vestibular-offer__modal-close {
+  border: 0;
+  background: transparent;
+  color: rgba(11, 17, 31, 0.5);
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.vestibular-offer__modal-body {
+  padding: 20px 24px 8px;
+  color: var(--vestibular-text);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.vestibular-offer__modal-body p {
+  margin: 0 0 1em;
+}
+
+.vestibular-offer__modal-state {
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.vestibular-offer__modal-state.is-error {
+  min-height: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.vestibular-offer__modal-state.is-error p {
+  margin: 0;
+}
+
+.vestibular-offer__modal-state.is-error button {
+  align-self: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--vestibular-blue-dark) 0%, var(--vestibular-blue) 100%);
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.vestibular-offer__modal-content {
+  color: var(--vestibular-text);
+}
+
+.vestibular-offer__modal-content.is-text {
+  white-space: pre-wrap;
+}
+
+.vestibular-offer__modal-content > :first-child {
+  margin-top: 0;
+}
+
+.vestibular-offer__modal-content > :last-child {
+  margin-bottom: 0;
+}
+
+.vestibular-offer__modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 24px 24px;
+}
+
+.vestibular-offer__modal-confirm {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--vestibular-blue-dark) 0%, var(--vestibular-blue) 100%);
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.vestibular-empty {
+  padding: 56px 1rem 80px;
+}
+
+.vestibular-empty__inner {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  padding: 32px 28px;
+  border: 1px solid var(--vestibular-border);
+  border-radius: 24px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.vestibular-empty__inner h1 {
+  margin: 0;
+  color: #050505;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.vestibular-empty__inner p {
+  margin: 16px 0 0;
+  color: rgba(11, 17, 31, 0.82);
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.vestibular-empty__cta {
+  margin-top: 24px;
+}
+
+@media (max-width: 1024px) {
+  .vestibular-admission__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .vestibular-header__inner,
+  .vestibular-hero__inner,
+  .vestibular-admission__inner,
+  .vestibular-step__inner,
+  .vestibular-essay__inner,
+  .vestibular-offer__inner {
+    width: min(100%, calc(100% - 1.5rem));
+  }
+
+  .vestibular-header__inner {
+    min-height: 72px;
+    gap: 10px;
+  }
+
+  .vestibular-header__brand img {
+    width: 128px;
+    height: auto;
+  }
+
+  .vestibular-header__profile {
+    gap: 8px;
+  }
+
+  .vestibular-header__profile-name,
+  .vestibular-header__profile-email {
+    font-size: 13px;
+  }
+
+  .vestibular-header__profile-email {
+    max-width: 108px;
+  }
+
+  .vestibular-header__profile-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .vestibular-hero {
+    padding: 0;
+  }
+
+  .vestibular-hero__inner {
+    width: 100%;
+  }
+
+  .vestibular-hero__banner {
+    border-radius: 0;
+  }
+
+  .vestibular-admission,
+  .vestibular-step,
+  .vestibular-essay,
+  .vestibular-offer {
+    padding: 20px 0 40px;
+  }
+
+  .vestibular-admission h2,
+  .vestibular-step__title,
+  .vestibular-essay__title,
+  .vestibular-offer__title,
+  .vestibular-empty__inner h1 {
+    font-size: 24px;
+    line-height: 1.08;
+  }
+
+  .vestibular-step__title span,
+  .vestibular-step__title strong {
+    display: block;
+    margin-left: 0;
+  }
+
+  .vestibular-essay__title strong,
+  .vestibular-offer__title strong {
+    margin-left: 0;
+  }
+
+  .vestibular-admission__grid,
+  .vestibular-essay__themes {
+    grid-template-columns: 1fr;
+  }
+
+  .vestibular-admission__option,
+  .vestibular-essay__theme {
+    padding: 18px 14px;
+  }
+
+  .vestibular-admission__option-copy h3,
+  .vestibular-essay__theme-copy strong,
+  .vestibular-essay__theme-copy span {
+    font-size: 14px;
+  }
+
+  .vestibular-admission__option-copy p,
+  .vestibular-step__description,
+  .vestibular-essay__content,
+  .vestibular-offer__headline,
+  .vestibular-empty__inner p {
+    font-size: 14px;
+  }
+
+  .vestibular-admission__enem {
+    padding: 16px 14px;
+  }
+
+  .vestibular-admission__enem h3 {
+    font-size: 18px;
+  }
+
+  .vestibular-admission__actions,
+  .vestibular-step__actions,
+  .vestibular-essay__actions,
+  .vestibular-offer__footer {
+    justify-content: stretch;
+  }
+
+  .vestibular-admission__continue,
+  .vestibular-step__continue,
+  .vestibular-essay__continue,
+  .vestibular-offer__finish,
+  .vestibular-empty__cta {
+    width: 100%;
+    min-height: 42px;
+    font-size: 15px;
+  }
+
+  .vestibular-admission__modal-backdrop {
+    padding: 16px;
+  }
+
+  .vestibular-admission__modal-header {
+    padding: 18px 20px 14px;
+  }
+
+  .vestibular-admission__modal-header h3 {
+    font-size: 18px;
+  }
+
+  .vestibular-admission__modal-body {
+    padding: 16px 20px;
+  }
+
+  .vestibular-admission__modal-body p {
+    font-size: 14px;
+  }
+
+  .vestibular-admission__modal-footer {
+    padding: 0 20px 20px;
+  }
+
+  .vestibular-admission__modal-confirm {
+    width: 100%;
+  }
+
+  .vestibular-step__back,
+  .vestibular-essay__back,
+  .vestibular-offer__back {
+    margin-bottom: 24px;
+    font-size: 15px;
+  }
+
+  .vestibular-step__field input {
+    height: 48px;
+    font-size: 14px;
+  }
+
+  .vestibular-step__field textarea {
+    min-height: 240px;
+    font-size: 14px;
+    padding: 16px 14px;
+  }
+
+  .vestibular-step--essay .vestibular-step__field textarea {
+    min-height: 260px;
+  }
+
+  .vestibular-step__label {
+    font-size: 13px;
+  }
+
+  .vestibular-step__actions {
+    margin-top: 18px;
+  }
+
+  .vestibular-step__actions p {
+    font-size: 12px;
+  }
+
+  .vestibular-essay__content {
+    margin-top: 14px;
+  }
+
+  .vestibular-essay__paragraph + .vestibular-essay__paragraph {
+    margin-top: 16px;
+  }
+
+  .vestibular-essay__figure {
+    width: 100%;
+  }
+
+  .vestibular-offer__card {
+    padding: 16px;
+  }
+
+  .vestibular-offer__headline {
+    font-size: 16px;
+  }
+
+  .vestibular-offer__table-box {
+    min-height: 0;
+    max-height: 320px;
+    margin-top: 12px;
+    padding: 14px 10px;
+    border-radius: 18px;
+  }
+
+  .vestibular-offer__table td {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .vestibular-offer__contract {
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-top: 14px;
+    text-align: left;
+  }
+
+  .vestibular-offer__contract span {
+    font-size: 12px;
+  }
+
+  .vestibular-empty {
+    padding: 24px 0 40px;
+  }
+
+  .vestibular-empty__inner {
+    width: min(100%, calc(100% - 1.5rem));
+    padding: 24px 18px;
+  }
+
+  .vestibular-offer__footer {
+    margin-top: 14px;
+  }
+
+  .vestibular-offer__finish {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    font-size: 16px;
+  }
+
+  .vestibular-offer__modal-backdrop {
+    padding: 16px;
+  }
+
+  .vestibular-offer__modal {
+    border-radius: 16px;
+    max-height: min(86vh, 720px);
+  }
+
+  .vestibular-offer__modal-header {
+    padding: 18px 18px 14px;
+  }
+
+  .vestibular-offer__modal-header h3 {
+    font-size: 18px;
+  }
+
+  .vestibular-offer__modal-body {
+    padding: 18px 18px 8px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .vestibular-offer__modal-footer {
+    padding: 0 18px 18px;
+  }
+
+  .vestibular-offer__modal-confirm {
+    width: 100%;
+    min-height: 38px;
+  }
+}

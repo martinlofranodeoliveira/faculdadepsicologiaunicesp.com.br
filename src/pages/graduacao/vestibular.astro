@@ -1,16 +1,12 @@
 ---
-import SiteFooter from '@/components/SiteFooter.astro'
-import SiteHeader from '@/components/SiteHeader.astro'
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/site/config'
 import { GraduationVestibularPage } from '@/vestibular/GraduationVestibularPage'
 
 const title = `Vestibular | Graduação | ${siteConfig.name}`
-const description = 'Selecione a forma de ingresso e continue o fluxo do vestibular.'
+const description = 'Selecione sua forma de ingresso e conclua o fluxo do vestibular da graduação.'
 ---
 
 <BaseLayout title={title} description={description} canonicalPath="/graduacao/vestibular" noindex={true}>
-  <SiteHeader />
   <GraduationVestibularPage client:load />
-  <SiteFooter />
 </BaseLayout>
