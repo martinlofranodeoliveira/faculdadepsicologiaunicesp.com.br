@@ -9,10 +9,14 @@ set -euo pipefail
 #   REPO_URL=https://github.com/martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git
 #   TARGET_DIR=/www/wwwroot/faculdadepsicologiaunicesp.com.br
 #   BRANCH=main
+#   SERVICE_NAME=faculdadepsicologiaunicesp
+#   RESTART_SERVICE=1
 
 REPO_URL="${REPO_URL:-https://github.com/martinlofranodeoliveira/faculdadepsicologiaunicesp.com.br.git}"
 TARGET_DIR="${TARGET_DIR:-/www/wwwroot/faculdadepsicologiaunicesp.com.br}"
 BRANCH="${BRANCH:-main}"
+SERVICE_NAME="${SERVICE_NAME:-faculdadepsicologiaunicesp}"
+RESTART_SERVICE="${RESTART_SERVICE:-1}"
 
 echo "==> Repo:   $REPO_URL"
 echo "==> Pasta:  $TARGET_DIR"
@@ -39,3 +43,20 @@ echo "==> Build de producao..."
 npm run build
 
 echo "==> OK: build gerada em $TARGET_DIR/dist"
+
+if [ "$RESTART_SERVICE" = "1" ]; then
+  if command -v systemctl >/dev/null 2>&1; then
+    if systemctl cat "$SERVICE_NAME" >/dev/null 2>&1; then
+      echo "==> Recarregando configuracao do systemd..."
+      systemctl daemon-reload
+      echo "==> Reiniciando service $SERVICE_NAME..."
+      systemctl restart "$SERVICE_NAME"
+      echo "==> Status do service $SERVICE_NAME:"
+      systemctl status "$SERVICE_NAME" --no-pager || true
+    else
+      echo "==> Aviso: service $SERVICE_NAME nao encontrado. Pulando restart."
+    fi
+  else
+    echo "==> Aviso: systemctl indisponivel. Pulando restart do service."
+  fi
+fi
