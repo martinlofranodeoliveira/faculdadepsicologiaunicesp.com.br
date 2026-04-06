@@ -1,4 +1,10 @@
-import { getCourseDisplayTitle, getCoursePath, normalizeComparableText, toSlug } from './courseRoutes'
+import {
+  getCourseDisplayTitle,
+  getCoursePath,
+  normalizeComparableText,
+  normalizeCourseSlugByType,
+  toSlug,
+} from './courseRoutes'
 
 export type CourseType = 'graduacao' | 'pos'
 export type CourseModality = 'ead' | 'semipresencial' | 'presencial'
@@ -859,7 +865,10 @@ function buildCourseFromApi(
     courseType,
     courseLabel: seo.courseName || rawLabel,
   })
-  const slug = toSlug(seo.slug || title || rawLabel || `curso-${listItem.id}`)
+  const slug = normalizeCourseSlugByType(
+    courseType,
+    seo.slug || title || rawLabel || `curso-${listItem.id}`,
+  )
   const value = `${courseType}-${slug}`
   const path = getCoursePath({
     courseType,

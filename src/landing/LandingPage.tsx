@@ -8,7 +8,7 @@ import { FaqSection } from './components/FaqSection'
 import { Header } from './components/Header'
 import { HeroSection } from './components/HeroSection'
 import { PortariaSection } from './components/PortariaSection'
-import type { LandingPostCourse } from './landingModels'
+import type { LandingCurriculumTerm, LandingPostCourse } from './landingModels'
 
 const EnrollmentPopup = lazy(() =>
   import('./components/EnrollmentPopup').then((module) => ({ default: module.EnrollmentPopup })),
@@ -46,11 +46,13 @@ const DEFAULT_HERO_COURSE_SELECTION: CourseLeadSelection = {
 type LandingPageProps = {
   heroSelection?: CourseLeadSelection
   postCourses?: LandingPostCourse[]
+  curriculumTerms?: LandingCurriculumTerm[]
 }
 
 export function LandingPage({
   heroSelection = DEFAULT_HERO_COURSE_SELECTION,
   postCourses = [],
+  curriculumTerms = [],
 }: LandingPageProps) {
   const [popupSelection, setPopupSelection] = useState<CourseLeadSelection | null>(null)
 
@@ -85,7 +87,7 @@ export function LandingPage({
       </DeferredSection>
       <DeferredSection minHeight={920}>
         <Suspense fallback={null}>
-          <GradeSection onOpenPopup={openHeroPopup} />
+          <GradeSection terms={curriculumTerms} onOpenPopup={openHeroPopup} />
         </Suspense>
       </DeferredSection>
       <DeferredSection minHeight={860}>

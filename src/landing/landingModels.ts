@@ -5,6 +5,14 @@ export type LandingPostCourseWorkload = {
   label: string
 }
 
+export type LandingCurriculumTerm = {
+  id: string
+  label: string
+  name: string
+  totalHours: number
+  subjects: string[]
+}
+
 export type LandingPostCourse = {
   id: string
   title: string
@@ -20,4 +28,5 @@ export type LandingPostCourse = {
 export type LandingPageData = {
   heroSelection: CourseLeadSelection
   postCourses: LandingPostCourse[]
+  curriculumTerms: LandingCurriculumTerm[]
 }

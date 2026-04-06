@@ -1,10 +1,15 @@
-import type { CatalogCourse } from '@/lib/catalogApi'
+﻿import type { CatalogCourse } from '@/lib/catalogApi'
 import { getGraduationCoursePageBySlug, getPostCoursePages } from '@/lib/courseCatalog'
 import { toSlug } from '@/lib/courseRoutes'
 import { siteConfig } from '@/site/config'
 
 import type { CourseLeadSelection } from './crmLead'
-import type { LandingPageData, LandingPostCourse, LandingPostCourseWorkload } from './landingModels'
+import type {
+  LandingCurriculumTerm,
+  LandingPageData,
+  LandingPostCourse,
+  LandingPostCourseWorkload,
+} from './landingModels'
 
 const DEFAULT_HERO_SELECTION: CourseLeadSelection = {
   courseType: 'graduacao',
@@ -67,11 +72,13 @@ function buildWorkloadOptions(course: CatalogCourse): LandingPostCourseWorkload[
 }
 
 function buildHoursLabel(workloadOptions: LandingPostCourseWorkload[]) {
-  const uniqueHours = [...new Set(
-    workloadOptions
-      .map((item) => item.label.match(/(\d+)/)?.[1] ?? '')
-      .filter(Boolean),
-  )]
+  const uniqueHours = [
+    ...new Set(
+      workloadOptions
+        .map((item) => item.label.match(/(\d+)/)?.[1] ?? '')
+        .filter(Boolean),
+    ),
+  ]
 
   if (!uniqueHours.length) return ''
   if (uniqueHours.length === 1) return `${uniqueHours[0]}H`
@@ -125,6 +132,50 @@ function sortPostCourses(courses: LandingPostCourse[]) {
   )
 }
 
+function buildLandingCurriculumTerms(course: CatalogCourse | null): LandingCurriculumTerm[] {
+  if (!course?.curriculumVariants.length) return []
+
+  const primaryVariant = course.curriculumVariants[0]
+  const disciplines = [...(primaryVariant?.disciplines ?? [])]
+    .filter((discipline) => normalizeText(discipline.name).length > 0)
+    .sort((left, right) => left.sequence - right.sequence)
+
+  if (!disciplines.length) return []
+
+  const mappedHours = disciplines.reduce((sum, discipline) => sum + discipline.hours, 0)
+  const semesterCount = Math.max(1, course.semesterCount || Math.ceil(disciplines.length / 6))
+
+  if (disciplines.length <= semesterCount) {
+    return [
+      {
+        id: `${primaryVariant.id || 1}`,
+        label: 'Grade cadastrada',
+        name: primaryVariant.name || 'Disciplinas cadastradas',
+        totalHours: mappedHours || primaryVariant.totalHours,
+        subjects: disciplines.map((discipline) => normalizeText(discipline.name)),
+      },
+    ]
+  }
+
+  const chunkSize = Math.max(1, Math.ceil(disciplines.length / semesterCount))
+  const groups: LandingCurriculumTerm[] = []
+
+  for (let index = 0; index < semesterCount; index += 1) {
+    const chunk = disciplines.slice(index * chunkSize, (index + 1) * chunkSize)
+    if (!chunk.length) continue
+
+    groups.push({
+      id: `${index + 1}`,
+      label: `${index + 1}`,
+      name: semesterCount > 1 ? `Disciplinas do ${index + 1}º semestre` : 'Disciplinas do curso',
+      totalHours: chunk.reduce((sum, discipline) => sum + discipline.hours, 0),
+      subjects: chunk.map((discipline) => normalizeText(discipline.name)),
+    })
+  }
+
+  return groups
+}
+
 export async function getLandingPageData(force = false): Promise<LandingPageData> {
   const [graduationCourse, postCourses] = await Promise.all([
     getGraduationCoursePageBySlug(siteConfig.primaryGraduationSlug, force),
@@ -134,5 +185,6 @@ export async function getLandingPageData(force = false): Promise<LandingPageData
   return {
     heroSelection: buildHeroSelection(graduationCourse),
     postCourses: sortPostCourses(postCourses.map(buildLandingPostCourse)),
+    curriculumTerms: buildLandingCurriculumTerms(graduationCourse),
   }
 }

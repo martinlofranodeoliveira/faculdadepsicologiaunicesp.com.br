@@ -4,6 +4,19 @@ export type CourseRouteInput = {
   courseLabel: string
 }
 
+const POST_SLUG_PREFIXES = [
+  'pos-graduacao-em-',
+  'pos-graduacao-',
+  'posgraduacao-em-',
+  'posgraduacao-',
+  'pos-em-',
+  'pos-',
+  'especializacao-em-',
+  'especializacao-',
+]
+
+const GRADUATION_SLUG_PREFIXES = ['graduacao-em-', 'graduacao-']
+
 export function normalizeComparableText(value: string): string {
   return value
     .normalize('NFD')
@@ -16,6 +29,30 @@ export function toSlug(value: string): string {
   return normalizeComparableText(value)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
+
+export function normalizeCourseSlugByType(
+  courseType: CourseRouteInput['courseType'],
+  value: string,
+): string {
+  const fallbackSlug = toSlug(value)
+  if (!fallbackSlug) return ''
+
+  let normalizedSlug = fallbackSlug
+  const prefixes = courseType === 'pos' ? POST_SLUG_PREFIXES : GRADUATION_SLUG_PREFIXES
+
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const prefix of prefixes) {
+      if (normalizedSlug.startsWith(prefix)) {
+        normalizedSlug = normalizedSlug.slice(prefix.length)
+        changed = true
+      }
+    }
+  }
+
+  return normalizedSlug || fallbackSlug
 }
 
 export function stripGraduationModality(label: string): string {
@@ -59,16 +96,10 @@ export function getCourseDisplayTitle(input: CourseRouteInput): string {
 
 export function getCourseSlug(input: CourseRouteInput): string {
   if (input.courseValue) {
-    if (input.courseValue.startsWith('graduacao-')) {
-      return input.courseValue.replace(/^graduacao-/, '')
-    }
-
-    if (input.courseValue.startsWith('pos-')) {
-      return input.courseValue.replace(/^pos-/, '')
-    }
+    return normalizeCourseSlugByType(input.courseType, input.courseValue)
   }
 
-  return toSlug(getCourseDisplayTitle(input))
+  return normalizeCourseSlugByType(input.courseType, getCourseDisplayTitle(input))
 }
 
 export function getCoursePath(
