@@ -1,4 +1,4 @@
-import {
+﻿import {
   getCourseDisplayTitle,
   getCoursePath,
   normalizeComparableText,
@@ -25,6 +25,7 @@ export type CatalogCurriculumDiscipline = {
   name: string
   hours: number
   sequence: number
+  semester?: number | null
 }
 
 export type CatalogCurriculumVariant = {
@@ -241,6 +242,7 @@ type ApiCurriculumDiscipline = {
   discipline_name?: string | null
   discipline_hours?: number | null
   sequence_no?: number | null
+  semester?: number | null
 }
 
 const DEFAULT_CACHE_TTL_MS = parseCacheTtl(
@@ -355,7 +357,7 @@ function buildQuery(params: Record<string, string | number | boolean | undefined
 function buildApiUrl(path: string, params: Record<string, string | number | boolean | undefined> = {}) {
   const baseUrl = getApiBaseUrl()
   if (!baseUrl) {
-    throw new Error('COURSES_API_BASE_URL não configurada.')
+    throw new Error('COURSES_API_BASE_URL nÃ£o configurada.')
   }
 
   const normalizedPath = path.replace(/^\/+/, '')
@@ -379,7 +381,7 @@ async function apiFetch<T>(
   const institutionId = getInstitutionId()
 
   if (!hasApiConfig()) {
-    throw new Error('Catalog API não configurada.')
+    throw new Error('Catalog API nÃ£o configurada.')
   }
 
   const response = await fetch(buildApiUrl(path, params), {
@@ -519,14 +521,14 @@ function resolvePrimaryModality(rawValues: string[]): CourseModality {
 
 function getModalityLabel(courseType: CourseType, modality: CourseModality) {
   if (courseType === 'pos') {
-    if (modality === 'semipresencial') return 'PÓS-GRADUAÇÃO SEMIPRESENCIAL'
-    if (modality === 'presencial') return 'PÓS-GRADUAÇÃO PRESENCIAL'
-    return 'PÓS-GRADUAÇÃO EAD'
+    if (modality === 'semipresencial') return 'PÃ“S-GRADUAÃ‡ÃƒO SEMIPRESENCIAL'
+    if (modality === 'presencial') return 'PÃ“S-GRADUAÃ‡ÃƒO PRESENCIAL'
+    return 'PÃ“S-GRADUAÃ‡ÃƒO EAD'
   }
 
-  if (modality === 'semipresencial') return 'GRADUAÇÃO SEMIPRESENCIAL'
-  if (modality === 'presencial') return 'GRADUAÇÃO PRESENCIAL'
-  return 'GRADUAÇÃO EAD'
+  if (modality === 'semipresencial') return 'GRADUAÃ‡ÃƒO SEMIPRESENCIAL'
+  if (modality === 'presencial') return 'GRADUAÃ‡ÃƒO PRESENCIAL'
+  return 'GRADUAÃ‡ÃƒO EAD'
 }
 
 function getPageModalityLabel(modality: CourseModality) {
@@ -687,6 +689,10 @@ function normalizeCurriculumVariants(
           name: normalizeText(discipline.discipline_name),
           hours: Number(discipline.discipline_hours ?? 0),
           sequence: Number(discipline.sequence_no ?? 0),
+          semester:
+            typeof discipline.semester === 'number' && Number.isFinite(discipline.semester)
+              ? Number(discipline.semester)
+              : null,
         }))
         .filter((discipline) => discipline.name)
         .sort((left, right) => left.sequence - right.sequence),
@@ -820,10 +826,10 @@ function resolveCourseImage(
 
 function buildGeneratedDescription(courseType: CourseType, title: string) {
   if (courseType === 'pos') {
-    return `Conheça a Pós-graduação em ${title} e continue sua inscrição.`
+    return `ConheÃ§a a PÃ³s-graduaÃ§Ã£o em ${title} e continue sua inscriÃ§Ã£o.`
   }
 
-  return `Conheça a Graduação em ${title} e continue sua inscrição.`
+  return `ConheÃ§a a GraduaÃ§Ã£o em ${title} e continue sua inscriÃ§Ã£o.`
 }
 
 function summarizeCourse(course: CatalogCourse): CatalogCourseSummary {
@@ -915,11 +921,11 @@ function buildCourseFromApi(
   const currentInstallmentPrice =
     courseType === 'pos'
       ? `18X DE ${formatCurrency(postMonthlyAmount)}`.toUpperCase()
-      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÊS`
+      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÃŠS`
   const currentInstallmentPriceMonthly =
     courseType === 'pos'
-      ? `18X ${formatCurrency(postMonthlyAmount).toUpperCase()}/MÊS`
-      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÊS`
+      ? `18X ${formatCurrency(postMonthlyAmount).toUpperCase()}/MÃŠS`
+      : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÃŠS`
   const oldInstallmentPrice =
     courseType === 'pos'
       ? `18X ${formatCurrency(Math.round(postMonthlyAmount * 1.53)).toUpperCase()}`
@@ -1196,8 +1202,9 @@ export async function getPostCatalogCourseSummaries(force = false) {
 export function splitDifferentials(text: string): string[] {
   const parsed = normalizeMultilineText(text)
     .split(/\n+/)
-    .map((line) => line.replace(/^[-•\s]+/, '').trim())
+    .map((line) => line.replace(/^[-â€¢\s]+/, '').trim())
     .filter(Boolean)
 
   return parsed.length ? parsed : [normalizeText(text)].filter(Boolean)
 }
+

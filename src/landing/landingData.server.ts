@@ -1,6 +1,7 @@
 ﻿import type { CatalogCourse } from '@/lib/catalogApi'
-import { getGraduationCoursePageBySlug, getPostCoursePages } from '@/lib/courseCatalog'
+import { getGraduationCoursePageById, getGraduationCoursePageBySlug, getPostCoursePages } from '@/lib/courseCatalog'
 import { toSlug } from '@/lib/courseRoutes'
+import { PRIMARY_GRADUATION_CATALOG_COURSE_ID } from '@/lib/graduation'
 import { siteConfig } from '@/site/config'
 
 import type { CourseLeadSelection } from './crmLead'
@@ -142,49 +143,55 @@ function buildLandingCurriculumTerms(course: CatalogCourse | null): LandingCurri
 
   if (!disciplines.length) return []
 
-  const mappedHours = disciplines.reduce((sum, discipline) => sum + discipline.hours, 0)
-  const semesterCount = Math.max(1, course.semesterCount || Math.ceil(disciplines.length / 6))
+  const hasExplicitSemester = disciplines.some(
+    (discipline) => typeof discipline.semester === 'number' && discipline.semester > 0,
+  )
 
-  if (disciplines.length <= semesterCount) {
+  if (!hasExplicitSemester) {
     return [
       {
         id: `${primaryVariant.id || 1}`,
         label: 'Grade cadastrada',
         name: primaryVariant.name || 'Disciplinas cadastradas',
-        totalHours: mappedHours || primaryVariant.totalHours,
+        totalHours: primaryVariant.totalHours || disciplines.reduce((sum, discipline) => sum + discipline.hours, 0),
         subjects: disciplines.map((discipline) => normalizeText(discipline.name)),
       },
     ]
   }
 
-  const chunkSize = Math.max(1, Math.ceil(disciplines.length / semesterCount))
-  const groups: LandingCurriculumTerm[] = []
+  const groupsBySemester = new Map<number, typeof disciplines>()
 
-  for (let index = 0; index < semesterCount; index += 1) {
-    const chunk = disciplines.slice(index * chunkSize, (index + 1) * chunkSize)
-    if (!chunk.length) continue
-
-    groups.push({
-      id: `${index + 1}`,
-      label: `${index + 1}`,
-      name: semesterCount > 1 ? `Disciplinas do ${index + 1}º semestre` : 'Disciplinas do curso',
-      totalHours: chunk.reduce((sum, discipline) => sum + discipline.hours, 0),
-      subjects: chunk.map((discipline) => normalizeText(discipline.name)),
-    })
+  for (const discipline of disciplines) {
+    const semester = discipline.semester ?? null
+    if (!semester || semester <= 0) continue
+    const current = groupsBySemester.get(semester) ?? []
+    current.push(discipline)
+    groupsBySemester.set(semester, current)
   }
 
-  return groups
+  return [...groupsBySemester.entries()]
+    .sort((left, right) => left[0] - right[0])
+    .map(([semester, semesterDisciplines]) => ({
+      id: `${semester}`,
+      label: `${semester}`,
+      name: `Disciplinas do ${semester}º semestre`,
+      totalHours: semesterDisciplines.reduce((sum, discipline) => sum + discipline.hours, 0),
+      subjects: semesterDisciplines
+        .sort((left, right) => left.sequence - right.sequence)
+        .map((discipline) => normalizeText(discipline.name)),
+    }))
 }
 
 export async function getLandingPageData(force = false): Promise<LandingPageData> {
-  const [graduationCourse, postCourses] = await Promise.all([
+  const [graduationCourse, graduationCurriculumCourse, postCourses] = await Promise.all([
     getGraduationCoursePageBySlug(siteConfig.primaryGraduationSlug, force),
+    getGraduationCoursePageById(PRIMARY_GRADUATION_CATALOG_COURSE_ID, force),
     getPostCoursePages(force),
   ])
 
   return {
     heroSelection: buildHeroSelection(graduationCourse),
     postCourses: sortPostCourses(postCourses.map(buildLandingPostCourse)),
-    curriculumTerms: buildLandingCurriculumTerms(graduationCourse),
+    curriculumTerms: buildLandingCurriculumTerms(graduationCurriculumCourse ?? graduationCourse),
   }
 }
