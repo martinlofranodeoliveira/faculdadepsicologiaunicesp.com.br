@@ -2,6 +2,7 @@
 import { splitDifferentials, type CatalogCourse, type CatalogCourseSummary } from '@/lib/catalogApi'
 import { RelatedCoursesSection } from '@/course/RelatedCoursesSection'
 import { CurriculumSection } from '@/course/CurriculumSection'
+import PostCourseSalarySection from '@/course/PostCourseSalarySection.astro'
 import { TestimonialsSection } from '@/course/TestimonialsSection'
 import { FooterBottomSection } from '@/landing/components/FooterBottomSection'
 import { FaqCtaSection } from '@/landing/components/FaqCtaSection'
@@ -108,6 +109,10 @@ const curriculumDownloadHref = course.teachingPlanUrl || ''
 const curriculumDownloadFilename = course.teachingPlanUrl
   ? course.teachingPlanUrl.split('/').pop() || `${course.slug}-matriz-curricular`
   : undefined
+const hasRegulatoryBody = Boolean(course.regulatoryBodyId || course.regulatoryBodyName.trim())
+const regulatoryBodyFlagText = hasRegulatoryBody
+  ? `CURSO COM CHANCELA DO CONSELHO DE CLASSE DO ${course.regulatoryBodyName.trim().toUpperCase()}`
+  : ''
 ---
 
 <div class="lp-page bg-white">
@@ -127,9 +132,20 @@ const curriculumDownloadFilename = course.teachingPlanUrl
             <span class="text-black/50 truncate max-w-full inline-block" title={course.title}>{course.title}</span>
           </div>
 
-          <h1 class="text-[#070707] text-[36px] lg:text-[45px] leading-tight lg:leading-[45px] font-extrabold uppercase mb-8 lg:mb-[60px] font-['Kumbh_Sans']">
+          <h1 class:list={[
+            "text-[#070707] text-[36px] lg:text-[45px] leading-tight lg:leading-[45px] font-extrabold uppercase font-['Kumbh_Sans']",
+            hasRegulatoryBody ? 'mb-4 lg:mb-5' : 'mb-8 lg:mb-[60px]',
+          ]}>
             {course.title}
           </h1>
+
+          {hasRegulatoryBody ? (
+            <div class="mb-6 inline-flex items-center justify-center rounded-[7px] bg-[linear-gradient(172.166deg,#1b63de_15.428%,#0f3678_154.99%)] px-[13px] py-[5px] lg:mb-8">
+              <span class="font-['Kumbh_Sans'] text-[14px] font-extrabold uppercase leading-[20px] text-white">
+                {regulatoryBodyFlagText}
+              </span>
+            </div>
+          ) : null}
 
           <p class="text-[#070707] text-[18px] lg:text-[20px] leading-snug lg:leading-[25px] mb-8 lg:mb-[60px]">
             {course.description}
@@ -175,7 +191,7 @@ const curriculumDownloadFilename = course.teachingPlanUrl
           )}
         </div>
 
-        <div class="flex justify-center lg:justify-end items-start w-full relative order-2 lg:row-span-2">
+        <div id="course-lead-form" class="flex justify-center lg:justify-end items-start w-full relative order-2 lg:row-span-2">
           <div class="w-full max-w-[552px] lg:sticky lg:top-[30px] relative">
             <CourseLeadForm
               client:load
@@ -187,6 +203,10 @@ const curriculumDownloadFilename = course.teachingPlanUrl
               workloadOptions={course.workloadOptions}
               priceItems={course.priceItems}
               durationText={course.durationText}
+              oldInstallmentPrice={course.oldInstallmentPrice}
+              regulatoryBodyId={course.regulatoryBodyId}
+              regulatoryBodyName={course.regulatoryBodyName}
+              regulatoryBodyComplement={course.regulatoryBodyComplement}
             />
           </div>
         </div>
@@ -222,11 +242,14 @@ const curriculumDownloadFilename = course.teachingPlanUrl
 
     <div class="w-full bg-white rounded-[40px] lg:rounded-[60px] relative z-10 -mt-24 lg:-mt-[100px] py-12 lg:py-[60px] px-4 lg:px-8 flex flex-col items-center shadow-[0_4px_21px_0_rgba(0,0,0,0.05)]">
       <div class="w-full max-w-[1240px] flex flex-col items-center">
-        <h2 class="text-[#0a073c] text-[28px] lg:text-[35px] font-extrabold uppercase text-center mb-10 font-['Kumbh_Sans'] leading-tight">
-          PARA QUEM ESSE CURSO <span class="text-[#1449a3]">É INDICADO?</span>
-        </h2>
+        {isPos && <PostCourseSalarySection course={course} />}
+        {!isPos && (
+          <h2 class="text-[#0a073c] text-[28px] lg:text-[35px] font-extrabold uppercase text-center mb-10 font-['Kumbh_Sans'] leading-tight">
+            PARA QUEM ESSE CURSO <span class="text-[#1449a3]">É INDICADO?</span>
+          </h2>
+        )}
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full mb-10">
+        <div class={`grid grid-cols-1 lg:grid-cols-3 gap-6 w-full mb-10 ${isPos ? 'mt-8 lg:mt-10' : ''}`}>
           <div class="bg-[#f4f4f4] rounded-[25px] p-6 flex flex-col gap-4">
             <div class="flex items-center gap-3">
               <img src="/course/cognition.webp" alt="Competências" class="w-10 h-10 object-contain shrink-0" />

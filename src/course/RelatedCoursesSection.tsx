@@ -8,7 +8,10 @@ type Props = {
 
 function resolveCourseImage(image?: string) {
   const normalizedImage = image?.trim() ?? ''
-  return normalizedImage || '/course/teacher_working_on_laptop_1.webp'
+  if (!normalizedImage || normalizedImage === '/landing/posgraduacao-banner.webp') {
+    return '/course/teacher_working_on_laptop_1.webp'
+  }
+  return normalizedImage
 }
 
 export function RelatedCoursesSection({ courses }: Props) {

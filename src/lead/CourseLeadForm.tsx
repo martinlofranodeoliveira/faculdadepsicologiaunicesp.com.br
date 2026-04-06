@@ -52,6 +52,10 @@ type Props = {
   workloadOptions?: string[]
   priceItems?: CatalogPriceItem[]
   durationText?: string
+  oldInstallmentPrice?: string
+  regulatoryBodyId?: number | null
+  regulatoryBodyName?: string
+  regulatoryBodyComplement?: string
 }
 
 type FieldErrors = {
@@ -196,10 +200,10 @@ function CourseFormSelect({
         aria-invalid={invalid}
         disabled={disabled}
         className={[
-          'flex h-12 w-full items-center justify-between rounded-[12px] border bg-[#eef1f5] px-4 text-left text-[15px] leading-none text-[#0b111f] outline-none transition',
-          invalid ? 'border-[#d53030]' : 'border-transparent',
-          disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-[#1e5ec8]/40 focus:border-[#1e5ec8]',
-          !selectedOption ? 'text-[#7b8190]' : '',
+          'flex h-[50px] w-full items-center justify-between rounded-[8px] border bg-[#eeeeee] px-3 text-left font-["Liberation_Sans"] text-[16px] leading-[20px] text-black outline-none transition',
+          invalid ? 'border-[#d53030]' : 'border-[rgba(0,0,0,0.25)]',
+          disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-[#066aff] focus:border-[#066aff]',
+          !selectedOption ? 'text-black/80' : '',
         ].join(' ')}
         onClick={() => {
           if (disabled) return
@@ -211,7 +215,7 @@ function CourseFormSelect({
       </button>
 
       {open && !disabled ? (
-        <div role="listbox" aria-label={menuLabel} className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-[14px] border border-[#d7dce5] bg-white shadow-[0_20px_50px_rgba(15,46,98,0.18)]">
+        <div role="listbox" aria-label={menuLabel} className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-[14px] border border-[rgba(0,0,0,0.12)] bg-white shadow-[0_20px_50px_rgba(15,46,98,0.18)]">
           <div className="max-h-64 overflow-y-auto py-2">
             {options.map((option) => {
               const isSelected = option.value === value
@@ -222,7 +226,7 @@ function CourseFormSelect({
                   role="option"
                   aria-selected={isSelected}
                   className={[
-                    'flex w-full items-center justify-between px-4 py-3 text-left text-[15px] text-[#0b111f] transition',
+                    'flex w-full items-center justify-between px-4 py-3 text-left font-["Liberation_Sans"] text-[15px] text-[#0b111f] transition',
                     isSelected ? 'bg-[#edf4ff] font-semibold text-[#14418d]' : 'hover:bg-[#f5f7fb]',
                   ].join(' ')}
                   onMouseDown={(event) => event.preventDefault()}
@@ -305,6 +309,23 @@ function formatInstallmentPriceLabel(amountCents: number, installmentsMax: numbe
   return `${installments}X DE ${formatCurrencyBrl(monthlyAmount)}/MÊS`
 }
 
+function findExistingPaymentPlanGroupKey(
+  groupMap: Map<string, PaymentPlanGroup>,
+  label: string,
+  totalHours: number,
+  workloadVariantId?: number,
+) {
+  const normalizedLabel = normalizeWorkloadText(label)
+
+  for (const [key, group] of groupMap.entries()) {
+    if (workloadVariantId && group.workloadVariantId === workloadVariantId) return key
+    if (normalizedLabel && normalizeWorkloadText(group.label) === normalizedLabel) return key
+    if (totalHours > 0 && group.totalHours === totalHours) return key
+  }
+
+  return null
+}
+
 function buildPaymentPlanGroups(
   workloadOptions: string[] = [],
   priceItems: CatalogPriceItem[] = [],
@@ -316,13 +337,20 @@ function buildPaymentPlanGroups(
     const label = item.workloadName.trim() || (item.totalHours ? `${item.totalHours} Horas` : '')
     if (!label) continue
 
-    const key = item.workloadVariantId ? String(item.workloadVariantId) : normalizeWorkloadKey(label)
+    const totalHours = item.totalHours || parseHours(label)
+    const existingKey = findExistingPaymentPlanGroupKey(
+      groupMap,
+      label,
+      totalHours,
+      item.workloadVariantId ?? undefined,
+    )
+    const key = existingKey || (item.workloadVariantId ? String(item.workloadVariantId) : normalizeWorkloadKey(label))
     const currentGroup = groupMap.get(key)
     const nextGroup: PaymentPlanGroup = currentGroup ?? {
       value: key,
       label,
       workloadVariantId: item.workloadVariantId ?? undefined,
-      totalHours: item.totalHours || parseHours(label),
+      totalHours,
       options: [],
     }
 
@@ -330,7 +358,13 @@ function buildPaymentPlanGroups(
       groupMap.set(key, nextGroup)
     }
 
-    if (!nextGroup.options.some((option) => option.pricingId === item.id)) {
+    if (
+      !nextGroup.options.some(
+        (option) =>
+          option.pricingId === item.id ||
+          (option.amountCents === item.amountCents && option.installmentsMax === item.installmentsMax),
+      )
+    ) {
       nextGroup.options.push({
         value: String(item.id),
         label: formatInstallmentPriceLabel(item.amountCents, item.installmentsMax),
@@ -345,12 +379,16 @@ function buildPaymentPlanGroups(
     const label = option.trim()
     if (!label) continue
 
+    const totalHours = parseHours(label)
+    const existingKey = findExistingPaymentPlanGroupKey(groupMap, label, totalHours)
+    if (existingKey) continue
+
     const key = normalizeWorkloadKey(label)
     if (!groupMap.has(key)) {
       groupMap.set(key, {
         value: key,
         label,
-        totalHours: parseHours(label),
+        totalHours,
         options: fallbackPriceLabel
           ? [
               {
@@ -368,7 +406,9 @@ function buildPaymentPlanGroups(
   return [...groupMap.values()]
     .map((group) => ({
       ...group,
-      options: [...group.options].sort((left, right) => left.amountCents - right.amountCents || left.installmentsMax - right.installmentsMax),
+      options: [...group.options].sort(
+        (left, right) => left.amountCents - right.amountCents || left.installmentsMax - right.installmentsMax,
+      ),
     }))
     .sort((left, right) => left.totalHours - right.totalHours || left.label.localeCompare(right.label))
 }
@@ -404,7 +444,7 @@ function resolveCoverImage(image?: string) {
 
 function resolvePixMessage(pixText?: string) {
   const normalizedPixText = pixText?.trim() ?? ''
-  return normalizedPixText || 'Condições comerciais e descontos são confirmados no atendimento.'
+  return normalizedPixText || '*À vista no PIX: consulte o atendimento.'
 }
 
 function normalizeCpf(value: string) {
@@ -554,29 +594,85 @@ function FieldError({ message }: { message?: string }) {
   return <p className="mt-1 text-[12px] font-medium text-[#d53030]">{message}</p>
 }
 
-function PostInfoRow({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex items-start gap-2 rounded-[12px] bg-[#eef5ff] px-3 py-2 text-[13px] font-semibold leading-[1.35] text-[#1e5ec8]">
-      <AlertIcon className="mt-[1px] h-4 w-4 shrink-0" />
-      <span>{children}</span>
-    </div>
+function PostInfoRow({
+  children,
+  onClick,
+}: {
+  children: ReactNode
+  onClick?: () => void
+}) {
+  const content = (
+    <>
+      <AlertIcon className="h-[21px] w-[21px] shrink-0 text-black" />
+      <span className="font-['Liberation_Sans'] underline underline-offset-2">{children}</span>
+    </>
   )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className="flex items-center gap-[7px] text-[12px] leading-[20px] text-[#066aff]"
+        onClick={onClick}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return <div className="flex items-center gap-[7px] text-[12px] leading-[20px] text-[#066aff]">{content}</div>
 }
 
-function PostPriceCard({ priceLabel, pixMessage }: { priceLabel: string; pixMessage: string }) {
+function parseMonthlyAmountFromLabel(value: string) {
+  const match = value.match(/R\$\s*([\d.]+,\d{2})/i)
+  if (!match) return null
+  return Number.parseFloat(match[1].replace(/\./g, '').replace(',', '.'))
+}
+
+function formatDiscountPercent(oldPriceLabel?: string, currentPriceLabel?: string) {
+  const oldAmount = parseMonthlyAmountFromLabel(oldPriceLabel ?? '')
+  const currentAmount = parseMonthlyAmountFromLabel(currentPriceLabel ?? '')
+  if (!oldAmount || !currentAmount || oldAmount <= currentAmount) return null
+
+  const discount = ((oldAmount - currentAmount) / oldAmount) * 100
+  return String(Math.floor(discount))
+}
+
+function PostPriceCard({
+  priceLabel,
+  pixMessage,
+  oldPriceLabel,
+}: {
+  priceLabel: string
+  pixMessage: string
+  oldPriceLabel?: string
+}) {
+  const discountPercent = formatDiscountPercent(oldPriceLabel, priceLabel)
+
   return (
-    <div className="mt-2 rounded-[18px] border border-[#d6e4ff] bg-[#f8fbff] p-4 shadow-[0_10px_25px_rgba(15,46,98,0.08)]">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full max-w-[240px] items-center overflow-hidden rounded-[14px] bg-[#0a8f1f] text-white shadow-[0_12px_24px_rgba(10,143,31,0.16)]">
-          <div className="flex min-w-[78px] flex-col items-center justify-center px-3 py-3 text-center font-['Kumbh_Sans'] text-[13px] font-black uppercase leading-[1.05]"><span>30%</span><span className="font-light">OFF</span></div>
-          <div className="h-10 w-px bg-white/35" />
-          <div className="px-3 py-3 font-['Kumbh_Sans'] text-[13px] leading-[1.1]"><strong className="block font-extrabold">Desconto</strong><span>Pontualidade</span></div>
+    <div className="mt-[4px]">
+      <div className="flex flex-col gap-[12px] sm:flex-row sm:items-center sm:gap-[16px]">
+        <div className="flex h-[59px] w-full max-w-[195px] items-center justify-between overflow-hidden rounded-[8px] bg-[#04930e] px-[12px] py-[6px] text-white">
+          <div className="w-[46px] font-['Kumbh_Sans'] text-[16px] font-black leading-[1.05]">
+            <div>{discountPercent ? `${discountPercent}%` : 'Oferta'}</div>
+            <div className="font-light uppercase">{discountPercent ? 'OFF' : 'Ativa'}</div>
+          </div>
+          <div className="h-[26px] w-px bg-white/45" />
+          <div className="pr-1 font-['Kumbh_Sans'] text-[16px] leading-[1.15]">
+            <strong className="block font-extrabold">Desconto</strong>
+            <span className="font-normal">Pontualidade</span>
+          </div>
         </div>
 
         <div className="flex-1 font-['Kumbh_Sans'] text-[#0b111f]">
-          <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#4d5f86]">Por:</p>
-          <p className="text-[24px] font-extrabold leading-none text-[#0b111f]">{priceLabel}</p>
-          <p className="mt-2 text-[13px] leading-[1.35] text-[#4d5f86]">{pixMessage}</p>
+          {oldPriceLabel ? (
+            <p className="text-[14px] font-normal leading-[1.14] text-black line-through">{oldPriceLabel}</p>
+          ) : null}
+          <p className="text-[22px] font-normal leading-[1.14] text-black">
+            <span>Por: </span>
+            <span className="font-bold">{priceLabel}</span>
+          </p>
+          <p className="mt-[2px] text-[14px] font-medium leading-[1.14] text-black/50">{pixMessage}</p>
         </div>
       </div>
     </div>
@@ -590,6 +686,10 @@ export function CourseLeadForm({
   pixText,
   workloadOptions = [],
   priceItems = [],
+  oldInstallmentPrice,
+  regulatoryBodyId = null,
+  regulatoryBodyName = '',
+  regulatoryBodyComplement = '',
 }: Props) {
   const isGraduation = selection.courseType === 'graduacao'
   const currentCoursePath = selection.coursePath || (typeof window !== 'undefined' ? window.location.pathname : '')
@@ -624,6 +724,7 @@ export function CourseLeadForm({
   const [resumeOptions, setResumeOptions] = useState<ResumeCourseOption[]>([])
   const [selectedResumeJourneyId, setSelectedResumeJourneyId] = useState('')
   const [isContractModalOpen, setIsContractModalOpen] = useState(false)
+  const [isInternshipModalOpen, setIsInternshipModalOpen] = useState(false)
   const [contractLoading, setContractLoading] = useState(false)
   const [contractError, setContractError] = useState('')
   const [contractContent, setContractContent] = useState<InstitutionContractPayload | null>(null)
@@ -641,6 +742,13 @@ export function CourseLeadForm({
     selectedPaymentPlan?.label ||
     selectedWorkloadGroup?.options[0]?.label ||
     normalizePriceLabel(selection.priceLabel || '', { includeDeAfterInstallments: true })
+  const internshipRegulatoryBodyLabel = regulatoryBodyName.trim()
+  const internshipRegulatoryBodyComplement = regulatoryBodyComplement.trim()
+  const showInternshipInfoLink = !isGraduation && Boolean(regulatoryBodyId || internshipRegulatoryBodyLabel)
+  const internshipWorkloadLabel =
+    selectedWorkloadGroup?.label?.trim() ||
+    workloadOptions[0]?.trim() ||
+    'a carga horária selecionada'
 
   useEffect(() => {
     if (isGraduation || paymentPlanGroups.length === 0) return
@@ -1359,35 +1467,94 @@ export function CourseLeadForm({
         </div>
       </div>
     ) : null
+    const internshipInfoModal = isInternshipModalOpen ? (
+      <div
+        className="fixed inset-0 z-[81] flex items-center justify-center bg-[#07122d]/70 px-4 py-6"
+        role="presentation"
+        onClick={() => setIsInternshipModalOpen(false)}
+      >
+        <div
+          className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="course-internship-info-title"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-center justify-between gap-4 border-b border-[#e4e8f0] px-5 py-4 lg:px-6">
+            <h3
+              id="course-internship-info-title"
+              className="font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase leading-tight text-[#0b111f]"
+            >
+              Estágio e Prática Obrigatória
+            </h3>
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d9e0ea] text-[24px] leading-none text-[#0f2e62] transition hover:border-[#1e5ec8] hover:text-[#1e5ec8]"
+              aria-label="Fechar aviso sobre estágio e prática obrigatória"
+              onClick={() => setIsInternshipModalOpen(false)}
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 lg:px-6">
+            <div className="flex flex-col gap-4 text-[14px] leading-[1.6] text-[#273245]">
+              <p>
+                {`Este curso possui chancela do conselho de classe do ${internshipRegulatoryBodyLabel}. Alguns componentes práticos, estágios e exigências acadêmicas podem variar conforme a carga horária escolhida e a matriz curricular vigente.`}
+              </p>
+              {internshipRegulatoryBodyComplement ? (
+                <p className="font-semibold text-[#0f2e62]">{internshipRegulatoryBodyComplement}</p>
+              ) : null}
+              <p>{`Carga horária selecionada: ${internshipWorkloadLabel}.`}</p>
+              <p>
+                A confirmação das atividades obrigatórias, quando aplicáveis, acontece na trilha
+                acadêmica do curso e nas orientações fornecidas pela instituição durante a jornada
+                do aluno.
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-[#e4e8f0] px-5 py-4 lg:px-6">
+            <button
+              type="button"
+              className="inline-flex h-[48px] items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-6 font-['Kumbh_Sans'] text-[15px] font-extrabold uppercase text-white transition hover:opacity-95"
+              onClick={() => setIsInternshipModalOpen(false)}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null
 
     return (
       <>
-        <section className="w-full max-w-[552px] rounded-[30px] bg-white p-[15px] shadow-[0_4px_21px_rgba(0,0,0,0.25)] lg:p-5">
+        <section className="w-full max-w-[552px] rounded-[30px] bg-white p-[20px] shadow-[0_4px_21px_rgba(0,0,0,0.25)]">
         <div className="overflow-hidden rounded-[14px] bg-[#d7dbe4]">
           <img src={courseCoverImage} alt={selection.courseLabel} className="block h-[220px] w-full object-cover lg:h-[287px]" />
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-1 text-[12px] font-semibold text-[#4d5f86] lg:text-[13px]">
+        <div className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-1 font-['Kumbh_Sans'] text-[16px] font-semibold leading-[24px] text-[#212121]">
           {showResumeHint ? (
             <>
               <span>Já iniciou sua inscrição?</span>
-              <button type="button" className="text-[#1e5ec8] underline underline-offset-2" onClick={openResumeFlow}>Clique aqui para continuar</button>
+              <button type="button" className="font-semibold text-[#066aff] underline underline-offset-2" onClick={openResumeFlow}>Clique aqui para continuar</button>
             </>
           ) : (
             <>
               <span>Ainda não se inscreveu?</span>
-              <button type="button" className="text-[#1e5ec8] underline underline-offset-2" onClick={closeResumeFlow}>Clique aqui e inscreva-se</button>
+              <button type="button" className="font-semibold text-[#066aff] underline underline-offset-2" onClick={closeResumeFlow}>Clique aqui e inscreva-se</button>
             </>
           )}
         </div>
 
-        <div className="mt-3">
-          <h2 className="font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase leading-[1.15] text-[#0b111f] lg:text-[22px]">
+        <div className="mt-[10px]">
+          <h2 className="font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase leading-[25px] text-[#0b111f]">
             {isLookupMode ? 'Informe seu e-mail para continuar' : isSelectMode ? 'Selecione o curso' : 'Preencha o formulário para se inscrever'}
           </h2>
         </div>
 
-        <form className="mt-4 flex flex-col gap-3" onSubmit={isLookupMode ? handleResumeLookup : isSelectMode ? handleResumeSelection : handleSubmit} noValidate>
+        <form className="mt-[14px] flex flex-col gap-[14px]" onSubmit={isLookupMode ? handleResumeLookup : isSelectMode ? handleResumeSelection : handleSubmit} noValidate>
           {isLookupMode ? (
             <>
               <div>
@@ -1399,18 +1566,18 @@ export function CourseLeadForm({
                   maxLength={120}
                   value={resumeEmail}
                   onChange={(event) => setResumeEmail(event.target.value)}
-                  className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', resumeErrors.email ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')}
+                  className={['h-[48px] w-full rounded-[8px] border bg-[#e8e9ea] px-3 font-[\"Liberation_Sans\"] text-[16px] text-black outline-none transition placeholder:text-black/80', resumeErrors.email ? 'border-[#d53030]' : 'border-[rgba(0,0,0,0.15)] focus:border-[#066aff]'].join(' ')}
                 />
                 <FieldError message={resumeErrors.email} />
               </div>
 
-              <label className="flex items-start gap-3 rounded-[12px] bg-[#f7f9fc] px-3 py-3 text-[12px] leading-[1.35] text-[#273245]">
-                <input type="checkbox" checked={resumeAgreementAccepted} onChange={(event) => setResumeAgreementAccepted(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#1e5ec8]" />
+              <label className="flex items-start gap-[7px] text-[14px] leading-[16px] text-black">
+                <input type="checkbox" checked={resumeAgreementAccepted} onChange={(event) => setResumeAgreementAccepted(event.target.checked)} className="mt-0.5 h-[24px] w-[24px] shrink-0 rounded-[4px] border border-black/40 accent-[#066aff]" />
                 {postAgreementCopy}
               </label>
               <FieldError message={resumeErrors.agreement} />
 
-              <button type="submit" className="mt-1 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={resumeLoading}>
+              <button type="submit" className="mt-[2px] flex h-[51px] w-full items-center justify-center rounded-[12px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={resumeLoading}>
                 {resumeLoading ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
               </button>
             </>
@@ -1421,25 +1588,25 @@ export function CourseLeadForm({
                 <FieldError message={resumeErrors.courseId} />
               </div>
 
-              <button type="submit" className="mt-1 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={resumeLoading}>
+              <button type="submit" className="mt-[2px] flex h-[51px] w-full items-center justify-center rounded-[12px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={resumeLoading}>
                 {resumeLoading ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
               </button>
             </>
           ) : step === 1 ? (
             <>
               <div>
-                <input ref={nameInputRef} type="text" placeholder="Nome" autoComplete="name" maxLength={120} value={fullName} onChange={(event) => setFullName(normalizeName(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.fullName ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                <input ref={nameInputRef} type="text" placeholder="Nome completo" autoComplete="name" maxLength={120} value={fullName} onChange={(event) => setFullName(normalizeName(event.target.value))} className={['h-[48px] w-full rounded-[8px] border bg-[#e8e9ea] px-3 font-[\"Liberation_Sans\"] text-[16px] text-black outline-none transition placeholder:text-black/80', errors.fullName ? 'border-[#d53030]' : 'border-[rgba(0,0,0,0.15)] focus:border-[#066aff]'].join(' ')} />
                 <FieldError message={errors.fullName} />
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-[14px] sm:grid-cols-2">
                 <div>
-                  <input type="email" placeholder="Email" autoComplete="email" maxLength={120} value={email} onChange={(event) => setEmail(event.target.value)} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.email ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                  <input type="email" placeholder="Email" autoComplete="email" maxLength={120} value={email} onChange={(event) => setEmail(event.target.value)} className={['h-[48px] w-full rounded-[8px] border bg-[#e8e9ea] px-3 font-[\"Liberation_Sans\"] text-[16px] text-black outline-none transition placeholder:text-black/80', errors.email ? 'border-[#d53030]' : 'border-[rgba(0,0,0,0.15)] focus:border-[#066aff]'].join(' ')} />
                   <FieldError message={errors.email} />
                 </div>
 
                 <div>
-                  <input type="tel" inputMode="numeric" placeholder="WhatsApp" autoComplete="tel-national" maxLength={15} value={phone} onChange={(event) => setPhone(formatPhoneMask(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.phone ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                  <input type="tel" inputMode="numeric" placeholder="Telefone" autoComplete="tel-national" maxLength={15} value={phone} onChange={(event) => setPhone(formatPhoneMask(event.target.value))} className={['h-[48px] w-full rounded-[8px] border bg-[#e8e9ea] px-3 font-[\"Liberation_Sans\"] text-[16px] text-black outline-none transition placeholder:text-black/80', errors.phone ? 'border-[#d53030]' : 'border-[rgba(0,0,0,0.15)] focus:border-[#066aff]'].join(' ')} />
                   <FieldError message={errors.phone} />
                 </div>
               </div>
@@ -1449,19 +1616,23 @@ export function CourseLeadForm({
                 <FieldError message={errors.workload} />
               </div>
 
-              {!advanceLoading ? <PostInfoRow>Saiba mais sobre o Estágio e a Prática Obrigatória</PostInfoRow> : null}
+              {!advanceLoading && showInternshipInfoLink ? (
+                <PostInfoRow onClick={() => setIsInternshipModalOpen(true)}>
+                  Saiba mais sobre o Estágio e a Prática Obrigatória
+                </PostInfoRow>
+              ) : null}
 
-              <label className="flex items-start gap-3 rounded-[12px] bg-[#f7f9fc] px-3 py-3 text-[12px] leading-[1.35] text-[#273245]">
-                <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#1e5ec8]" />
+              <label className="flex items-start gap-[7px] text-[14px] leading-[16px] text-black">
+                <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-0.5 h-[24px] w-[24px] shrink-0 rounded-[4px] border border-black/40 accent-[#066aff]" />
                 {postAgreementCopy}
               </label>
               <FieldError message={errors.agreement} />
 
-              <button type="submit" className="mt-1 flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={advanceLoading} aria-busy={advanceLoading}>
+              <button type="submit" className="mt-[2px] flex h-[51px] w-full items-center justify-center rounded-[12px] bg-gradient-to-r from-[#14418d] to-[#0c033c] font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60" disabled={advanceLoading} aria-busy={advanceLoading}>
                 {advanceLoading ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
               </button>
 
-              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} />
+              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} oldPriceLabel={oldInstallmentPrice} />
 
               <div className="mt-1">
                 <button type="button" className="inline-flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.02em] text-[#1e5ec8]" onClick={() => setVoucherOpen((current) => !current)}>
@@ -1480,7 +1651,7 @@ export function CourseLeadForm({
           ) : (
             <>
               <div>
-                <input ref={cpfInputRef} type="text" inputMode="numeric" placeholder="CPF" autoComplete="off" maxLength={14} value={cpf} onChange={(event) => setCpf(formatCpfMask(event.target.value))} className={['h-12 w-full rounded-[12px] border bg-[#eef1f5] px-4 text-[15px] text-[#0b111f] outline-none transition', errors.cpf ? 'border-[#d53030]' : 'border-transparent focus:border-[#1e5ec8]'].join(' ')} />
+                <input ref={cpfInputRef} type="text" inputMode="numeric" placeholder="CPF" autoComplete="off" maxLength={14} value={cpf} onChange={(event) => setCpf(formatCpfMask(event.target.value))} className={['h-[48px] w-full rounded-[8px] border bg-[#e8e9ea] px-3 font-[\"Liberation_Sans\"] text-[16px] text-black outline-none transition placeholder:text-black/80', errors.cpf ? 'border-[#d53030]' : 'border-[rgba(0,0,0,0.15)] focus:border-[#066aff]'].join(' ')} />
                 <FieldError message={errors.cpf} />
               </div>
 
@@ -1489,20 +1660,24 @@ export function CourseLeadForm({
                 <FieldError message={errors.paymentPlan} />
               </div>
 
-              <PostInfoRow>Saiba mais sobre o Estágio e a Prática Obrigatória</PostInfoRow>
+              {showInternshipInfoLink ? (
+                <PostInfoRow onClick={() => setIsInternshipModalOpen(true)}>
+                  Saiba mais sobre o Estágio e a Prática Obrigatória
+                </PostInfoRow>
+              ) : null}
 
-              <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <button type="button" className="inline-flex h-[50px] items-center justify-center gap-1 rounded-[14px] border border-[#d9e0ea] px-5 font-['Kumbh_Sans'] text-[15px] font-bold text-[#0f2e62] transition hover:border-[#1e5ec8] hover:text-[#1e5ec8]" onClick={() => { setErrors({}); setSubmitStatus('idle'); setSubmitMessage(''); setStep(1) }}>
+              <div className="mt-[2px] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button type="button" className="inline-flex h-[50px] items-center justify-center gap-1 rounded-[12px] border border-[#d9e0ea] px-5 font-['Kumbh_Sans'] text-[15px] font-bold text-[#0f2e62] transition hover:border-[#1e5ec8] hover:text-[#1e5ec8]" onClick={() => { setErrors({}); setSubmitStatus('idle'); setSubmitMessage(''); setStep(1) }}>
                   <ChevronLeftIcon className="h-4 w-4" />
                   <span>Voltar</span>
                 </button>
 
-                <button type="submit" className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-6 font-['Kumbh_Sans'] text-[16px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60 sm:w-auto" disabled={submitStatus === 'submitting'} aria-busy={submitStatus === 'submitting'}>
+                <button type="submit" className="flex h-[51px] w-full items-center justify-center rounded-[12px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-6 font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase text-white transition hover:opacity-95 disabled:opacity-60 sm:w-auto" disabled={submitStatus === 'submitting'} aria-busy={submitStatus === 'submitting'}>
                   {submitStatus === 'submitting' ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar inscrição</span>}
                 </button>
               </div>
 
-              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} />
+              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} oldPriceLabel={oldInstallmentPrice} />
 
               <div className="mt-1">
                 <button type="button" className="inline-flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.02em] text-[#1e5ec8]" onClick={() => setVoucherOpen((current) => !current)}>
@@ -1525,6 +1700,7 @@ export function CourseLeadForm({
         </form>
         </section>
         {contractModal}
+        {internshipInfoModal}
       </>
     )
   }

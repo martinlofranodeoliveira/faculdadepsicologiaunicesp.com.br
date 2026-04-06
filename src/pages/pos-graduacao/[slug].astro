@@ -6,6 +6,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/site/config'
 
 export const prerender = false
+const RELATED_COURSES_LIMIT = 8
 
 const { slug = '' } = Astro.params
 const course = await getPostCoursePageBySlug(slug)
@@ -15,7 +16,7 @@ if (course) {
   const pool = await getPostCoursePageSummaries()
   const sameArea = pool.filter((item) => item.path !== course.path && item.areaSlug === course.areaSlug)
   const fallback = sameArea.length > 0 ? sameArea : pool.filter((item) => item.path !== course.path)
-  relatedCourses = fallback.slice(0, 3)
+  relatedCourses = fallback.slice(0, RELATED_COURSES_LIMIT)
 }
 
 if (!course) {

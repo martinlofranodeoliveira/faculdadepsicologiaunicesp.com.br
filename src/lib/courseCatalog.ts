@@ -14,7 +14,6 @@ import {
   getPostCatalogCourseById,
   getPostCatalogCourseBySlug,
   getPostCatalogCourses,
-  getPostCatalogCourseSummaries,
   type CatalogCourse,
   type CatalogCourseSummary,
 } from './catalogApi'
@@ -22,6 +21,30 @@ import { normalizeComparableText } from './courseRoutes'
 
 export type CoursePageEntry = CatalogCourse
 export type CoursePageSummaryEntry = CatalogCourseSummary
+
+function summarizeCoursePage(course: CatalogCourse): CatalogCourseSummary {
+  return {
+    institutionId: course.institutionId,
+    institutionName: course.institutionName,
+    institutionSlug: course.institutionSlug,
+    courseType: course.courseType,
+    courseId: course.courseId,
+    slug: course.slug,
+    value: course.value,
+    path: course.path,
+    title: course.title,
+    rawLabel: course.rawLabel,
+    image: course.image,
+    currentInstallmentPrice: course.currentInstallmentPrice,
+    currentInstallmentPriceMonthly: course.currentInstallmentPriceMonthly,
+    oldInstallmentPrice: course.oldInstallmentPrice,
+    modality: course.modality,
+    modalityBadge: course.modalityBadge,
+    areaSlug: course.areaSlug,
+    primaryAreaLabel: course.primaryAreaLabel,
+    fixedInstallments: course.fixedInstallments,
+  }
+}
 
 function isPrimaryGraduationCourse(course: CatalogCourse | CatalogCourseSummary) {
   const target = normalizeComparableText(siteConfig.primaryGraduationSlug)
@@ -103,6 +126,6 @@ export async function getGraduationCoursePageSummaries(
 }
 
 export async function getPostCoursePageSummaries(force = false): Promise<CoursePageSummaryEntry[]> {
-  const courses = filterPostCourses(await getPostCatalogCourseSummaries(force))
+  const courses = filterPostCourses(await getPostCatalogCourses(force)).map(summarizeCoursePage)
   return useFallbackCourses(courses, fallbackPostCourseSummaries)
 }
