@@ -1,4 +1,4 @@
-﻿import { startTransition, useDeferredValue, useMemo, useState } from 'react'
+﻿import { startTransition, useDeferredValue, useEffect, useMemo, useState } from 'react'
 
 import type { PostCategoryCourse } from './postCategoryData'
 
@@ -21,7 +21,6 @@ const AREA_LABEL_OVERRIDES: Record<string, string> = {
 }
 
 const COURSE_TYPES = [
-  { value: 'todos', label: 'Tudo' },
   { value: 'ead', label: 'EAD' },
   { value: 'semipresencial', label: 'Semipresencial' },
   { value: 'presencial', label: 'Presencial' },
@@ -45,10 +44,12 @@ function resolveCourseImage(image: string) {
 
 export function PostCategoryExplorer({ courses }: Props) {
   const [query, setQuery] = useState('')
-  const [selectedArea, setSelectedArea] = useState('todos')
-  const [selectedType, setSelectedType] = useState('todos')
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([])
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const deferredQuery = useDeferredValue(query)
+  const ITEMS_PER_PAGE = 4
 
   const areas = useMemo(() => {
     const uniqueAreas = new Map<string, string>()
@@ -72,21 +73,31 @@ export function PostCategoryExplorer({ courses }: Props) {
       return leftLabel.localeCompare(rightLabel, 'pt-BR')
     })
 
-    return [
-      { value: 'todos', label: 'Todas' },
-      ...orderedAreas.map(([value, label]) => ({
-        value,
-        label: resolveAreaLabel(value, label),
-      })),
-    ]
+    return orderedAreas.map(([value, label]) => ({
+      value,
+      label: resolveAreaLabel(value, label),
+    }))
   }, [courses])
+
+  function toggleSelection(value: string, currentValues: string[], setter: (values: string[]) => void) {
+    startTransition(() => {
+      setter(
+        currentValues.includes(value)
+          ? currentValues.filter((item) => item !== value)
+          : [...currentValues, value],
+      )
+      setCurrentPage(1)
+    })
+  }
 
   const filteredCourses = useMemo(() => {
     const normalizedQuery = normalizeText(deferredQuery)
 
     return courses.filter((course) => {
-      const matchesArea = selectedArea === 'todos' || course.area === selectedArea
-      const matchesType = selectedType === 'todos' || course.modality?.toLowerCase() === selectedType
+      const courseArea = course.area?.trim() ?? ''
+      const courseType = course.modality?.toLowerCase() ?? ''
+      const matchesArea = !selectedAreas.length || selectedAreas.includes(courseArea)
+      const matchesType = !selectedTypes.length || selectedTypes.includes(courseType)
       const matchesQuery =
         !normalizedQuery ||
         normalizeText(course.title).includes(normalizedQuery) ||
@@ -94,7 +105,17 @@ export function PostCategoryExplorer({ courses }: Props) {
 
       return matchesArea && matchesType && matchesQuery
     })
-  }, [courses, deferredQuery, selectedArea, selectedType])
+  }, [courses, deferredQuery, selectedAreas, selectedTypes])
+
+  const totalPages = Math.max(1, Math.ceil(filteredCourses.length / ITEMS_PER_PAGE))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const pageStart = (safeCurrentPage - 1) * ITEMS_PER_PAGE
+  const pageCourses = filteredCourses.slice(pageStart, pageStart + ITEMS_PER_PAGE)
+  useEffect(() => {
+    if (currentPage !== safeCurrentPage) {
+      startTransition(() => setCurrentPage(safeCurrentPage))
+    }
+  }, [currentPage, safeCurrentPage])
 
   return (
     <div className="container mx-auto px-4 lg:px-8 max-w-[1240px] flex flex-col">
@@ -146,11 +167,10 @@ export function PostCategoryExplorer({ courses }: Props) {
                 <label key={type.value} className="flex items-center gap-[7px] cursor-pointer group">
                   <div className="relative flex items-center justify-center">
                     <input
-                      type="radio"
-                      name="courseType"
+                      type="checkbox"
                       value={type.value}
-                      checked={selectedType === type.value}
-                      onChange={() => startTransition(() => setSelectedType(type.value))}
+                      checked={selectedTypes.includes(type.value)}
+                      onChange={() => toggleSelection(type.value, selectedTypes, setSelectedTypes)}
                       className="peer appearance-none w-[24px] h-[24px] border border-gray-400 rounded-[4px] checked:bg-[#1b63de] checked:border-[#1b63de] transition-colors shrink-0"
                     />
                     <svg className="absolute w-[14px] h-[14px] text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -174,11 +194,10 @@ export function PostCategoryExplorer({ courses }: Props) {
                 <label key={area.value} className="flex items-center gap-[7px] cursor-pointer group">
                   <div className="relative flex items-center justify-center">
                     <input
-                      type="radio"
-                      name="courseArea"
+                      type="checkbox"
                       value={area.value}
-                      checked={selectedArea === area.value}
-                      onChange={() => startTransition(() => setSelectedArea(area.value))}
+                      checked={selectedAreas.includes(area.value)}
+                      onChange={() => toggleSelection(area.value, selectedAreas, setSelectedAreas)}
                       className="peer appearance-none w-[24px] h-[24px] border border-gray-400 rounded-[4px] checked:bg-[#1b63de] checked:border-[#1b63de] transition-colors shrink-0"
                     />
                     <svg className="absolute w-[14px] h-[14px] text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -197,20 +216,34 @@ export function PostCategoryExplorer({ courses }: Props) {
         <div className="flex flex-col w-full relative">
           <div className="flex items-center justify-end mb-[20px] gap-[41px]">
             <div className="flex flex-col font-['Kumbh_Sans'] font-medium justify-center relative shrink-0 text-[16px] text-[rgba(0,0,0,0.5)] whitespace-nowrap">
-              <p className="leading-[24px]">1-{filteredCourses.length} de {courses.length}</p>
+              <p className="leading-[24px]">
+                {filteredCourses.length ? `${pageStart + 1}-${Math.min(pageStart + ITEMS_PER_PAGE, filteredCourses.length)}` : '0-0'} de {filteredCourses.length}
+              </p>
             </div>
             <div className="flex items-center gap-[12px]">
-              <button type="button" className="opacity-25 cursor-not-allowed" aria-label="Página anterior">
+              <button
+                type="button"
+                className={safeCurrentPage === 1 ? 'opacity-25 cursor-not-allowed' : 'opacity-100 hover:opacity-70 transition-opacity'}
+                aria-label="Página anterior"
+                disabled={safeCurrentPage === 1}
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              >
                 <img src="/landing/arrow_back_ios.svg" alt="Anterior" className="w-[18px] h-[18px] object-contain" />
               </button>
-              <button type="button" className="opacity-100 hover:opacity-70 transition-opacity" aria-label="Próxima página">
+              <button
+                type="button"
+                className={safeCurrentPage >= totalPages ? 'opacity-25 cursor-not-allowed' : 'opacity-100 hover:opacity-70 transition-opacity'}
+                aria-label="Próxima página"
+                disabled={safeCurrentPage >= totalPages}
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              >
                 <img src="/landing/arrow_back_ios.svg" alt="Próximo" className="w-[18px] h-[18px] object-contain rotate-180" />
               </button>
             </div>
           </div>
 
           <div className="flex flex-col gap-[20px] w-full pb-8">
-            {filteredCourses.map((course) => (
+            {pageCourses.map((course) => (
               <article key={course.path} className="bg-white rounded-[22px] p-[14px] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)] flex flex-col sm:flex-row items-center gap-5 w-full transition-transform hover:-translate-y-1">
                 <div className="bg-black h-[180px] sm:h-[137px] w-full sm:w-[217px] rounded-[16px] overflow-hidden shrink-0 relative">
                   <img
@@ -257,9 +290,17 @@ export function PostCategoryExplorer({ courses }: Props) {
                 </div>
               </article>
             ))}
+            {!pageCourses.length ? (
+              <div className="rounded-[22px] bg-white p-8 text-center shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15)]">
+                <p className="font-['Kumbh_Sans'] text-[18px] font-bold text-[#0b111f]">Nenhum curso encontrado</p>
+                <p className="mt-2 text-[15px] text-[rgba(0,0,0,0.65)]">Ajuste os filtros para ver outras opções de pós-graduação.</p>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
     </div>
   )
 }
+
+
