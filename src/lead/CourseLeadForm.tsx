@@ -15,6 +15,7 @@ import {
 } from '@/course/journeyProgress'
 import type { CatalogPriceItem } from '@/lib/catalogApi'
 import { getCoursePath } from '@/lib/courseRoutes'
+import { PRIMARY_GRADUATION_JOURNEY_COURSE_ID } from '@/lib/graduation'
 import {
   fetchInstitutionContract,
   type InstitutionContractPayload,
@@ -420,9 +421,27 @@ function formatCpfMask(value: string) {
 }
 
 function validateCpf(value: string): string | undefined {
-  const digits = normalizeCpf(value)
-  if (!digits) return 'Informe o CPF.'
+  const rawDigits = value.replace(/[.\-\/\s]/g, '')
+  if (!rawDigits) return 'Informe o CPF.'
+
+  const digits = rawDigits.padStart(11, '0')
   if (digits.length !== 11) return 'Digite um CPF válido.'
+  if (/^(\d)\1{10}$/.test(digits)) return 'Digite um CPF válido.'
+
+  for (let target = 9; target < 11; target += 1) {
+    let digitSum = 0
+
+    for (let cursor = 0; cursor < target; cursor += 1) {
+      digitSum += Number.parseInt(digits[cursor] ?? '0', 10) * ((target + 1) - cursor)
+    }
+
+    digitSum = ((10 * digitSum) % 11) % 10
+
+    if (Number.parseInt(digits[target] ?? '0', 10) !== digitSum) {
+      return 'Digite um CPF válido.'
+    }
+  }
+
   return undefined
 }
 
@@ -860,7 +879,7 @@ export function CourseLeadForm({
       email: validateEmail(email),
       phone: validatePhone(phone),
       workload: selectedWorkloadGroup ? undefined : 'Selecione a carga horária.',
-      agreement: acceptedTerms ? undefined : 'Você precisa aceitar os termos para continuar.',
+      agreement: acceptedTerms ? undefined : 'Você precisa concordar com o contrato para continuar.',
     } satisfies FieldErrors
   }
 
@@ -1001,7 +1020,7 @@ export function CourseLeadForm({
 
     const nextErrors: ResumeFieldErrors = {
       email: validateEmail(resumeEmail),
-      agreement: resumeAgreementAccepted ? undefined : 'Você precisa aceitar os termos para continuar.',
+      agreement: resumeAgreementAccepted ? undefined : 'Você precisa concordar com o contrato para continuar.',
     }
     setResumeErrors(nextErrors)
     setResumeMessage('')
@@ -1111,7 +1130,7 @@ export function CourseLeadForm({
       fullName: validateFullName(fullName),
       email: validateEmail(email),
       phone: validatePhone(phone),
-      agreement: acceptedTerms ? undefined : 'Você precisa concordar com os termos.',
+      agreement: acceptedTerms ? undefined : 'Você precisa concordar com o contrato.',
     }
     setErrors(nextErrors)
 
@@ -1133,7 +1152,7 @@ export function CourseLeadForm({
       if (canUseJourney(selection, institutionSlug)) {
         try {
           const step1 = await createJourneyStep1({
-            course_id: selection.courseId,
+            course_id: PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
             full_name: fullName.trim(),
             email: email.trim(),
             phone: normalizePhone(phone),
@@ -1153,6 +1172,7 @@ export function CourseLeadForm({
         phone,
         journeyId,
         courseId: selection.courseId,
+        journeyCourseId: PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
         courseLabel: selection.courseLabel,
         courseValue: selection.courseValue,
         currentStep,
@@ -1257,7 +1277,7 @@ export function CourseLeadForm({
     const showResumeHint = resumeMode === 'default' || isSelectMode
     const postAgreementCopy = (
       <span>
-        Li e concordo com os{' '}
+        {'LI E CONCORDO COM OS '}
         <a
           href="#course-contract"
           className="font-semibold text-[#1e5ec8] underline underline-offset-2"
@@ -1267,9 +1287,8 @@ export function CourseLeadForm({
             openContractModal()
           }}
         >
-          Termos do Contrato de Prestação de Serviços Educacionais
+          TERMOS DO CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS.
         </a>
-        .
       </span>
     )
     const contractModal = isContractModalOpen ? (
@@ -1510,7 +1529,93 @@ export function CourseLeadForm({
     )
   }
 
+  const graduationAgreementCopy = (
+    <span>
+      {'LI E CONCORDO COM OS '}
+      <a
+        href="#course-contract"
+        className="font-semibold text-[#1e5ec8] underline underline-offset-2"
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          openContractModal()
+        }}
+      >
+        TERMOS DO CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS.
+      </a>
+    </span>
+  )
+  const graduationContractModal = isContractModalOpen ? (
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-[#07122d]/70 px-4 py-6"
+      role="presentation"
+      onClick={() => setIsContractModalOpen(false)}
+    >
+      <div
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="course-contract-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-4 border-b border-[#e4e8f0] px-5 py-4 lg:px-6">
+          <h3 id="course-contract-title" className="font-['Kumbh_Sans'] text-[18px] font-extrabold uppercase leading-tight text-[#0b111f]">
+            {contractContent?.title || 'Contrato de prestação de serviços educacionais'}
+          </h3>
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d9e0ea] text-[24px] leading-none text-[#0f2e62] transition hover:border-[#1e5ec8] hover:text-[#1e5ec8]"
+            aria-label="Fechar contrato"
+            onClick={() => setIsContractModalOpen(false)}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 lg:px-6 lg:py-5">
+          {contractLoading ? (
+            <div className="flex items-center gap-3 text-[14px] font-medium text-[#0f2e62]">
+              <SpinnerIcon className="h-5 w-5 animate-spin" />
+              <span>Carregando contrato...</span>
+            </div>
+          ) : contractError ? (
+            <div className="flex flex-col gap-3 text-[14px] text-[#273245]">
+              <p>{contractError}</p>
+              <button
+                type="button"
+                className="inline-flex w-fit items-center justify-center rounded-[12px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-4 py-3 font-['Kumbh_Sans'] text-[14px] font-extrabold uppercase text-white"
+                onClick={() => void loadContract(contractType)}
+              >
+                Tentar novamente
+              </button>
+            </div>
+          ) : contractContent?.html ? (
+            <div
+              className="prose prose-sm max-w-none text-[#273245]"
+              dangerouslySetInnerHTML={{ __html: contractContent.html }}
+            />
+          ) : (
+            <div className="whitespace-pre-line text-[14px] leading-[1.55] text-[#273245]">
+              {contractContent?.text || 'Contrato não encontrado para a instituição informada.'}
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-[#e4e8f0] px-5 py-4 lg:px-6">
+          <button
+            type="button"
+            className="inline-flex h-[48px] items-center justify-center rounded-[14px] bg-gradient-to-r from-[#14418d] to-[#0c033c] px-6 font-['Kumbh_Sans'] text-[15px] font-extrabold uppercase text-white transition hover:opacity-95"
+            onClick={() => setIsContractModalOpen(false)}
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null
+
   return (
+    <>
     <section className="w-full max-w-[552px] rounded-[30px] bg-white p-[15px] shadow-[0_4px_21px_rgba(0,0,0,0.25)] lg:p-5">
       <div className="overflow-hidden rounded-[14px] bg-[#d7dbe4]">
         <img src={courseCoverImage} alt={selection.courseLabel} className="block h-[220px] w-full object-cover lg:h-[287px]" />
@@ -1539,7 +1644,7 @@ export function CourseLeadForm({
 
         <label className="flex items-start gap-3 rounded-[12px] bg-[#f7f9fc] px-3 py-3 text-[12px] leading-[1.35] text-[#273245]">
           <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#1e5ec8]" />
-          <span>Ao continuar você concorda com nossos <a href="/termos-de-uso" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Termos de Uso</a> e <a href="/politica-de-privacidade" className="font-semibold text-[#1e5ec8] underline underline-offset-2">Política de Privacidade</a>.</span>
+          {graduationAgreementCopy}
         </label>
         <FieldError message={errors.agreement} />
 
@@ -1550,5 +1655,7 @@ export function CourseLeadForm({
         </button>
       </form>
     </section>
+    {graduationContractModal}
+    </>
   )
 }

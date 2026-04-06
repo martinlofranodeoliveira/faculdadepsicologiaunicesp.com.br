@@ -232,6 +232,7 @@ export function GraduationVestibularPage() {
 
   function persistLeadSnapshot(updates: Partial<GraduationVestibularLead> = {}) {
     if (!identity.fullName.trim()) return
+    const storedLead = readGraduationVestibularLead()
 
     storeGraduationVestibularLead({
       fullName: identity.fullName,
@@ -239,8 +240,16 @@ export function GraduationVestibularPage() {
       phone: identity.phone,
       journeyId: identity.journeyId ?? undefined,
       courseId: identity.courseId ?? undefined,
+      journeyCourseId: storedLead?.journeyCourseId,
       courseLabel: identity.courseLabel,
       courseValue: identity.courseValue,
+      cpf: storedLead?.cpf,
+      stateUf: storedLead?.stateUf,
+      city: storedLead?.city,
+      poleId: storedLead?.poleId,
+      poleName: storedLead?.poleName,
+      pcd: storedLead?.pcd,
+      pcdDetails: storedLead?.pcdDetails,
       entryMethod: mapAdmissionOptionToEntryMethod(selectedOptionId),
       presentationLetter: resumePresentation,
       essayThemeId: selectedEssayThemeId,
@@ -295,6 +304,34 @@ export function GraduationVestibularPage() {
 
     try {
       const step3Response = await updateJourneyStep3(identity.journeyId, step3Payload)
+      const storedLead = readGraduationVestibularLead()
+      const entryMethod =
+        typeof step3Payload.entry_method === 'string'
+          ? step3Payload.entry_method
+          : mapAdmissionOptionToEntryMethod(selectedOptionId)
+      const presentationLetter =
+        typeof step3Payload.presentation_letter === 'string'
+          ? step3Payload.presentation_letter
+          : storedLead?.presentationLetter
+      const essayThemeId =
+        typeof step3Payload.essay_theme_id === 'string'
+          ? step3Payload.essay_theme_id
+          : storedLead?.essayThemeId
+      const essayTitle =
+        typeof step3Payload.essay_title === 'string'
+          ? step3Payload.essay_title
+          : storedLead?.essayTitle
+      const essayText =
+        typeof step3Payload.essay_text === 'string'
+          ? step3Payload.essay_text
+          : storedLead?.essayText
+      const enemCode =
+        typeof step3Payload.enem_registration === 'string'
+          ? step3Payload.enem_registration
+          : typeof step3Payload.enem_code === 'string'
+            ? step3Payload.enem_code
+            : storedLead?.enemRegistration
+
       saveJourneyProgress({
         journeyId: identity.journeyId,
         courseType: 'graduacao',
@@ -304,6 +341,19 @@ export function GraduationVestibularPage() {
         fullName: identity.fullName,
         email: identity.email,
         phone: identity.phone,
+        cpf: storedLead?.cpf,
+        stateUf: storedLead?.stateUf,
+        city: storedLead?.city,
+        poleId: storedLead?.poleId,
+        poleName: storedLead?.poleName,
+        pcd: storedLead?.pcd,
+        pcdDetails: storedLead?.pcdDetails,
+        entryMethod,
+        presentationLetter,
+        essayThemeId,
+        essayTitle,
+        essayText,
+        enemRegistration: enemCode,
         currentStep: step3Response.current_step ?? 3,
       })
 
