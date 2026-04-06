@@ -7,7 +7,7 @@ export function Header({ onOpenPopup }: HeaderProps) {
     <header className="lp-header" id="inicio">
       <div className="lp-header__inner">
         <div className="lp-header__logos" aria-label="Instituicoes do grupo educacional">
-          <a className="lp-header__brand" href="#inicio" aria-label="Faculdade de Psicologia">
+          <a className="lp-header__brand" href="/" aria-label="Faculdade de Psicologia">
             <img
               className="lp-logo__image lp-logo__image--psychology"
               src="/landing/faculdade-de-psicologia-logo.webp"
