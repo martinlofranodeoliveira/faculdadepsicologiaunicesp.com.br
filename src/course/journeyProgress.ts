@@ -16,8 +16,20 @@ export type StoredJourneyProgress = {
   workloadVariantId?: number
   workloadLabel?: string
   cpf?: string
+  stateUf?: string
+  city?: string
+  poleId?: number
+  poleName?: string
+  pcd?: boolean
+  pcdDetails?: string
   pricingId?: number
   paymentPlanLabel?: string
+  entryMethod?: string
+  presentationLetter?: string
+  essayThemeId?: string
+  essayTitle?: string
+  essayText?: string
+  enemRegistration?: string
   currentStep?: number | string | null
   status?: string | null
   createdAt: number

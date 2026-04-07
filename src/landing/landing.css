@@ -4285,6 +4285,7 @@
 .lp-enroll-popup__back:focus-visible,
 .lp-enroll-popup__resume-link:focus-visible,
 .lp-enroll-popup__agreement a:focus-visible,
+.lp-enroll-popup__agreement-button:focus-visible,
 .lp-enroll-popup__close:focus-visible {
   outline: 2px solid rgba(30, 94, 200, 0.45);
   outline-offset: 2px;
@@ -4361,7 +4362,7 @@
 
 .lp-enroll-popup__agreement {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -4375,6 +4376,10 @@
   accent-color: #1e5ec8;
 }
 
+.lp-enroll-popup__agreement-copy {
+  display: inline;
+}
+
 .lp-enroll-popup__agreement span {
   color: #121826;
   font-family: 'Liberation Sans', Arial, sans-serif;
@@ -4384,6 +4389,164 @@
 
 .lp-enroll-popup__agreement a {
   color: #1e5ec8;
+}
+
+.lp-enroll-popup__agreement-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #1e5ec8;
+  font: inherit;
+  font-weight: 700;
+  line-height: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.lp-enroll-popup__contract-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(7, 18, 45, 0.72);
+}
+
+.lp-enroll-popup__contract-modal {
+  width: min(860px, 100%);
+  max-height: min(calc(100vh - 40px), 760px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.lp-enroll-popup__contract-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e4e8f0;
+  padding: 20px 22px;
+}
+
+.lp-enroll-popup__contract-modal-header h3 {
+  margin: 0;
+  color: #0b111f;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.lp-enroll-popup__contract-modal-close {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: 1px solid #d9e0ea;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f2e62;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.lp-enroll-popup__contract-modal-close:hover,
+.lp-enroll-popup__contract-modal-close:focus-visible {
+  border-color: #1e5ec8;
+  color: #1e5ec8;
+  outline: none;
+}
+
+.lp-enroll-popup__contract-modal-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 20px 22px;
+}
+
+.lp-enroll-popup__contract-modal-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #0f2e62;
+  font-family: 'Liberation Sans', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.lp-enroll-popup__contract-modal-state.is-error {
+  flex-direction: column;
+  align-items: flex-start;
+  color: #273245;
+  font-weight: 400;
+}
+
+.lp-enroll-popup__contract-modal-state.is-error p {
+  margin: 0;
+}
+
+.lp-enroll-popup__contract-modal-state.is-error button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #14418d 0%, #0c033c 100%);
+  padding: 0 18px;
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.lp-enroll-popup__contract-modal-content {
+  color: #273245;
+  font-family: 'Liberation Sans', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.lp-enroll-popup__contract-modal-content.is-text {
+  white-space: pre-line;
+}
+
+.lp-enroll-popup__contract-modal-content > :first-child {
+  margin-top: 0;
+}
+
+.lp-enroll-popup__contract-modal-content > :last-child {
+  margin-bottom: 0;
+}
+
+.lp-enroll-popup__contract-modal-footer {
+  border-top: 1px solid #e4e8f0;
+  padding: 18px 22px;
+}
+
+.lp-enroll-popup__contract-modal-confirm {
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #14418d 0%, #0c033c 100%);
+  padding: 0 24px;
+  color: #ffffff;
+  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .lp-enroll-popup__submit {
@@ -4540,5 +4703,25 @@
 
   .lp-enroll-popup__agreement span {
     font-size: 13px;
+  }
+
+  .lp-enroll-popup__contract-modal-backdrop {
+    padding: 12px;
+  }
+
+  .lp-enroll-popup__contract-modal {
+    max-height: min(calc(100vh - 24px), 760px);
+    border-radius: 22px;
+  }
+
+  .lp-enroll-popup__contract-modal-header,
+  .lp-enroll-popup__contract-modal-body,
+  .lp-enroll-popup__contract-modal-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .lp-enroll-popup__contract-modal-header h3 {
+    font-size: 16px;
   }
 }

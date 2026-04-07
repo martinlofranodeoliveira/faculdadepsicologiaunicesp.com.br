@@ -18,94 +18,94 @@ const POST_TOTAL_PRICE_CENTS = POST_MONTHLY_PRICE_CENTS * 18
 const POST_CONTENT_BY_SLUG: Record<string, FallbackPostContent> = {
   neuropsicologia: {
     description:
-      'Aprofunde sua atuação na interface entre cognição, comportamento e avaliação clínica, com uma trilha preparada para profissionais que precisam interpretar funções cerebrais, desenvolvimento humano e tomada de decisão terapêutica.',
+      'Aprofunde sua atuaÃ§Ã£o na interface entre cogniÃ§Ã£o, comportamento e avaliaÃ§Ã£o clÃ­nica, com uma trilha preparada para profissionais que precisam interpretar funÃ§Ãµes cerebrais, desenvolvimento humano e tomada de decisÃ£o terapÃªutica.',
     targetAudience:
-      'Psicólogos e profissionais da saúde que desejam atuar com avaliação neuropsicológica, reabilitação e acompanhamento interdisciplinar.',
+      'PsicÃ³logos e profissionais da saÃºde que desejam atuar com avaliaÃ§Ã£o neuropsicolÃ³gica, reabilitaÃ§Ã£o e acompanhamento interdisciplinar.',
     benefits:
-      'Estude fundamentos de neurociência aplicada, avaliação cognitiva, construção de raciocínio clínico e elaboração de condutas com olhar técnico.',
+      'Estude fundamentos de neurociÃªncia aplicada, avaliaÃ§Ã£o cognitiva, construÃ§Ã£o de raciocÃ­nio clÃ­nico e elaboraÃ§Ã£o de condutas com olhar tÃ©cnico.',
     differentials:
-      'Conteúdo organizado por trilhas, variações de carga horária e estrutura pensada para integração com prática supervisionada quando disponível.',
+      'ConteÃºdo organizado por trilhas, variaÃ§Ãµes de carga horÃ¡ria e estrutura pensada para integraÃ§Ã£o com prÃ¡tica supervisionada quando disponÃ­vel.',
     laborMarket:
-      'Atuação em clínicas, hospitais, centros de reabilitação, escolas, equipes multiprofissionais e consultoria especializada.',
-    featureTitle: 'Neuropsicologia aplicada à prática clínica',
+      'AtuaÃ§Ã£o em clÃ­nicas, hospitais, centros de reabilitaÃ§Ã£o, escolas, equipes multiprofissionais e consultoria especializada.',
+    featureTitle: 'Neuropsicologia aplicada Ã  prÃ¡tica clÃ­nica',
   },
   'psicologia-clinica': {
     description:
-      'Estrutura orientada para aprofundar escuta clínica, manejo de casos, planejamento terapêutico e ética profissional em cenários individuais, familiares e institucionais.',
+      'Estrutura orientada para aprofundar escuta clÃ­nica, manejo de casos, planejamento terapÃªutico e Ã©tica profissional em cenÃ¡rios individuais, familiares e institucionais.',
     targetAudience:
-      'Psicólogos que desejam fortalecer repertório clínico e ampliar segurança para condução terapêutica em diferentes contextos.',
+      'PsicÃ³logos que desejam fortalecer repertÃ³rio clÃ­nico e ampliar seguranÃ§a para conduÃ§Ã£o terapÃªutica em diferentes contextos.',
     benefits:
-      'A trilha reúne fundamentos de psicopatologia, técnicas de intervenção, condução de entrevistas e organização do processo terapêutico.',
+      'A trilha reÃºne fundamentos de psicopatologia, tÃ©cnicas de intervenÃ§Ã£o, conduÃ§Ã£o de entrevistas e organizaÃ§Ã£o do processo terapÃªutico.',
     differentials:
-      'Página e currículo preparados para atualização por API, com apresentação clara de carga horária, investimento e jornada de captação.',
+      'PÃ¡gina e currÃ­culo preparados para atualizaÃ§Ã£o por API, com apresentaÃ§Ã£o clara de carga horÃ¡ria, investimento e jornada de captaÃ§Ã£o.',
     laborMarket:
-      'Consultório próprio, clínicas, hospitais, instituições de acolhimento, escolas e organizações com foco em saúde mental.',
-    featureTitle: 'Clínica com base técnica e estrutura escalável',
+      'ConsultÃ³rio prÃ³prio, clÃ­nicas, hospitais, instituiÃ§Ãµes de acolhimento, escolas e organizaÃ§Ãµes com foco em saÃºde mental.',
+    featureTitle: 'ClÃ­nica com base tÃ©cnica e estrutura escalÃ¡vel',
   },
   'psicologia-escolar-e-educacional': {
     description:
-      'Uma pós voltada à compreensão dos processos de aprendizagem, desenvolvimento e mediação institucional dentro do ambiente educacional.',
+      'Uma pÃ³s voltada Ã  compreensÃ£o dos processos de aprendizagem, desenvolvimento e mediaÃ§Ã£o institucional dentro do ambiente educacional.',
     targetAudience:
-      'Psicólogos, pedagogos e profissionais da educação que atuam com mediação, inclusão, orientação e desenvolvimento escolar.',
+      'PsicÃ³logos, pedagogos e profissionais da educaÃ§Ã£o que atuam com mediaÃ§Ã£o, inclusÃ£o, orientaÃ§Ã£o e desenvolvimento escolar.',
     benefits:
-      'Explore avaliação institucional, aprendizagem, desenvolvimento infantil, relações escola-família e estratégias de intervenção.',
+      'Explore avaliaÃ§Ã£o institucional, aprendizagem, desenvolvimento infantil, relaÃ§Ãµes escola-famÃ­lia e estratÃ©gias de intervenÃ§Ã£o.',
     differentials:
-      'Estrutura pronta para destacar planos pedagógicos, diferenciais acadêmicos e variações de carga horária em páginas individuais.',
+      'Estrutura pronta para destacar planos pedagÃ³gicos, diferenciais acadÃªmicos e variaÃ§Ãµes de carga horÃ¡ria em pÃ¡ginas individuais.',
     laborMarket:
-      'Escolas, redes de ensino, clínicas de apoio educacional, consultoria pedagógica e programas de inclusão.',
-    featureTitle: 'Psicologia educacional com foco em intervenção',
+      'Escolas, redes de ensino, clÃ­nicas de apoio educacional, consultoria pedagÃ³gica e programas de inclusÃ£o.',
+    featureTitle: 'Psicologia educacional com foco em intervenÃ§Ã£o',
   },
   'psicologia-forense-e-juridica': {
     description:
-      'Aprofunde temas ligados a perícia, avaliação psicológica, escuta especializada e interface entre psicologia, sistema de justiça e políticas públicas.',
+      'Aprofunde temas ligados a perÃ­cia, avaliaÃ§Ã£o psicolÃ³gica, escuta especializada e interface entre psicologia, sistema de justiÃ§a e polÃ­ticas pÃºblicas.',
     targetAudience:
-      'Psicólogos interessados em atuação pericial, jurídica, socioeducativa e em contextos de mediação de conflitos.',
+      'PsicÃ³logos interessados em atuaÃ§Ã£o pericial, jurÃ­dica, socioeducativa e em contextos de mediaÃ§Ã£o de conflitos.',
     benefits:
-      'Estude fundamentos legais, técnicas de avaliação, produção de documentos e análise de contextos de vulnerabilidade e violência.',
+      'Estude fundamentos legais, tÃ©cnicas de avaliaÃ§Ã£o, produÃ§Ã£o de documentos e anÃ¡lise de contextos de vulnerabilidade e violÃªncia.',
     differentials:
-      'Organização pensada para campanhas segmentadas e para expansão futura com novos módulos e integrações de catálogo.',
+      'OrganizaÃ§Ã£o pensada para campanhas segmentadas e para expansÃ£o futura com novos mÃ³dulos e integraÃ§Ãµes de catÃ¡logo.',
     laborMarket:
-      'Tribunais, assistência social, varas de família, sistema socioeducativo, consultoria pericial e instituições públicas.',
-    featureTitle: 'Psicologia jurídica com jornada própria',
+      'Tribunais, assistÃªncia social, varas de famÃ­lia, sistema socioeducativo, consultoria pericial e instituiÃ§Ãµes pÃºblicas.',
+    featureTitle: 'Psicologia jurÃ­dica com jornada prÃ³pria',
   },
   'psicologia-infantil': {
     description:
-      'Curso orientado à compreensão do desenvolvimento infantil, da dinâmica familiar e das intervenções adequadas às diferentes fases da infância.',
+      'Curso orientado Ã  compreensÃ£o do desenvolvimento infantil, da dinÃ¢mica familiar e das intervenÃ§Ãµes adequadas Ã s diferentes fases da infÃ¢ncia.',
     targetAudience:
-      'Psicólogos e profissionais interessados em desenvolvimento infantil, acolhimento familiar e acompanhamento terapêutico de crianças.',
+      'PsicÃ³logos e profissionais interessados em desenvolvimento infantil, acolhimento familiar e acompanhamento terapÃªutico de crianÃ§as.',
     benefits:
-      'Aborde desenvolvimento emocional, avaliação de comportamento, construção de vínculo terapêutico e protocolos de acompanhamento.',
+      'Aborde desenvolvimento emocional, avaliaÃ§Ã£o de comportamento, construÃ§Ã£o de vÃ­nculo terapÃªutico e protocolos de acompanhamento.',
     differentials:
-      'Apresentação clara de posicionamento, oferta e captação para um nicho com alta procura em clínicas e ambientes escolares.',
+      'ApresentaÃ§Ã£o clara de posicionamento, oferta e captaÃ§Ã£o para um nicho com alta procura em clÃ­nicas e ambientes escolares.',
     laborMarket:
-      'Clínicas, escolas, consultórios, projetos sociais, equipes multiprofissionais e programas de suporte à infância.',
+      'ClÃ­nicas, escolas, consultÃ³rios, projetos sociais, equipes multiprofissionais e programas de suporte Ã  infÃ¢ncia.',
     featureTitle: 'Desenvolvimento infantil e cuidado especializado',
   },
   'psicologia-pastoral': {
     description:
-      'Integre escuta psicológica, acolhimento humano e contextos comunitários em uma formação voltada ao cuidado emocional em instituições e comunidades de fé.',
+      'Integre escuta psicolÃ³gica, acolhimento humano e contextos comunitÃ¡rios em uma formaÃ§Ã£o voltada ao cuidado emocional em instituiÃ§Ãµes e comunidades de fÃ©.',
     targetAudience:
-      'Psicólogos e profissionais que atuam em contextos pastorais, comunitários e projetos de suporte emocional.',
+      'PsicÃ³logos e profissionais que atuam em contextos pastorais, comunitÃ¡rios e projetos de suporte emocional.',
     benefits:
-      'Aprofunde acolhimento, sofrimento psíquico, ética do cuidado, mediação de conflitos e acompanhamento em redes de apoio.',
+      'Aprofunde acolhimento, sofrimento psÃ­quico, Ã©tica do cuidado, mediaÃ§Ã£o de conflitos e acompanhamento em redes de apoio.',
     differentials:
-      'Estrutura flexível para comunicação de nicho, expansão de conteúdo e vinculação com novos materiais vindos da API.',
+      'Estrutura flexÃ­vel para comunicaÃ§Ã£o de nicho, expansÃ£o de conteÃºdo e vinculaÃ§Ã£o com novos materiais vindos da API.',
     laborMarket:
-      'Instituições religiosas, projetos sociais, comunidades terapêuticas, atendimento comunitário e consultoria pastoral.',
-    featureTitle: 'Escuta, acolhimento e intervenção em comunidade',
+      'InstituiÃ§Ãµes religiosas, projetos sociais, comunidades terapÃªuticas, atendimento comunitÃ¡rio e consultoria pastoral.',
+    featureTitle: 'Escuta, acolhimento e intervenÃ§Ã£o em comunidade',
   },
   'psicologia-social': {
     description:
-      'Aprofunde leitura crítica de território, vínculos coletivos, políticas públicas e intervenção psicossocial em contextos de vulnerabilidade.',
+      'Aprofunde leitura crÃ­tica de territÃ³rio, vÃ­nculos coletivos, polÃ­ticas pÃºblicas e intervenÃ§Ã£o psicossocial em contextos de vulnerabilidade.',
     targetAudience:
-      'Psicólogos e profissionais que atuam com rede pública, assistência social, políticas sociais e atendimento comunitário.',
+      'PsicÃ³logos e profissionais que atuam com rede pÃºblica, assistÃªncia social, polÃ­ticas sociais e atendimento comunitÃ¡rio.',
     benefits:
-      'Estude território, exclusão social, políticas públicas, construção de vínculo e estratégias de atuação intersetorial.',
+      'Estude territÃ³rio, exclusÃ£o social, polÃ­ticas pÃºblicas, construÃ§Ã£o de vÃ­nculo e estratÃ©gias de atuaÃ§Ã£o intersetorial.',
     differentials:
-      'A estrutura do curso já nasce compatível com páginas, categoria e campanhas voltadas a áreas específicas da psicologia.',
+      'A estrutura do curso jÃ¡ nasce compatÃ­vel com pÃ¡ginas, categoria e campanhas voltadas a Ã¡reas especÃ­ficas da psicologia.',
     laborMarket:
-      'CRAS, CREAS, projetos sociais, políticas públicas, organizações do terceiro setor e atendimento em rede.',
-    featureTitle: 'Intervenção psicossocial orientada por território',
+      'CRAS, CREAS, projetos sociais, polÃ­ticas pÃºblicas, organizaÃ§Ãµes do terceiro setor e atendimento em rede.',
+    featureTitle: 'IntervenÃ§Ã£o psicossocial orientada por territÃ³rio',
   },
 }
 
@@ -141,14 +141,14 @@ function createCurriculumVariant(
   const disciplineHours = Math.max(20, Math.round(totalHours / 8))
 
   const disciplines = [
-    'Fundamentos Teóricos',
+    'Fundamentos TeÃ³ricos',
     'Leitura de Casos',
-    'Avaliação e Diagnóstico',
-    'Intervenções Contemporâneas',
-    'Ética e Responsabilidade',
+    'AvaliaÃ§Ã£o e DiagnÃ³stico',
+    'IntervenÃ§Ãµes ContemporÃ¢neas',
+    'Ã‰tica e Responsabilidade',
     'Pesquisa Aplicada',
-    'Prática Orientada',
-    'Seminário Integrador',
+    'PrÃ¡tica Orientada',
+    'SeminÃ¡rio Integrador',
   ].map((baseName, index) => ({
     id: workloadVariantId * 100 + index + 1,
     name: createDisciplineName(courseTitle, baseName),
@@ -201,23 +201,23 @@ const fallbackGraduationCourse: CatalogCourse = {
   title: 'Psicologia',
   rawLabel: 'Psicologia Presencial',
   description:
-    'A graduação presencial em Psicologia foi posicionada aqui como rota principal da operação, com foco em captação, apresentação clara da oferta e integração futura com os dados oficiais do catálogo.',
+    'A graduaÃ§Ã£o presencial em Psicologia foi posicionada aqui como rota principal da operaÃ§Ã£o, com foco em captaÃ§Ã£o, apresentaÃ§Ã£o clara da oferta e integraÃ§Ã£o futura com os dados oficiais do catÃ¡logo.',
   seoDescription:
-    'Conheça a graduação presencial em Psicologia, com página própria, formulário de inscrição e fluxo de vestibular preparado para integração.',
+    'ConheÃ§a a graduaÃ§Ã£o presencial em Psicologia, com pÃ¡gina prÃ³pria, formulÃ¡rio de inscriÃ§Ã£o e fluxo de vestibular preparado para integraÃ§Ã£o.',
   areaLabels: ['Psicologia'],
   primaryAreaLabel: 'Psicologia',
   areaSlug: 'psicologia',
   modality: 'presencial',
   modalityLabel: 'Presencial',
-  modalityBadge: 'GRADUAÇÃO PRESENCIAL',
+  modalityBadge: 'GRADUAÃ‡ÃƒO PRESENCIAL',
   offeringModalityText: 'Presencial',
   image: '/landing/faculdade-de-psicologia-logo.webp',
   galleryImages: ['/landing/faculdade-de-psicologia-logo.webp'],
   posPriceCents: 0,
-  currentInstallmentPrice: 'R$ 549,00/MÊS',
-  currentInstallmentPriceMonthly: 'R$ 549,00/MÊS',
+  currentInstallmentPrice: 'R$ 549,00/MÃŠS',
+  currentInstallmentPriceMonthly: 'R$ 549,00/MÃŠS',
   oldInstallmentPrice: 'De R$ 1.890,00',
-  pixText: 'Condições comerciais e bolsas são confirmadas no atendimento.',
+  pixText: 'CondiÃ§Ãµes comerciais e bolsas sÃ£o confirmadas no atendimento.',
   fixedInstallments: false,
   teachingPlanUrl: '',
   priceItems: [
@@ -239,21 +239,21 @@ const fallbackGraduationCourse: CatalogCourse = {
       name: 'Matriz curricular principal',
       totalHours: 4000,
       disciplines: [
-        { id: 1, name: 'História da Psicologia', hours: 120, sequence: 1 },
+        { id: 1, name: 'HistÃ³ria da Psicologia', hours: 120, sequence: 1 },
         { id: 2, name: 'Psicologia do Desenvolvimento', hours: 120, sequence: 2 },
         { id: 3, name: 'Teorias da Personalidade', hours: 120, sequence: 3 },
         { id: 4, name: 'Psicopatologia', hours: 120, sequence: 4 },
-        { id: 5, name: 'Avaliação Psicológica', hours: 120, sequence: 5 },
+        { id: 5, name: 'AvaliaÃ§Ã£o PsicolÃ³gica', hours: 120, sequence: 5 },
         { id: 6, name: 'Psicologia Social', hours: 120, sequence: 6 },
-        { id: 7, name: 'Ética Profissional', hours: 120, sequence: 7 },
-        { id: 8, name: 'Estágio Supervisionado', hours: 120, sequence: 8 },
+        { id: 7, name: 'Ã‰tica Profissional', hours: 120, sequence: 7 },
+        { id: 8, name: 'EstÃ¡gio Supervisionado', hours: 120, sequence: 8 },
       ],
     },
   ],
   targetAudience:
-    'Candidatos que buscam formação presencial em Psicologia, com base teórica sólida, prática supervisionada e desenvolvimento clínico e institucional progressivo.',
+    'Candidatos que buscam formaÃ§Ã£o presencial em Psicologia, com base teÃ³rica sÃ³lida, prÃ¡tica supervisionada e desenvolvimento clÃ­nico e institucional progressivo.',
   competenciesBenefits:
-    'A página foi estruturada para apresentar proposta de valor, trilha formativa, campos de atuação e pontos de apoio comercial sem depender de uma landing única.',
+    'A pÃ¡gina foi estruturada para apresentar proposta de valor, trilha formativa, campos de atuaÃ§Ã£o e pontos de apoio comercial sem depender de uma landing Ãºnica.',
   competitiveDifferentials:
     'Rota dedicada, vestibular separado, camada de dados pronta para API e possibilidade de incorporar o layout final do Figma sem refazer a arquitetura.',
   durationMonths: 60,
@@ -268,7 +268,19 @@ const fallbackGraduationCourse: CatalogCourse = {
   tccRequired: true,
   titulation: 'Bacharelado',
   laborMarket:
-    'Clínicas, consultórios, hospitais, escolas, organizações, assistência social, RH, políticas públicas e atuação em contextos comunitários.',
+    'ClÃ­nicas, consultÃ³rios, hospitais, escolas, organizaÃ§Ãµes, assistÃªncia social, RH, polÃ­ticas pÃºblicas e atuaÃ§Ã£o em contextos comunitÃ¡rios.',
+  regulatoryBodyId: null,
+  regulatoryBodyName: '',
+  regulatoryBodyComplement: '',
+  salaryAverage: null,
+  salaryJunior: null,
+  salaryPleno: null,
+  salarySenior: null,
+  salaryWithoutPos: null,
+  salaryWithPos: null,
+  institutionMecOrdinance: '',
+  institutionMecOrdinanceQrCodeImageUrl: '',
+  institutionMecOrdinanceQrCodeHref: '',
 }
 
 function siteName() {
@@ -283,15 +295,15 @@ function buildPostCourse(
   slug: string,
 ) {
   const content = POST_CONTENT_BY_SLUG[slug] ?? {
-    description: `A pós-graduação em ${title} organiza conteúdo, jornada comercial e página própria para fortalecer a captação e a navegação no catálogo.`,
-    targetAudience: `Profissionais que desejam aprofundar atuação em ${title.toLowerCase()}.`,
-    benefits: `O curso estrutura fundamentos, aplicação prática e aprofundamento progressivo em ${title.toLowerCase()}.`,
-    differentials: 'Página preparada para atualização de API, SEO e formulários dedicados por curso.',
-    laborMarket: `Atuação especializada em contextos ligados a ${title.toLowerCase()}.`,
+    description: `A pÃ³s-graduaÃ§Ã£o em ${title} organiza conteÃºdo, jornada comercial e pÃ¡gina prÃ³pria para fortalecer a captaÃ§Ã£o e a navegaÃ§Ã£o no catÃ¡logo.`,
+    targetAudience: `Profissionais que desejam aprofundar atuaÃ§Ã£o em ${title.toLowerCase()}.`,
+    benefits: `O curso estrutura fundamentos, aplicaÃ§Ã£o prÃ¡tica e aprofundamento progressivo em ${title.toLowerCase()}.`,
+    differentials: 'PÃ¡gina preparada para atualizaÃ§Ã£o de API, SEO e formulÃ¡rios dedicados por curso.',
+    laborMarket: `AtuaÃ§Ã£o especializada em contextos ligados a ${title.toLowerCase()}.`,
     featureTitle: title,
   }
 
-  const rawLabel = `Pós-graduação em ${title}`
+  const rawLabel = `PÃ³s-graduaÃ§Ã£o em ${title}`
   const value = `pos-${slug}`
   const path = getCoursePath({
     courseType: 'pos',
@@ -324,15 +336,15 @@ function buildPostCourse(
     areaSlug: 'psicologia',
     modality: 'ead',
     modalityLabel: 'EAD',
-    modalityBadge: 'PÓS-GRADUAÇÃO EAD',
+    modalityBadge: 'PÃ“S-GRADUAÃ‡ÃƒO EAD',
     offeringModalityText: 'EAD',
     image: image || '/landing/posgraduacao-banner.webp',
     galleryImages: image ? [image] : [],
     posPriceCents: POST_TOTAL_PRICE_CENTS,
     currentInstallmentPrice: '18X DE R$ 86,00',
-    currentInstallmentPriceMonthly: '18X R$ 86,00/MÊS',
-    oldInstallmentPrice: '18X R$ 132,00',
-    pixText: 'Condição promocional sujeita à disponibilidade comercial.',
+    currentInstallmentPriceMonthly: '18X R$ 86,00/MÃŠS',
+    oldInstallmentPrice: '18X R$ 329,00/MÊS',
+    pixText: 'CondiÃ§Ã£o promocional sujeita Ã  disponibilidade comercial.',
     fixedInstallments: false,
     teachingPlanUrl: '',
     priceItems,
@@ -353,6 +365,18 @@ function buildPostCourse(
     tccRequired: false,
     titulation: 'Especialista',
     laborMarket: content.laborMarket,
+    regulatoryBodyId: null,
+    regulatoryBodyName: '',
+    regulatoryBodyComplement: '',
+    salaryAverage: null,
+    salaryJunior: null,
+    salaryPleno: null,
+    salarySenior: null,
+    salaryWithoutPos: null,
+    salaryWithPos: null,
+    institutionMecOrdinance: '',
+    institutionMecOrdinanceQrCodeImageUrl: '',
+    institutionMecOrdinanceQrCodeHref: '',
   } satisfies CatalogCourse
 }
 
@@ -367,7 +391,7 @@ export const fallbackPostCourses: CatalogCourse[] = PSYCHOLOGY_POST_COURSES.map(
     getCourseSlug({
       courseType: 'pos',
       courseValue: course.fallbackValue,
-      courseLabel: `Pós-graduação em ${course.title}`,
+      courseLabel: `PÃ³s-graduaÃ§Ã£o em ${course.title}`,
     }),
   ),
 )

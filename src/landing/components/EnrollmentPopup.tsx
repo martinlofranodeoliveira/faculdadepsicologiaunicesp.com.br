@@ -5,6 +5,10 @@ import { saveCourseLeadDraft } from '@/course/courseLeadDraft'
 import { getCoursePath } from '@/lib/courseRoutes'
 import { PRIMARY_GRADUATION_JOURNEY_COURSE_ID } from '@/lib/graduation'
 import {
+  fetchInstitutionContract,
+  type InstitutionContractPayload,
+} from '@/lib/institutionContractsClient'
+import {
   createJourneyStep1,
   getPendingJourneys,
   resumeJourney,
@@ -278,10 +282,43 @@ function formatCpfMask(value: string): string {
 }
 
 function validateCpf(value: string): string | undefined {
-  const digits = normalizeCpf(value)
-  if (!digits) return 'Informe o CPF.'
+  const rawDigits = value.replace(/[.\-\/\s]/g, '')
+  if (!rawDigits) return 'Informe o CPF.'
+
+  const digits = rawDigits.padStart(11, '0')
   if (digits.length !== 11) return 'Digite um CPF válido.'
+  if (/^(\d)\1{10}$/.test(digits)) return 'Digite um CPF válido.'
+
+  for (let target = 9; target < 11; target += 1) {
+    let digitSum = 0
+
+    for (let cursor = 0; cursor < target; cursor += 1) {
+      digitSum += Number.parseInt(digits[cursor] ?? '0', 10) * ((target + 1) - cursor)
+    }
+
+    digitSum = ((10 * digitSum) % 11) % 10
+
+    if (Number.parseInt(digits[target] ?? '0', 10) !== digitSum) {
+      return 'Digite um CPF válido.'
+    }
+  }
+
   return undefined
+}
+
+function hasCompletedGraduationStep2(progress: {
+  cpf?: string
+  stateUf?: string
+  city?: string
+  pcd?: boolean
+  pcdDetails?: string
+}) {
+  if (!progress.cpf?.trim()) return false
+  if (!progress.stateUf?.trim()) return false
+  if (!progress.city?.trim()) return false
+  if (typeof progress.pcd !== 'boolean') return false
+  if (progress.pcd && !progress.pcdDetails?.trim()) return false
+  return true
 }
 
 function formatPoleOptionLabel(value: string): string {
@@ -389,7 +426,7 @@ function buildGraduationResumeLead(
     essayThemeId: readRecordString(step3, ['essay_theme_id']),
     essayTitle: readRecordString(step3, ['essay_title']),
     essayText: readRecordString(step3, ['essay_text']),
-    enemRegistration: readRecordString(step3, ['enem_registration']),
+    enemRegistration: readRecordString(step3, ['enem_registration', 'enem_code']),
   }
 }
 
@@ -406,7 +443,7 @@ async function sendGraduationInscritoToCrm(input: { courseId: number; courseLabe
   const normalizedCpf = normalizeCpf(input.cpf)
   const normalizedPhone = normalizePhone(input.phone)
   const pcdValue = input.pcd === 'sim' ? 'Sim' : 'Não'
-  const observacao = `GRADUACAO: Landing Page Faculdade de Psicologia | Inscrito | CPF: ${normalizedCpf || 'nao informado'} | Estado: ${input.stateUf || 'nao informado'} | Cidade: ${input.city || 'nao informada'} | Polo: ${input.poleName || 'nao informado'} | PCD: ${pcdValue}${input.pcd === 'sim' && input.pcdDetails.trim() ? ` | Detalhes PCD: ${input.pcdDetails.trim()}` : ''}`
+  const observacao = `GRADUACAO: Landing Page Faculdade de Psicologia | Inscrito | CPF: ${normalizedCpf || 'nao informado'} | Estado: ${input.stateUf || 'nao informado'} | Cidade: ${input.city || 'nao informada'} | Polo: ${input.poleName || 'sem polo'} | PCD: ${pcdValue}${input.pcd === 'sim' && input.pcdDetails.trim() ? ` | Detalhes PCD: ${input.pcdDetails.trim()}` : ''}`
 
   const payload = {
     aluno: 0,
@@ -606,6 +643,10 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
   const [advanceLoading, setAdvanceLoading] = useState(false)
   const [finalSubmitLoading, setFinalSubmitLoading] = useState(false)
   const [savedLead, setSavedLead] = useState<GraduationVestibularLead | null>(null)
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false)
+  const [contractLoading, setContractLoading] = useState(false)
+  const [contractError, setContractError] = useState('')
+  const [contractContent, setContractContent] = useState<InstitutionContractPayload | null>(null)
 
   const nameInputRef = useRef<HTMLInputElement | null>(null)
   const cpfInputRef = useRef<HTMLInputElement | null>(null)
@@ -626,9 +667,10 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
 
     const storedLead = readGraduationVestibularLead()
     const matchingStoredLead = matchesStoredLead(storedLead, selection) ? storedLead : null
+    const hasSavedStep2 = matchingStoredLead ? hasCompletedGraduationStep2(matchingStoredLead) : false
 
     setViewMode('default')
-    setCurrentStep(matchingStoredLead && (matchingStoredLead.cpf || matchingStoredLead.stateUf || matchingStoredLead.city || matchingStoredLead.pcd !== undefined) ? 2 : 1)
+    setCurrentStep(hasSavedStep2 ? 2 : 1)
     setFullName(matchingStoredLead?.fullName ?? '')
     setEmail(matchingStoredLead?.email ?? '')
     setPhone(matchingStoredLead?.phone ? formatPhoneMask(matchingStoredLead.phone) : '')
@@ -660,6 +702,10 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
     setAdvanceLoading(false)
     setFinalSubmitLoading(false)
     setSavedLead(matchingStoredLead)
+    setIsContractModalOpen(false)
+    setContractLoading(false)
+    setContractError('')
+    setContractContent(null)
   }, [isOpen, selection])
 
   useEffect(() => {
@@ -667,14 +713,19 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key !== 'Escape') return
+      if (isContractModalOpen) {
+        setIsContractModalOpen(false)
+        return
+      }
+      onClose()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isOpen, onClose])
+  }, [isContractModalOpen, isOpen, onClose])
 
   useEffect(() => {
     if (!isOpen) return
@@ -793,6 +844,117 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
   const activeSelection = selection
 
   const firstErrorMessage = errors.fullName ?? errors.email ?? errors.phone ?? errors.agreement ?? errors.cpf ?? errors.stateUf ?? errors.city ?? errors.poleId ?? errors.pcd ?? errors.pcdDetails ?? poleMessage ?? ''
+  const agreementCopy = (
+    <span className="lp-enroll-popup__agreement-copy">
+      {'LI E CONCORDO COM OS '}
+      <a
+        href="/termos-de-uso"
+        className="lp-enroll-popup__agreement-button"
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          openContractModal()
+        }}
+      >
+        TERMOS DO CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS.
+      </a>
+    </span>
+  )
+  const contractModal = isContractModalOpen ? (
+    <div
+      className="lp-enroll-popup__contract-modal-backdrop"
+      role="presentation"
+      onClick={(event) => {
+        event.stopPropagation()
+        setIsContractModalOpen(false)
+      }}
+    >
+      <div
+        className="lp-enroll-popup__contract-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lp-enroll-popup-contract-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="lp-enroll-popup__contract-modal-header">
+          <h3 id="lp-enroll-popup-contract-title">
+            {contractContent?.title || 'Contrato de prestação de serviços educacionais'}
+          </h3>
+          <button
+            type="button"
+            className="lp-enroll-popup__contract-modal-close"
+            aria-label="Fechar contrato"
+            onClick={() => setIsContractModalOpen(false)}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="lp-enroll-popup__contract-modal-body">
+          {contractLoading ? (
+            <div className="lp-enroll-popup__contract-modal-state">
+              <SpinnerIcon className="lp-enroll-popup__spinner" />
+              <span>Carregando contrato...</span>
+            </div>
+          ) : contractError ? (
+            <div className="lp-enroll-popup__contract-modal-state is-error">
+              <p>{contractError}</p>
+              <button type="button" onClick={() => void loadContract()}>
+                Tentar novamente
+              </button>
+            </div>
+          ) : contractContent?.html ? (
+            <div
+              className="lp-enroll-popup__contract-modal-content"
+              dangerouslySetInnerHTML={{ __html: contractContent.html }}
+            />
+          ) : (
+            <div className="lp-enroll-popup__contract-modal-content is-text">
+              {contractContent?.text || 'Contrato não encontrado para a instituição informada.'}
+            </div>
+          )}
+        </div>
+
+        <div className="lp-enroll-popup__contract-modal-footer">
+          <button
+            type="button"
+            className="lp-enroll-popup__contract-modal-confirm"
+            onClick={() => setIsContractModalOpen(false)}
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null
+
+  async function loadContract() {
+    setContractLoading(true)
+    setContractError('')
+
+    try {
+      const nextContract = await fetchInstitutionContract('graduation')
+      setContractContent(nextContract)
+    } catch (error) {
+      setContractContent(null)
+      setContractError(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível carregar o contrato agora. Tente novamente em instantes.',
+      )
+    } finally {
+      setContractLoading(false)
+    }
+  }
+
+  function openContractModal() {
+    setIsContractModalOpen(true)
+
+    if (contractLoading) return
+    if (contractContent || contractError) return
+
+    void loadContract()
+  }
 
   function openResumeFlow() {
     setViewMode('resume')
@@ -837,7 +999,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
 
     const nextErrors: ResumeErrors = {
       email: validateEmail(resumeEmail),
-      agreement: resumeAgreementAccepted ? undefined : 'Você precisa concordar com os termos para continuar.',
+      agreement: resumeAgreementAccepted ? undefined : 'Você precisa concordar com o contrato para continuar.',
     }
     setResumeErrors(nextErrors)
     setResumeMessage('')
@@ -886,7 +1048,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
       if (!lead) throw new Error('Não encontramos uma inscrição em andamento para este e-mail.')
 
       storeGraduationVestibularLead(lead)
-      if ((lead.currentStep ?? 0) >= 2) {
+      if ((lead.currentStep ?? 0) >= 3 || hasCompletedGraduationStep2(lead)) {
         window.location.assign('/graduacao/vestibular')
         return
       }
@@ -906,7 +1068,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
       fullName: validateFullName(fullName),
       email: validateEmail(email),
       phone: validatePhone(phone),
-      agreement: agreementAccepted ? undefined : 'Você precisa concordar com os termos para continuar.',
+      agreement: agreementAccepted ? undefined : 'Você precisa concordar com o contrato para continuar.',
     }
     setErrors(nextErrors)
     if (nextErrors.fullName || nextErrors.email || nextErrors.phone || nextErrors.agreement) {
@@ -1013,33 +1175,38 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
     let storedStep = 2
 
     try {
-      const step2Response = await updateJourneyStep2(journeyId, {
-        cpf: normalizeCpf(cpf),
-        estado: stateUf,
-        cidade: city,
-        pcd: pcd === 'sim',
-        quais_necessidades: pcd === 'sim' ? pcdDetails.trim() || null : null,
-        pole_id: selectedPole?.id ?? null,
-        polo: selectedPole?.name ?? null,
-      })
-      storedStep = step2Response.current_step ?? 2
-
       try {
-        await sendGraduationInscritoToCrm({
-          courseId: resolvedCourseId,
-          courseLabel: normalizedCourseLabel,
-          fullName,
-          email,
-          phone,
-          cpf,
-          stateUf,
-          city,
-          poleName: selectedPole?.name,
-          pcd: pcd as 'sim' | 'nao',
-          pcdDetails,
+        const step2Response = await updateJourneyStep2(journeyId, {
+          cpf: normalizeCpf(cpf),
+          estado: stateUf,
+          cidade: city,
+          pcd: pcd === 'sim',
+          quais_necessidades: pcd === 'sim' ? pcdDetails.trim() || null : null,
+          pole_id: selectedPole?.id ?? null,
+          polo: selectedPole?.name ?? null,
         })
+
+        storedStep = step2Response.current_step ?? 2
+
+        try {
+          await sendGraduationInscritoToCrm({
+            courseId: resolvedCourseId,
+            courseLabel: normalizedCourseLabel,
+            fullName,
+            email,
+            phone,
+            cpf,
+            stateUf,
+            city,
+            poleName: selectedPole?.name,
+            pcd: pcd as 'sim' | 'nao',
+            pcdDetails,
+          })
+        } catch (error) {
+          console.warn('Não foi possível enviar a etapa de inscrito da graduação para o CRM:', error)
+        }
       } catch (error) {
-        console.warn('Não foi possível enviar a etapa de inscrito da graduação para o CRM:', error)
+        console.warn('Não foi possível sincronizar a etapa 2 da graduação nesta etapa:', error)
       }
 
       storeGraduationVestibularLead({
@@ -1072,6 +1239,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
     }
   }
   return (
+    <>
     <div className="lp-enroll-popup" role="dialog" aria-modal="true" aria-labelledby="lp-enroll-popup-title" onClick={onClose}>
       <div className="lp-enroll-popup__panel" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="lp-enroll-popup__close" onClick={onClose} aria-label="Fechar formulário de inscrição">
@@ -1106,7 +1274,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
 
               <label className={`lp-enroll-popup__agreement ${resumeErrors.agreement ? 'is-invalid' : ''}`}>
                 <input type="checkbox" checked={resumeAgreementAccepted} onChange={(event) => setResumeAgreementAccepted(event.target.checked)} />
-                <span>Ao continuar você concorda com nossos <a href="/termos-de-uso" target="_blank" rel="noreferrer">Termos de uso</a> e <a href="/politica-de-privacidade" target="_blank" rel="noreferrer">Políticas de Privacidade</a></span>
+                {agreementCopy}
               </label>
 
               <div className="lp-enroll-popup__actions">
@@ -1133,7 +1301,7 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
 
               <label className={`lp-enroll-popup__agreement ${errors.agreement ? 'is-invalid' : ''}`}>
                 <input type="checkbox" checked={agreementAccepted} onChange={(event) => setAgreementAccepted(event.target.checked)} />
-                <span>Ao continuar você concorda com nossos <a href="/termos-de-uso" target="_blank" rel="noreferrer">Termos de uso</a> e <a href="/politica-de-privacidade" target="_blank" rel="noreferrer">Políticas de Privacidade</a></span>
+                {agreementCopy}
               </label>
 
               <button type="submit" className="lp-enroll-popup__submit" disabled={advanceLoading}>{advanceLoading ? <SpinnerIcon className="lp-enroll-popup__spinner" /> : <span>CONTINUAR</span>}</button>
@@ -1196,6 +1364,8 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
         </div>
       </div>
     </div>
+    {contractModal}
+    </>
   )
 }
 

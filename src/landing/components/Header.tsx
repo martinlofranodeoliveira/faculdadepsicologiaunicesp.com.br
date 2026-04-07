@@ -3,11 +3,36 @@ type HeaderProps = {
 }
 
 export function Header({ onOpenPopup }: HeaderProps) {
+  function handleCtaClick() {
+    if (typeof window === 'undefined') return
+
+    const currentPath = window.location.pathname
+    const isHome = currentPath === '/'
+    const isCoursePage =
+      (/^\/pos-graduacao\/[^/]+\/?$/i.test(currentPath) && currentPath !== '/pos-graduacao') ||
+      (/^\/graduacao\/[^/]+\/?$/i.test(currentPath) && currentPath !== '/graduacao')
+
+    if (isHome && onOpenPopup) {
+      onOpenPopup()
+      return
+    }
+
+    if (isCoursePage) {
+      const leadFormElement = document.getElementById('course-lead-form')
+      if (leadFormElement) {
+        leadFormElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+    }
+
+    window.location.href = '/pos-graduacao'
+  }
+
   return (
     <header className="lp-header" id="inicio">
       <div className="lp-header__inner">
         <div className="lp-header__logos" aria-label="Instituicoes do grupo educacional">
-          <a className="lp-header__brand" href="#inicio" aria-label="Faculdade de Psicologia">
+          <a className="lp-header__brand" href="/" aria-label="Faculdade de Psicologia">
             <img
               className="lp-logo__image lp-logo__image--psychology"
               src="/landing/faculdade-de-psicologia-logo.webp"
@@ -37,7 +62,7 @@ export function Header({ onOpenPopup }: HeaderProps) {
           </div>
         </div>
 
-        <button type="button" className="lp-header__cta" onClick={onOpenPopup}>
+        <button type="button" className="lp-header__cta" onClick={handleCtaClick}>
           QUERO ME MATRICULAR
         </button>
       </div>

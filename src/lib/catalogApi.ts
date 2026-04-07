@@ -1,4 +1,10 @@
-import { getCourseDisplayTitle, getCoursePath, normalizeComparableText, toSlug } from './courseRoutes'
+﻿import {
+  getCourseDisplayTitle,
+  getCoursePath,
+  normalizeComparableText,
+  normalizeCourseSlugByType,
+  toSlug,
+} from './courseRoutes'
 
 export type CourseType = 'graduacao' | 'pos'
 export type CourseModality = 'ead' | 'semipresencial' | 'presencial'
@@ -19,6 +25,7 @@ export type CatalogCurriculumDiscipline = {
   name: string
   hours: number
   sequence: number
+  semester?: number | null
 }
 
 export type CatalogCurriculumVariant = {
@@ -76,6 +83,18 @@ export type CatalogCourse = {
   tccRequired: boolean | null
   titulation: string
   laborMarket: string
+  regulatoryBodyId: number | null
+  regulatoryBodyName: string
+  regulatoryBodyComplement: string
+  salaryAverage: number | null
+  salaryJunior: number | null
+  salaryPleno: number | null
+  salarySenior: number | null
+  salaryWithoutPos: number | null
+  salaryWithPos: number | null
+  institutionMecOrdinance: string
+  institutionMecOrdinanceQrCodeImageUrl: string
+  institutionMecOrdinanceQrCodeHref: string
 }
 
 export type CatalogCourseSummary = Pick<
@@ -125,6 +144,9 @@ type ApiCourseListItem = {
   target_audience?: string | null
   competencies_benefits?: string | null
   competitive_differentials?: string | null
+  regulatory_body_id?: number | string | null
+  regulatory_body_name?: string | null
+  regulatory_body_complement?: string | null
   teaching_plan_path?: string | null
   main_image_url?: string | null
   modalities?: string | null
@@ -195,6 +217,24 @@ type ApiCourseMedia = {
   gallery_urls?: string[] | null
 }
 
+type ApiCourseTexts = {
+  salary_average?: number | string | null
+  salary_junior?: number | string | null
+  salary_pleno?: number | string | null
+  salary_senior?: number | string | null
+  salary_without_pos?: number | string | null
+  salary_with_pos?: number | string | null
+  ictSalaryAverage?: number | string | null
+  ictSalaryJunior?: number | string | null
+  ictSalaryPleno?: number | string | null
+  ictSalarySenior?: number | string | null
+  ictSalaryWithoutPos?: number | string | null
+  ictSalaryWithPos?: number | string | null
+  institution_mec_ordinance?: string | null
+  institution_mec_ordinance_qrcode_path?: string | null
+  institution_mec_ordinance_qrcode_url?: string | null
+}
+
 type ApiPricingItem = {
   id: number
   amount_cents?: number | null
@@ -221,11 +261,19 @@ type ApiCurriculumVariant = {
   disciplines?: ApiCurriculumDiscipline[] | null
 }
 
+type ApiCurriculumPayload = {
+  variants?: ApiCurriculumVariant[] | null
+  regulatory_body_id?: number | string | null
+  regulatory_body_name?: string | null
+  regulatory_body_complement?: string | null
+}
+
 type ApiCurriculumDiscipline = {
   discipline_id?: number | null
   discipline_name?: string | null
   discipline_hours?: number | null
   sequence_no?: number | null
+  semester?: number | null
 }
 
 const DEFAULT_CACHE_TTL_MS = parseCacheTtl(
@@ -445,6 +493,10 @@ function formatCurrency(amountCents: number): string {
   }).format(amountCents / 100)
 }
 
+function normalizeCurrencyText(value: string): string {
+  return value.replace(/\u00a0/g, ' ').trim()
+}
+
 function normalizeAmountCents(value: number | string | null | undefined): number {
   const parsed = Number(value ?? 0)
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0
@@ -602,6 +654,32 @@ function parseMecScoreValue(value: unknown): number | null {
   return null
 }
 
+function parseSalaryValue(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().replace(/\s+/g, '').replace(',', '.')
+    if (!normalized) return null
+
+    const parsed = Number.parseFloat(normalized)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
+  return null
+}
+
+function parseOptionalId(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.round(value) || null
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number.parseInt(value, 10)
+    return Number.isFinite(parsed) ? parsed || null : null
+  }
+
+  return null
+}
+
 function resolveMecScore(course: ApiCourseListItem, detail?: ApiCourseDetail | null) {
   const candidates = [
     detail?.mec_score,
@@ -672,6 +750,10 @@ function normalizeCurriculumVariants(
           name: normalizeText(discipline.discipline_name),
           hours: Number(discipline.discipline_hours ?? 0),
           sequence: Number(discipline.sequence_no ?? 0),
+          semester:
+            typeof discipline.semester === 'number' && Number.isFinite(discipline.semester)
+              ? Number(discipline.semester)
+              : null,
         }))
         .filter((discipline) => discipline.name)
         .sort((left, right) => left.sequence - right.sequence),
@@ -753,6 +835,18 @@ function getFallbackGraduationMonthlyAmount(title: string, modality: CourseModal
 
 function getFallbackPostMonthlyAmount() {
   return 8600
+}
+
+function getFallbackOldInstallmentPrice(courseType: CourseType, modality: CourseModality, monthlyGraduationAmount: number) {
+  if (courseType === 'pos') return '18X R$ 329,00/MÊS'
+  if (modality === 'presencial') return 'De R$ 1.890,00'
+  return `De ${formatCurrency(Math.round(monthlyGraduationAmount * 1.4)).toUpperCase()}`
+}
+
+function buildPixText(courseType: CourseType, totalPriceCents: number): string {
+  if (courseType !== 'pos' || !totalPriceCents) return ''
+  const pixValue = Math.floor((totalPriceCents * 0.9) / 100) * 100
+  return `*À vista no PIX: ${normalizeCurrencyText(formatCurrency(pixValue))}`
 }
 
 function resolveGraduationMonthlyAmount(course: ApiCourseListItem, priceItems: CatalogPriceItem[], title: string, modality: CourseModality) {
@@ -842,6 +936,12 @@ function buildCourseFromApi(
   media: ApiCourseMedia | null,
   pricingItems: CatalogPriceItem[],
   curriculumVariants: CatalogCurriculumVariant[],
+  texts: ApiCourseTexts | null,
+  regulatoryBody?: {
+    id: number | null
+    name: string
+    complement: string
+  },
 ): CatalogCourse {
   const seo = pickSeoFields(detail?.seo ?? listItem.seo)
   const rawLabel = firstNonEmpty(detail?.name, listItem.name)
@@ -849,7 +949,10 @@ function buildCourseFromApi(
     courseType,
     courseLabel: seo.courseName || rawLabel,
   })
-  const slug = toSlug(seo.slug || title || rawLabel || `curso-${listItem.id}`)
+  const slug = normalizeCourseSlugByType(
+    courseType,
+    seo.slug || title || rawLabel || `curso-${listItem.id}`,
+  )
   const value = `${courseType}-${slug}`
   const path = getCoursePath({
     courseType,
@@ -902,11 +1005,7 @@ function buildCourseFromApi(
       ? `18X ${formatCurrency(postMonthlyAmount).toUpperCase()}/MÊS`
       : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÊS`
   const oldInstallmentPrice =
-    courseType === 'pos'
-      ? `18X ${formatCurrency(Math.round(postMonthlyAmount * 1.53)).toUpperCase()}`
-      : modality === 'presencial'
-        ? 'De R$ 1.890,00'
-        : `De ${formatCurrency(Math.round(monthlyGraduationAmount * 1.4)).toUpperCase()}`
+    getFallbackOldInstallmentPrice(courseType, modality, monthlyGraduationAmount)
 
   const description =
     normalizeRichText(firstNonEmpty(detail?.description, listItem.description, seo.description)) ||
@@ -914,6 +1013,30 @@ function buildCourseFromApi(
   const seoDescription =
     normalizeRichText(firstNonEmpty(seo.description, detail?.description, listItem.description)) ||
     description
+  const institutionMecOrdinance = normalizeRichText(texts?.institution_mec_ordinance)
+  const salaryAverage = parseSalaryValue(texts?.salary_average ?? texts?.ictSalaryAverage)
+  const salaryJunior = parseSalaryValue(texts?.salary_junior ?? texts?.ictSalaryJunior)
+  const salaryPleno = parseSalaryValue(texts?.salary_pleno ?? texts?.ictSalaryPleno)
+  const salarySenior = parseSalaryValue(texts?.salary_senior ?? texts?.ictSalarySenior)
+  const salaryWithoutPos = parseSalaryValue(texts?.salary_without_pos ?? texts?.ictSalaryWithoutPos)
+  const salaryWithPos = parseSalaryValue(texts?.salary_with_pos ?? texts?.ictSalaryWithPos)
+  const institutionMecOrdinanceQrCodeImageUrl = toAbsoluteMediaUrl(
+    texts?.institution_mec_ordinance_qrcode_path,
+  )
+  const institutionMecOrdinanceQrCodeHref = toAbsoluteMediaUrl(
+    texts?.institution_mec_ordinance_qrcode_url,
+  )
+  const regulatoryBodyId =
+    regulatoryBody?.id ??
+    parseOptionalId(detail?.regulatory_body_id ?? listItem.regulatory_body_id)
+  const regulatoryBodyName = normalizeText(
+    regulatoryBody?.name || detail?.regulatory_body_name || listItem.regulatory_body_name,
+  )
+  const regulatoryBodyComplement = normalizeText(
+    regulatoryBody?.complement ||
+      detail?.regulatory_body_complement ||
+      listItem.regulatory_body_complement,
+  )
 
   return {
     institutionId: getInstitutionId(),
@@ -942,7 +1065,7 @@ function buildCourseFromApi(
     currentInstallmentPrice,
     currentInstallmentPriceMonthly,
     oldInstallmentPrice,
-    pixText: '',
+    pixText: buildPixText(courseType, postTotalPriceCents),
     fixedInstallments: false,
     teachingPlanUrl: resolveDocumentUrl(media?.teaching_plan?.teaching_plan_path ?? detail?.teaching_plan_path ?? listItem.teaching_plan_path),
     priceItems: pricingItems,
@@ -971,11 +1094,32 @@ function buildCourseFromApi(
     tccRequired: resolveTccRequired(listItem, detail),
     titulation: normalizeText(detail?.titulation ?? listItem.titulation),
     laborMarket: normalizeRichText(detail?.labor_market ?? listItem.labor_market),
+    regulatoryBodyId,
+    regulatoryBodyName,
+    regulatoryBodyComplement,
+    salaryAverage,
+    salaryJunior,
+    salaryPleno,
+    salarySenior,
+    salaryWithoutPos,
+    salaryWithPos,
+    institutionMecOrdinance,
+    institutionMecOrdinanceQrCodeImageUrl,
+    institutionMecOrdinanceQrCodeHref,
   }
 }
 
 function buildCourseSummaryFromApi(courseType: CourseType, listItem: ApiCourseListItem): CatalogCourseSummary {
-  const summaryCourse = buildCourseFromApi(courseType, listItem, null, null, normalizePricingItems(listItem.featured_pricing_options), [])
+  const summaryCourse = buildCourseFromApi(
+    courseType,
+    listItem,
+    null,
+    null,
+    normalizePricingItems(listItem.featured_pricing_options),
+    [],
+    null,
+    undefined,
+  )
   return summarizeCourse(summaryCourse)
 }
 
@@ -1024,14 +1168,19 @@ async function getCourseBundle(courseId: number, force = false) {
         media: null,
         pricingItems: [] as CatalogPriceItem[],
         curriculumVariants: [] as CatalogCurriculumVariant[],
+        texts: null as ApiCourseTexts | null,
+        regulatoryBodyId: null as number | null,
+        regulatoryBodyName: '',
+        regulatoryBodyComplement: '',
       }
     }
 
-    const [detailEnvelope, mediaEnvelope, pricingEnvelope, curriculumEnvelope] = await Promise.all([
+    const [detailEnvelope, mediaEnvelope, pricingEnvelope, curriculumEnvelope, textsEnvelope] = await Promise.all([
       optionalApiFetch<ApiCourseDetail>(`courses/${courseId}`),
       optionalApiFetch<ApiCourseMedia>(`courses/${courseId}/media`),
       optionalApiFetch<{ items?: ApiPricingItem[] }>(`courses/${courseId}/pricing-by-workload`),
-      optionalApiFetch<{ variants?: ApiCurriculumVariant[] }>(`courses/${courseId}/curriculum`),
+      optionalApiFetch<ApiCurriculumPayload>(`courses/${courseId}/curriculum`),
+      optionalApiFetch<{ texts?: ApiCourseTexts | null }>(`courses/${courseId}/texts`),
     ])
 
     return {
@@ -1039,6 +1188,10 @@ async function getCourseBundle(courseId: number, force = false) {
       media: mediaEnvelope?.data ?? null,
       pricingItems: normalizePricingItems(pricingEnvelope?.data?.items),
       curriculumVariants: normalizeCurriculumVariants(curriculumEnvelope?.data?.variants),
+      texts: textsEnvelope?.data?.texts ?? null,
+      regulatoryBodyId: parseOptionalId(curriculumEnvelope?.data?.regulatory_body_id),
+      regulatoryBodyName: normalizeText(curriculumEnvelope?.data?.regulatory_body_name),
+      regulatoryBodyComplement: normalizeText(curriculumEnvelope?.data?.regulatory_body_complement),
     }
   }, force)
 }
@@ -1049,7 +1202,20 @@ async function getCatalogCourses(courseType: CourseType, force = false): Promise
     const list = await getCourseList(courseType, force)
     const courses = await mapWithConcurrency(list, 6, async (item) => {
       const bundle = await getCourseBundle(Number(item.id ?? 0), force)
-      return buildCourseFromApi(courseType, item, bundle.detail, bundle.media, bundle.pricingItems, bundle.curriculumVariants)
+      return buildCourseFromApi(
+        courseType,
+        item,
+        bundle.detail,
+        bundle.media,
+        bundle.pricingItems,
+        bundle.curriculumVariants,
+        bundle.texts,
+        {
+          id: bundle.regulatoryBodyId,
+          name: bundle.regulatoryBodyName,
+          complement: bundle.regulatoryBodyComplement,
+        },
+      )
     })
     return dedupeCourses(courses)
   }, force)
@@ -1076,7 +1242,20 @@ async function getCatalogCourseBySlug(
     if (!match) return null
 
     const bundle = await getCourseBundle(Number(match.id ?? 0), force)
-    return buildCourseFromApi(courseType, match, bundle.detail, bundle.media, bundle.pricingItems, bundle.curriculumVariants)
+    return buildCourseFromApi(
+      courseType,
+      match,
+      bundle.detail,
+      bundle.media,
+      bundle.pricingItems,
+      bundle.curriculumVariants,
+      bundle.texts,
+      {
+        id: bundle.regulatoryBodyId,
+        name: bundle.regulatoryBodyName,
+        complement: bundle.regulatoryBodyComplement,
+      },
+    )
   }, force)
 }
 
@@ -1093,7 +1272,20 @@ async function getCatalogCourseById(
     if (!match) return null
 
     const bundle = await getCourseBundle(courseId, force)
-    return buildCourseFromApi(courseType, match, bundle.detail, bundle.media, bundle.pricingItems, bundle.curriculumVariants)
+    return buildCourseFromApi(
+      courseType,
+      match,
+      bundle.detail,
+      bundle.media,
+      bundle.pricingItems,
+      bundle.curriculumVariants,
+      bundle.texts,
+      {
+        id: bundle.regulatoryBodyId,
+        name: bundle.regulatoryBodyName,
+        complement: bundle.regulatoryBodyComplement,
+      },
+    )
   }, force)
 }
 
@@ -1132,8 +1324,10 @@ export async function getPostCatalogCourseSummaries(force = false) {
 export function splitDifferentials(text: string): string[] {
   const parsed = normalizeMultilineText(text)
     .split(/\n+/)
-    .map((line) => line.replace(/^[-•\s]+/, '').trim())
+    .map((line) => line.replace(/^[-â€¢\s]+/, '').trim())
     .filter(Boolean)
 
   return parsed.length ? parsed : [normalizeText(text)].filter(Boolean)
 }
+
+

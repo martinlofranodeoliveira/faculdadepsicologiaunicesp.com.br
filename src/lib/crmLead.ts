@@ -29,6 +29,9 @@ export type SendLeadToCrmInput = {
   phone: string
   selection: CourseLeadSelection
   stage?: 'lead' | 'inscrito'
+  context?: 'default' | 'course-page'
+  voucherCode?: string
+  cpf?: string
 }
 
 export function normalizePhone(value: string): string {
@@ -73,6 +76,10 @@ export function validatePhone(value: string): string | undefined {
     return 'Digite um telefone com DDD válido.'
   }
   return undefined
+}
+
+function normalizeCpf(value: string): string {
+  return value.replace(/\D/g, '').slice(0, 11)
 }
 
 function parseEnvInteger(value: string | undefined, fallback: number): number {
@@ -129,7 +136,24 @@ function getPipelineStage(selection: CourseLeadSelection, stage: 'lead' | 'inscr
     : parseEnvInteger(import.meta.env.VITE_CRM_ETAPA_GRAD, 78)
 }
 
-function getObservation(selection: CourseLeadSelection, stage: 'lead' | 'inscrito') {
+function getObservation(
+  selection: CourseLeadSelection,
+  stage: 'lead' | 'inscrito',
+  context: 'default' | 'course-page',
+  voucherCode?: string,
+  cpf?: string,
+) {
+  const normalizedVoucher = voucherCode?.trim() || 'não informado'
+  const normalizedCpf = normalizeCpf(cpf ?? '') || 'não informado'
+  const workloadLabel = selection.workloadLabel?.trim() || 'não informada'
+  const priceLabel = selection.priceLabel?.trim() || 'não informado'
+
+  if (context === 'course-page' && selection.courseType === 'pos') {
+    return stage === 'inscrito'
+      ? `PÓS-GRADUAÇÃO: Página do curso Faculdade de Psicologia | Inscrito | CPF: ${normalizedCpf} | Plano: ${priceLabel} | Carga horária: ${workloadLabel} | Voucher: ${normalizedVoucher}`
+      : `PÓS-GRADUAÇÃO: Página do curso Faculdade de Psicologia | Lead captado | Voucher: ${normalizedVoucher}`
+  }
+
   const workloadObservation = selection.workloadLabel?.trim()
     ? ` | Carga horária: ${selection.workloadLabel.trim()}`
     : ''
@@ -148,11 +172,16 @@ export async function sendLeadToCrm({
   phone,
   selection,
   stage = 'lead',
+  context = 'default',
+  voucherCode,
+  cpf,
 }: SendLeadToCrmInput): Promise<void> {
   const trackedFromUrl = syncUtmParamsFromUrl(window.location.search)
   const storedTrackingParams = readStoredUtmParams()
   const trackingParams = { ...storedTrackingParams, ...trackedFromUrl }
   const isPost = selection.courseType === 'pos'
+  const normalizedCpf = normalizeCpf(cpf ?? '')
+  const normalizedPriceLabel = selection.priceLabel?.trim() ?? ''
 
   const payload = {
     aluno: 0,
@@ -164,20 +193,23 @@ export async function sendLeadToCrm({
     idCurso: getCourseId(selection),
     curso: selection.courseLabel.trim(),
     etapa: getPipelineStage(selection, stage),
-    cpf: '',
-    valor: '',
+    cpf: context === 'course-page' && isPost && stage === 'inscrito' ? normalizedCpf : '',
+    valor: context === 'course-page' && isPost && stage === 'inscrito' ? normalizedPriceLabel : '',
     funil: isPost
       ? parseEnvInteger(import.meta.env.VITE_CRM_FUNIL_POS, 6)
       : parseEnvInteger(import.meta.env.VITE_CRM_FUNIL_GRAD, 6),
     status: parseEnvInteger(import.meta.env.VITE_CRM_STATUS_LEAD, 1),
-    observacao: getObservation(selection, stage),
+    observacao: getObservation(selection, stage, context, voucherCode, normalizedCpf),
     campanha: pickTrackingValue(trackingParams, ['campanha', 'utm_campaign']),
     midia: pickTrackingValue(trackingParams, ['midia', 'utm_medium']),
-    fonte: pickTrackingValue(
-      trackingParams,
-      ['id_fonte_crm', 'fonte', 'utm_source'],
-      import.meta.env.VITE_CRM_FONTE_ID ?? '33',
-    ),
+    fonte:
+      context === 'course-page' && isPost
+        ? '33'
+        : pickTrackingValue(
+            trackingParams,
+            ['id_fonte_crm', 'fonte', 'utm_source'],
+            import.meta.env.VITE_CRM_FONTE_ID ?? '33',
+          ),
     fonteTexto:
       import.meta.env.VITE_CRM_FONTE_TEXTO ?? 'Site Estruturado Faculdade de Psicologia UNICESP',
     origem: import.meta.env.VITE_CRM_ORIGEM ?? '4',

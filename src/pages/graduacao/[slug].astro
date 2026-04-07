@@ -6,10 +6,18 @@ import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/site/config'
 
 export const prerender = false
+const RELATED_COURSES_LIMIT = 8
 
 const { slug = '' } = Astro.params
 const course = await getGraduationCoursePageBySlug(slug)
-const relatedCourses = course ? (await getPostCoursePageSummaries()).slice(0, 3) : []
+let relatedCourses: Awaited<ReturnType<typeof getPostCoursePageSummaries>> = []
+
+if (course) {
+  const pool = await getPostCoursePageSummaries()
+  const sameArea = pool.filter((item) => item.areaSlug === course.areaSlug)
+  const fallback = pool.filter((item) => !sameArea.some((sameAreaItem) => sameAreaItem.courseId === item.courseId))
+  relatedCourses = [...sameArea, ...fallback].slice(0, RELATED_COURSES_LIMIT)
+}
 
 if (!course) {
   Astro.response.status = 404

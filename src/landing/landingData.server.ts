@@ -1,10 +1,22 @@
-import type { CatalogCourse } from '@/lib/catalogApi'
-import { getGraduationCoursePageBySlug, getPostCoursePages } from '@/lib/courseCatalog'
+﻿import type { CatalogCourse } from '@/lib/catalogApi'
+import {
+  getGraduationCoursePageById,
+  getGraduationCoursePageBySlug,
+  getPostCoursePageSummaries,
+  getPostCoursePages,
+  type CoursePageSummaryEntry,
+} from '@/lib/courseCatalog'
 import { toSlug } from '@/lib/courseRoutes'
+import { PRIMARY_GRADUATION_CATALOG_COURSE_ID } from '@/lib/graduation'
 import { siteConfig } from '@/site/config'
 
 import type { CourseLeadSelection } from './crmLead'
-import type { LandingPageData, LandingPostCourse, LandingPostCourseWorkload } from './landingModels'
+import type {
+  LandingCurriculumTerm,
+  LandingPageData,
+  LandingPostCourse,
+  LandingPostCourseWorkload,
+} from './landingModels'
 
 const DEFAULT_HERO_SELECTION: CourseLeadSelection = {
   courseType: 'graduacao',
@@ -67,11 +79,13 @@ function buildWorkloadOptions(course: CatalogCourse): LandingPostCourseWorkload[
 }
 
 function buildHoursLabel(workloadOptions: LandingPostCourseWorkload[]) {
-  const uniqueHours = [...new Set(
-    workloadOptions
-      .map((item) => item.label.match(/(\d+)/)?.[1] ?? '')
-      .filter(Boolean),
-  )]
+  const uniqueHours = [
+    ...new Set(
+      workloadOptions
+        .map((item) => item.label.match(/(\d+)/)?.[1] ?? '')
+        .filter(Boolean),
+    ),
+  ]
 
   if (!uniqueHours.length) return ''
   if (uniqueHours.length === 1) return `${uniqueHours[0]}H`
@@ -92,15 +106,62 @@ function buildHeroSelection(course: CatalogCourse | null): CourseLeadSelection {
   }
 }
 
-function buildLandingPostCourse(course: CatalogCourse): LandingPostCourse {
+type CanonicalPostCourseSummary = {
+  path: string
+  value: string
+}
+
+function buildPostCourseCanonicalMap(entries: CoursePageSummaryEntry[]) {
+  const byCourseId = new Map<number, CanonicalPostCourseSummary>()
+  const byLabel = new Map<string, CanonicalPostCourseSummary>()
+
+  for (const entry of entries) {
+    const canonical = {
+      path: entry.path,
+      value: entry.value,
+    }
+
+    if (entry.courseId > 0) {
+      byCourseId.set(entry.courseId, canonical)
+    }
+
+    const labelKey = normalizeText(entry.rawLabel || entry.title).toLowerCase()
+    if (labelKey) {
+      byLabel.set(labelKey, canonical)
+    }
+  }
+
+  return { byCourseId, byLabel }
+}
+
+function resolveCanonicalPostCourse(
+  course: CatalogCourse,
+  canonicalMap: ReturnType<typeof buildPostCourseCanonicalMap>,
+) {
+  if (course.courseId > 0) {
+    const courseMatch = canonicalMap.byCourseId.get(course.courseId)
+    if (courseMatch) return courseMatch
+  }
+
+  const labelKey = normalizeText(course.rawLabel || course.title).toLowerCase()
+  return canonicalMap.byLabel.get(labelKey)
+}
+
+function buildLandingPostCourse(
+  course: CatalogCourse,
+  canonicalMap: ReturnType<typeof buildPostCourseCanonicalMap>,
+): LandingPostCourse {
   const workloadOptions = buildWorkloadOptions(course)
   const currentInstallmentPrice = normalizePriceLabel(
     course.currentInstallmentPriceMonthly || course.currentInstallmentPrice,
   )
   const oldInstallmentPrice = normalizePriceLabel(course.oldInstallmentPrice)
+  const canonical = resolveCanonicalPostCourse(course, canonicalMap)
+  const courseValue = canonical?.value || course.value
+  const coursePath = canonical?.path || course.path
 
   return {
-    id: course.value || `${course.courseId}`,
+    id: courseValue || `${course.courseId}`,
     title: normalizeText(course.title || course.rawLabel),
     imageSrc: resolveCourseImage(course.image),
     currentInstallmentPrice,
@@ -110,10 +171,10 @@ function buildLandingPostCourse(course: CatalogCourse): LandingPostCourse {
     workloadOptions,
     selection: {
       courseType: 'pos',
-      courseValue: course.value,
+      courseValue,
       courseLabel: normalizeText(course.rawLabel || course.title),
       courseId: course.courseId > 0 ? course.courseId : undefined,
-      coursePath: course.path,
+      coursePath,
       priceLabel: currentInstallmentPrice,
     },
   }
@@ -125,14 +186,67 @@ function sortPostCourses(courses: LandingPostCourse[]) {
   )
 }
 
+function buildLandingCurriculumTerms(course: CatalogCourse | null): LandingCurriculumTerm[] {
+  if (!course?.curriculumVariants.length) return []
+
+  const primaryVariant = course.curriculumVariants[0]
+  const disciplines = [...(primaryVariant?.disciplines ?? [])]
+    .filter((discipline) => normalizeText(discipline.name).length > 0)
+    .sort((left, right) => left.sequence - right.sequence)
+
+  if (!disciplines.length) return []
+
+  const hasExplicitSemester = disciplines.some(
+    (discipline) => typeof discipline.semester === 'number' && discipline.semester > 0,
+  )
+
+  if (!hasExplicitSemester) {
+    return [
+      {
+        id: `${primaryVariant.id || 1}`,
+        label: 'Matriz Curricular',
+        name: primaryVariant.name || 'Disciplinas cadastradas',
+        totalHours: primaryVariant.totalHours || disciplines.reduce((sum, discipline) => sum + discipline.hours, 0),
+        subjects: disciplines.map((discipline) => normalizeText(discipline.name)),
+      },
+    ]
+  }
+
+  const groupsBySemester = new Map<number, typeof disciplines>()
+
+  for (const discipline of disciplines) {
+    const semester = discipline.semester ?? null
+    if (!semester || semester <= 0) continue
+    const current = groupsBySemester.get(semester) ?? []
+    current.push(discipline)
+    groupsBySemester.set(semester, current)
+  }
+
+  return [...groupsBySemester.entries()]
+    .sort((left, right) => left[0] - right[0])
+    .map(([semester, semesterDisciplines]) => ({
+      id: `${semester}`,
+      label: `${semester}`,
+      name: `Disciplinas do ${semester}º semestre`,
+      totalHours: semesterDisciplines.reduce((sum, discipline) => sum + discipline.hours, 0),
+      subjects: semesterDisciplines
+        .sort((left, right) => left.sequence - right.sequence)
+        .map((discipline) => normalizeText(discipline.name)),
+    }))
+}
+
 export async function getLandingPageData(force = false): Promise<LandingPageData> {
-  const [graduationCourse, postCourses] = await Promise.all([
+  const [graduationCourse, graduationCurriculumCourse, postCourses, postCourseSummaries] = await Promise.all([
     getGraduationCoursePageBySlug(siteConfig.primaryGraduationSlug, force),
+    getGraduationCoursePageById(PRIMARY_GRADUATION_CATALOG_COURSE_ID, force),
     getPostCoursePages(force),
+    getPostCoursePageSummaries(force),
   ])
+  const canonicalPostCourseMap = buildPostCourseCanonicalMap(postCourseSummaries)
 
   return {
     heroSelection: buildHeroSelection(graduationCourse),
-    postCourses: sortPostCourses(postCourses.map(buildLandingPostCourse)),
+    postCourses: sortPostCourses(postCourses.map((course) => buildLandingPostCourse(course, canonicalPostCourseMap))),
+    curriculumTerms: buildLandingCurriculumTerms(graduationCurriculumCourse ?? graduationCourse),
   }
 }

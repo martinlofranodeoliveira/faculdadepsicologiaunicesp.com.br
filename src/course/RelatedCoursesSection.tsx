@@ -8,22 +8,41 @@ type Props = {
 
 function resolveCourseImage(image?: string) {
   const normalizedImage = image?.trim() ?? ''
-  return normalizedImage || '/course/teacher_working_on_laptop_1.webp'
+  if (!normalizedImage || normalizedImage === '/landing/posgraduacao-banner.webp') {
+    return '/course/teacher_working_on_laptop_1.webp'
+  }
+  return normalizedImage
 }
 
 export function RelatedCoursesSection({ courses }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
 
   if (!courses || courses.length === 0) return null
 
+  const resolvePageLeft = (page: number, maxScrollLeft: number, pageCount: number) => {
+    if (pageCount <= 1 || maxScrollLeft <= 0) return 0
+    return (maxScrollLeft * page) / (pageCount - 1)
+  }
+
   const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-      setCanScrollLeft(scrollLeft > 0)
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5)
-    }
+    if (!scrollRef.current) return
+
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+    const maxScrollLeft = Math.max(scrollWidth - clientWidth, 0)
+    const nextTotalPages = clientWidth > 0 ? Math.max(1, Math.ceil(maxScrollLeft / clientWidth) + 1) : 1
+    const nextPage =
+      nextTotalPages <= 1 || maxScrollLeft <= 0
+        ? 0
+        : Math.min(nextTotalPages - 1, Math.round((scrollLeft / maxScrollLeft) * (nextTotalPages - 1)))
+
+    setCanScrollLeft(scrollLeft > 4)
+    setCanScrollRight(scrollLeft < maxScrollLeft - 4)
+    setCurrentPage(nextPage)
+    setTotalPages(nextTotalPages)
   }
 
   useEffect(() => {
@@ -33,14 +52,28 @@ export function RelatedCoursesSection({ courses }: Props) {
   }, [courses])
 
   const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 326
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      })
-      setTimeout(checkScroll, 500)
-    }
+    if (!scrollRef.current) return
+
+    const maxScrollLeft = Math.max(scrollRef.current.scrollWidth - scrollRef.current.clientWidth, 0)
+    const nextPage =
+      direction === 'left'
+        ? Math.max(0, currentPage - 1)
+        : Math.min(totalPages - 1, currentPage + 1)
+
+    scrollRef.current.scrollTo({
+      left: resolvePageLeft(nextPage, maxScrollLeft, totalPages),
+      behavior: 'smooth',
+    })
+    window.setTimeout(checkScroll, 350)
+  }
+
+  const scrollToPage = (page: number) => {
+    if (!scrollRef.current) return
+
+    const maxScrollLeft = Math.max(scrollRef.current.scrollWidth - scrollRef.current.clientWidth, 0)
+
+    scrollRef.current.scrollTo({ left: resolvePageLeft(page, maxScrollLeft, totalPages), behavior: 'smooth' })
+    window.setTimeout(checkScroll, 350)
   }
 
   return (
@@ -53,7 +86,7 @@ export function RelatedCoursesSection({ courses }: Props) {
         <div className="flex flex-col mb-6 lg:mb-10 items-start">
           <div className="border border-[rgba(0,0,0,0.55)] lg:border-none rounded-[12px] lg:rounded-none px-[12px] py-[6px] lg:p-0 mb-4 lg:mb-0">
             <p className="font-['Liberation_Sans'] text-[14px] lg:text-[20px] text-black leading-[1.36] lg:leading-snug m-0">
-              Não encontrou o que procurava?
+              {'N\u00E3o encontrou o que procurava?'}
             </p>
           </div>
           <h2 className="text-[#f61010] text-[25px] lg:text-[35px] font-extrabold uppercase font-['Kumbh_Sans'] leading-tight m-0 lg:mt-2">
@@ -107,26 +140,46 @@ export function RelatedCoursesSection({ courses }: Props) {
         <div className="w-full flex items-center justify-between mt-8 relative">
           <div className="flex items-center gap-[20px] px-0 lg:px-4">
             <div className="flex gap-[12px]">
-              {[0, 1, 2, 3].map((item) => (
-                <div key={item} className={`w-[13px] h-[13px] rounded-full ${item === 0 ? 'bg-[#09419f]' : 'bg-[#d9d9d9]'}`} />
+              {Array.from({ length: totalPages }, (_, item) => (
+                <button
+                  key={item}
+                  type="button"
+                  aria-label={`Ir para p\u00E1gina ${item + 1}`}
+                  onClick={() => scrollToPage(item)}
+                  className={`w-[13px] h-[13px] rounded-full transition-colors ${
+                    item === currentPage ? 'bg-[#09419f]' : 'bg-[#d9d9d9] hover:bg-[#bfc9dc]'
+                  }`}
+                />
               ))}
             </div>
           </div>
 
           <div className="flex gap-[15px] lg:gap-[20px] ml-auto">
             <button
+              type="button"
               onClick={() => scroll('left')}
-              className={`w-[41px] lg:w-[50px] h-[41px] lg:h-[50px] flex items-center justify-center rounded-full transition-opacity ${canScrollLeft ? 'opacity-100 hover:opacity-80' : 'opacity-30 cursor-not-allowed'}`}
+              className={`w-[41px] lg:w-[50px] h-[41px] lg:h-[50px] flex items-center justify-center rounded-full transition-colors ${
+                canScrollLeft ? 'bg-[#1b63de] hover:bg-[#1552ba]' : 'bg-[#d9d9d9] cursor-not-allowed'
+              }`}
               disabled={!canScrollLeft}
+              aria-label="Anterior"
             >
-              <img src="/course/frame_1000008993.webp" alt="Anterior" className="w-full h-full object-contain" />
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M10.75 4.75L6.5 9L10.75 13.25" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
             <button
+              type="button"
               onClick={() => scroll('right')}
-              className={`w-[41px] lg:w-[50px] h-[41px] lg:h-[50px] flex items-center justify-center rounded-full transition-opacity ${canScrollRight ? 'opacity-100 hover:opacity-80' : 'opacity-30 cursor-not-allowed'}`}
+              className={`w-[41px] lg:w-[50px] h-[41px] lg:h-[50px] flex items-center justify-center rounded-full transition-colors ${
+                canScrollRight ? 'bg-[#1b63de] hover:bg-[#1552ba]' : 'bg-[#d9d9d9] cursor-not-allowed'
+              }`}
               disabled={!canScrollRight}
+              aria-label={'Pr\u00F3ximo'}
             >
-              <img src="/course/frame_1000008992.webp" alt="Próximo" className="w-full h-full object-contain" />
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M7.25 4.75L11.5 9L7.25 13.25" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
           </div>
         </div>
