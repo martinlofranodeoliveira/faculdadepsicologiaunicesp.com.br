@@ -19,6 +19,9 @@
   background: #ffffff;
   border-bottom: 1px solid #d5d5d5;
   backdrop-filter: blur(6px);
+  position: sticky;
+  top: 0;
+  z-index: 1050;
 }
 
 .lp-section__inner {
@@ -152,56 +155,174 @@
 
 @media (max-width: 1024px) {
   .lp-header__inner {
-    min-height: auto;
+    width: min(980px, calc(100% - 1.5rem));
     padding: 12px 0;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    row-gap: 14px;
+    justify-content: space-between;
+    gap: 14px;
   }
 
   .lp-header__logos {
-    order: 1;
-    width: 100%;
-    justify-content: center;
-    gap: 10px;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    gap: 16px;
   }
 
   .lp-header__brand {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .lp-header__partner-logos {
-    width: auto;
-    flex: none;
-    justify-content: center;
-    flex-wrap: nowrap;
-    gap: 10px;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    gap: 16px;
   }
 
   .lp-header__divider {
-    height: 22px;
+    height: 28px;
   }
 
   .lp-logo__image--psychology {
-    height: 40px;
+    height: 36px;
   }
 
   .lp-logo__image--partner {
-    max-height: 20px;
+    max-height: 24px;
   }
 
   .lp-logo__image--fasul-group {
-    max-height: 18px;
+    max-height: 24px;
+  }
+
+  .lp-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 0 0 auto;
+    justify-content: flex-end;
   }
 
   .lp-header__cta {
-    order: 2;
-    margin: 0 auto;
+    margin: 0;
     width: auto;
     min-height: 42px;
-    padding: 10px 16px;
+    padding: 10px 20px;
     font-size: 14px;
+    border-radius: 50px;
+  }
+
+  .lp-header__menu-toggle {
+    background: transparent;
+    border: 0;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #000;
+  }
+
+  /* Mobile Menu Styles - Dropdown Top to Bottom */
+  .lp-mobile-menu {
+    position: fixed;
+    top: 61px;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0.3s;
+  }
+
+  .lp-mobile-menu.is-open {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .lp-mobile-menu__backdrop {
+    display: none;
+  }
+
+  .lp-mobile-menu__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px 20px;
+    box-sizing: border-box;
+    border-bottom: 2px solid #eee;
+  }
+
+  .lp-mobile-menu.is-open .lp-mobile-menu__content {
+    transform: translateY(0);
+  }
+
+  .lp-mobile-menu__close {
+    display: none;
+  }
+
+  .lp-mobile-menu__nav {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0;
+    flex: none;
+  }
+
+  .lp-mobile-menu__nav a {
+    padding: 15px 0;
+    text-decoration: none;
+    color: #333;
+    font-family: 'Kumbh Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    text-align: left;
+  }
+
+  .lp-mobile-menu__nav hr {
+    border: 0;
+    border-top: 1px solid #f5f5f5;
+    margin: 0;
+    width: 100%;
+  }
+
+  .lp-mobile-menu__footer {
+    padding: 15px 0 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+  }
+
+  .lp-mobile-menu__brand-unicesp {
+    display: flex;
+    align-items: center;
+  }
+
+  .lp-mobile-menu__brand-unicesp img {
+    height: 20px;
+    width: auto;
+  }
+
+  .lp-mobile-menu__brand-fasul {
+    display: flex;
+    align-items: center;
+  }
+
+  .lp-mobile-menu__brand-fasul img {
+    height: 24px;
+    width: auto;
   }
 }
 
@@ -2090,6 +2211,78 @@
     width: 50px;
     height: 50px;
   }
+
+  .lp-header {
+    backdrop-filter: blur(3.896px);
+  }
+
+  .lp-header__inner {
+    width: calc(100% - 20px) !important;
+    padding: 14px 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .lp-header__logos {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+  }
+  .lp-header__brand {
+    width: auto;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .lp-header__partner-logos {
+    display: none;
+  }
+
+  .lp-header__divider {
+    display: none;
+  }
+
+  .lp-logo__image--psychology {
+    height: 28px;
+    width: auto !important;
+    max-width: none !important;
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .lp-header__actions {
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .lp-header__cta {
+    width: auto !important;
+    min-height: 36px !important;
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+    border-radius: 50px !important;
+    flex: 0 1 auto !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
+  }
+
+  .lp-header__menu-toggle {
+    flex-shrink: 0;
+    padding: 4px;
+  }
 }
 
 .lp-footer-bottom {
@@ -2772,56 +2965,21 @@
     backdrop-filter: blur(3.896px);
   }
 
-  .lp-header__inner {
-    width: min(390px, 100%);
-    min-height: 118px;
-    padding: 11px 14px;
-    box-sizing: border-box;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 12px;
-  }
+  
 
-  .lp-header__logos {
-    width: 100%;
-    justify-content: center;
-    gap: 8px;
-  }
+  
 
-  .lp-header__partner-logos {
-    justify-content: center;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
+  
 
-  .lp-header__divider {
-    display: block;
-    height: 18px;
-  }
+  
 
-  .lp-logo__image--psychology {
-    height: 36px;
-    width: auto;
-  }
+  
 
-  .lp-logo__image--partner {
-    max-height: 18px;
-  }
+  
 
-  .lp-logo__image--fasul-group {
-    max-height: 16px;
-  }
+  
 
-  .lp-header__cta {
-    width: 100%;
-    min-height: 40px;
-    padding: 12px;
-    border-radius: 51px;
-    font-size: 12px;
-    line-height: 15.582px;
-    font-weight: 800;
-  }
+  
 
   .lp-enrollment-modal {
     padding: 0.75rem;
@@ -4792,4 +4950,14 @@
     width: 34px;
     height: 34px;
     display: block;
+}
+
+/* Desktop Reset */
+@media (min-width: 769px) {
+  .lp-header__menu-toggle {
+    display: none !important;
+  }
+  .lp-mobile-menu {
+    display: none !important;
+  }
 }
