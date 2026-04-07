@@ -14,7 +14,11 @@ export type CatalogPriceItem = {
   amountCents: number
   installmentsMax: number
   workloadVariantId: number | null
+  workloadProfileId?: number | null
   workloadName: string
+  paymentPlanName?: string
+  source?: string
+  billingType?: string
   totalHours: number
   modality: string
   validFrom: string
@@ -137,6 +141,7 @@ type ApiCourseListItem = {
   code?: string | null
   name?: string | null
   level?: string | null
+  course_seo_json?: string | null
   description?: string | null
   offering_modality?: string | null
   titulation?: string | null
@@ -237,10 +242,15 @@ type ApiCourseTexts = {
 
 type ApiPricingItem = {
   id: number
+  source?: string | null
+  payment_plan_name?: string | null
+  billing_type?: string | null
   amount_cents?: number | null
   installments_max?: number | null
+  workload_profile_id?: number | null
   workload_variant_id?: number | null
   workload_name?: string | null
+  workload_variant_name?: string | null
   total_hours?: number | null
   modality?: string | null
   valid_from?: string | null
@@ -355,17 +365,91 @@ function normalizeRichText(value: string | null | undefined): string {
   return normalizeMultilineText(normalized)
 }
 
+function parseCourseSeoJson(value: string | null | undefined): ApiSeoFields | null {
+  const normalized = normalizeText(value)
+  if (!normalized) return null
+
+  try {
+    const parsed = JSON.parse(normalized) as ApiSeoFields | null
+    if (!parsed || typeof parsed !== 'object') return null
+
+    return {
+      course_name: normalizeText(parsed.course_name),
+      seo_course_name: normalizeText(parsed.seo_course_name),
+      slug: normalizeText(parsed.slug),
+      seo_slug: normalizeText(parsed.seo_slug),
+      description: normalizeText(parsed.description),
+      seo_description: normalizeText(parsed.seo_description),
+      canonical_url: normalizeText(parsed.canonical_url),
+      seo_canonical_url: normalizeText(parsed.seo_canonical_url),
+      og_image_url: normalizeText(parsed.og_image_url),
+      seo_og_image_url: normalizeText(parsed.seo_og_image_url),
+    }
+  } catch {
+    return null
+  }
+}
+
+function mergeSeoBundle(
+  seo: ApiSeoBundle | null | undefined,
+  courseSeoJson: string | null | undefined,
+): ApiSeoBundle | null | undefined {
+  const parsedCourseSeo = parseCourseSeoJson(courseSeoJson)
+  if (!parsedCourseSeo) return seo
+  if (!seo) {
+    return {
+      generic: parsedCourseSeo,
+    }
+  }
+
+  return {
+    ...seo,
+    generic: {
+      ...parsedCourseSeo,
+      ...seo.generic,
+    },
+  }
+}
+
+function extractCanonicalSlug(value: string | null | undefined): string {
+  const normalized = normalizeText(value)
+  if (!normalized) return ''
+
+  const pathname = (() => {
+    if (normalized.startsWith('/')) return normalized
+
+    try {
+      return new URL(normalized).pathname
+    } catch {
+      return normalized
+    }
+  })()
+
+  const segments = pathname.split('/').filter(Boolean)
+  return normalizeText(segments[segments.length - 1])
+}
+
 function pickSeoFields(seo: ApiSeoBundle | null | undefined) {
   const effective = seo?.effective
   const institution = seo?.institution
   const generic = seo?.generic
+  const canonicalSlug =
+    extractCanonicalSlug(effective?.canonical_url || effective?.seo_canonical_url) ||
+    extractCanonicalSlug(institution?.canonical_url || institution?.seo_canonical_url) ||
+    extractCanonicalSlug(generic?.canonical_url || generic?.seo_canonical_url)
 
   return {
     courseName: normalizeText(
       effective?.course_name || effective?.seo_course_name || institution?.course_name || institution?.seo_course_name || generic?.course_name || generic?.seo_course_name,
     ),
     slug: normalizeText(
-      effective?.slug || effective?.seo_slug || institution?.slug || institution?.seo_slug || generic?.slug || generic?.seo_slug,
+      canonicalSlug ||
+        generic?.slug ||
+        generic?.seo_slug ||
+        effective?.slug ||
+        effective?.seo_slug ||
+        institution?.slug ||
+        institution?.seo_slug,
     ),
     description: normalizeRichText(
       effective?.description || effective?.seo_description || institution?.description || institution?.seo_description || generic?.description || generic?.seo_description,
@@ -502,6 +586,10 @@ function normalizeAmountCents(value: number | string | null | undefined): number
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0
 }
 
+function normalizePriceLabel(value: string): string {
+  return value.replace(/\s+/g, ' ').replace(/R\$/gi, 'R$ ').trim().toUpperCase()
+}
+
 function withCache<T>(key: string, loader: () => Promise<T>, force = false): Promise<T> {
   if (!force) {
     const cached = cache.get(key)
@@ -617,13 +705,20 @@ function normalizePricingItems(items: ApiPricingItem[] | null | undefined): Cata
   return (items ?? [])
     .map((item) => ({
       id: Number(item.id ?? 0),
+      source: normalizeText(item.source),
+      paymentPlanName: normalizeText(item.payment_plan_name),
+      billingType: normalizeText(item.billing_type),
       amountCents: normalizeAmountCents(item.amount_cents),
       installmentsMax: Number(item.installments_max ?? 0),
+      workloadProfileId:
+        item.workload_profile_id === null || item.workload_profile_id === undefined
+          ? null
+          : Number(item.workload_profile_id),
       workloadVariantId:
         item.workload_variant_id === null || item.workload_variant_id === undefined
           ? null
           : Number(item.workload_variant_id),
-      workloadName: normalizeText(item.workload_name),
+      workloadName: normalizeText(item.workload_name || item.workload_variant_name),
       totalHours: Number(item.total_hours ?? 0),
       modality: normalizeText(item.modality),
       validFrom: normalizeText(item.valid_from),
@@ -837,6 +932,9 @@ function getFallbackPostMonthlyAmount() {
   return 8600
 }
 
+const DEFAULT_POST_OLD_INSTALLMENT_AMOUNT_CENTS = 32900
+const POST_OLD_INSTALLMENT_INCREASE_MULTIPLIER = 1.738
+
 function getFallbackOldInstallmentPrice(courseType: CourseType, modality: CourseModality, monthlyGraduationAmount: number) {
   if (courseType === 'pos') return '18X R$ 329,00/MÊS'
   if (modality === 'presencial') return 'De R$ 1.890,00'
@@ -845,8 +943,7 @@ function getFallbackOldInstallmentPrice(courseType: CourseType, modality: Course
 
 function buildPixText(courseType: CourseType, totalPriceCents: number): string {
   if (courseType !== 'pos' || !totalPriceCents) return ''
-  const pixValue = Math.floor((totalPriceCents * 0.9) / 100) * 100
-  return `*À vista no PIX: ${normalizeCurrencyText(formatCurrency(pixValue))}`
+  return `*À vista no PIX: ${normalizeCurrencyText(formatCurrency(totalPriceCents))}`
 }
 
 function resolveGraduationMonthlyAmount(course: ApiCourseListItem, priceItems: CatalogPriceItem[], title: string, modality: CourseModality) {
@@ -855,13 +952,107 @@ function resolveGraduationMonthlyAmount(course: ApiCourseListItem, priceItems: C
   return directPrice > 100000 ? Math.round(directPrice / 18) : directPrice
 }
 
+function parseCurrencyTextToCents(value: string): number {
+  const match = value.match(/R\$\s*([\d.]+,\d{2})/i)
+  if (!match) return 0
+
+  const normalized = match[1].replace(/\./g, '').replace(',', '.')
+  const parsed = Number.parseFloat(normalized)
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) : 0
+}
+
+function resolvePixPriceFromPaymentPlans(priceItems: CatalogPriceItem[]): number {
+  for (const item of priceItems) {
+    const normalizedLabel = normalizeText(item.paymentPlanName)
+    if (!normalizedLabel || !/pix/i.test(normalizedLabel)) continue
+
+    const pixSegmentMatch = normalizedLabel.match(/\(([^)]*pix[^)]*)\)/i)
+    const pixSegment = pixSegmentMatch?.[1] ?? normalizedLabel
+    const currencyMatches = [...pixSegment.matchAll(/R\$\s*([\d.]+,\d{2})/gi)]
+    const lastCurrencyValue = currencyMatches[currencyMatches.length - 1]?.[0] ?? pixSegment
+    const pixValue = parseCurrencyTextToCents(lastCurrencyValue)
+    if (pixValue > 0) return pixValue
+  }
+
+  return 0
+}
+
 function resolvePostTotalPriceCents(course: ApiCourseListItem, priceItems: CatalogPriceItem[]) {
   const posPriceCents = normalizeAmountCents(course.pos_price_cents)
   if (posPriceCents) return posPriceCents
 
+  const pixPriceFromPlan = resolvePixPriceFromPaymentPlans(priceItems)
+  if (pixPriceFromPlan) return pixPriceFromPlan
+
   const directPrice = priceItems[0]?.amountCents || normalizeAmountCents(course.min_amount_cents)
   if (!directPrice) return getFallbackPostMonthlyAmount() * 18
   return directPrice > 40000 ? directPrice : directPrice * 18
+}
+
+function getPreferredPostPriceItem(priceItems: CatalogPriceItem[]): CatalogPriceItem | null {
+  if (!priceItems.length) return null
+
+  const recurringPlans = priceItems.filter((item) => item.installmentsMax > 1)
+  const candidates = recurringPlans.length ? recurringPlans : priceItems
+
+  return [...candidates].sort((left, right) => {
+    if (left.amountCents !== right.amountCents) return left.amountCents - right.amountCents
+    if (left.installmentsMax !== right.installmentsMax) return right.installmentsMax - left.installmentsMax
+    return left.id - right.id
+  })[0] ?? null
+}
+
+function buildPostInstallmentPriceLabel(
+  priceItem: CatalogPriceItem | null,
+  fallbackAmountCents: number,
+  options?: {
+    includeMonthlySuffix?: boolean
+  },
+): string {
+  if (priceItem) {
+    const normalizedPlanName = normalizePriceLabel(priceItem.paymentPlanName ?? '')
+    if (normalizedPlanName) {
+      if (
+        options?.includeMonthlySuffix &&
+        priceItem.installmentsMax > 1 &&
+        !/\/M[ÊE]S\b/i.test(normalizedPlanName)
+      ) {
+        return `${normalizedPlanName}/MÊS`
+      }
+
+      return normalizedPlanName
+    }
+
+    const baseLabel = `${priceItem.installmentsMax}X ${normalizeCurrencyText(formatCurrency(priceItem.amountCents))}`
+    return options?.includeMonthlySuffix && priceItem.installmentsMax > 1 ? `${baseLabel}/MÊS` : baseLabel
+  }
+
+  if (!fallbackAmountCents) return ''
+
+  const baseLabel = `18X ${normalizeCurrencyText(formatCurrency(fallbackAmountCents))}`
+  return options?.includeMonthlySuffix ? `${baseLabel}/MÊS` : baseLabel
+}
+
+function buildPostOldInstallmentPriceLabel(
+  priceItem: CatalogPriceItem | null,
+  fallbackAmountCents: number,
+): string {
+  const currentAmountCents =
+    (priceItem?.amountCents && priceItem.amountCents > 0 ? priceItem.amountCents : 0) ||
+    fallbackAmountCents ||
+    getFallbackPostMonthlyAmount()
+  const installments =
+    priceItem?.installmentsMax && priceItem.installmentsMax > 1 ? priceItem.installmentsMax : 18
+  const calculatedAmountCents = Math.max(
+    currentAmountCents + 1,
+    Math.round(currentAmountCents * POST_OLD_INSTALLMENT_INCREASE_MULTIPLIER),
+  )
+  const oldAmountCents =
+    DEFAULT_POST_OLD_INSTALLMENT_AMOUNT_CENTS > currentAmountCents
+      ? DEFAULT_POST_OLD_INSTALLMENT_AMOUNT_CENTS
+      : calculatedAmountCents
+
+  return `${installments}X ${normalizeCurrencyText(formatCurrency(oldAmountCents))}/MÊS`.toUpperCase()
 }
 
 function getFallbackCourseImage(courseType: CourseType, courseValue: string) {
@@ -943,7 +1134,9 @@ function buildCourseFromApi(
     complement: string
   },
 ): CatalogCourse {
-  const seo = pickSeoFields(detail?.seo ?? listItem.seo)
+  const seo = pickSeoFields(
+    mergeSeoBundle(detail?.seo ?? listItem.seo, detail?.course_seo_json ?? listItem.course_seo_json),
+  )
   const rawLabel = firstNonEmpty(detail?.name, listItem.name)
   const title = getCourseDisplayTitle({
     courseType,
@@ -993,19 +1186,24 @@ function buildCourseFromApi(
     (semesterCount ? `${semesterCount} semestres` : durationMonths ? `${durationMonths} meses` : '')
 
   const monthlyGraduationAmount = resolveGraduationMonthlyAmount(listItem, pricingItems, title, modality)
+  const preferredPostPriceItem = getPreferredPostPriceItem(pricingItems)
+  const fallbackPostMonthlyAmount = normalizeAmountCents(listItem.min_amount_cents) || getFallbackPostMonthlyAmount()
   const postTotalPriceCents = resolvePostTotalPriceCents(listItem, pricingItems)
-  const postMonthlyAmount = Math.max(1, Math.round(postTotalPriceCents / 18))
 
   const currentInstallmentPrice =
     courseType === 'pos'
-      ? `18X DE ${formatCurrency(postMonthlyAmount)}`.toUpperCase()
+      ? buildPostInstallmentPriceLabel(preferredPostPriceItem, fallbackPostMonthlyAmount)
       : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÊS`
   const currentInstallmentPriceMonthly =
     courseType === 'pos'
-      ? `18X ${formatCurrency(postMonthlyAmount).toUpperCase()}/MÊS`
+      ? buildPostInstallmentPriceLabel(preferredPostPriceItem, fallbackPostMonthlyAmount, {
+          includeMonthlySuffix: true,
+        })
       : `${formatCurrency(monthlyGraduationAmount).toUpperCase()}/MÊS`
   const oldInstallmentPrice =
-    getFallbackOldInstallmentPrice(courseType, modality, monthlyGraduationAmount)
+    courseType === 'pos'
+      ? buildPostOldInstallmentPriceLabel(preferredPostPriceItem, fallbackPostMonthlyAmount)
+      : getFallbackOldInstallmentPrice(courseType, modality, monthlyGraduationAmount)
 
   const description =
     normalizeRichText(firstNonEmpty(detail?.description, listItem.description, seo.description)) ||

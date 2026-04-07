@@ -309,6 +309,12 @@ function formatInstallmentPriceLabel(amountCents: number, installmentsMax: numbe
   return `${installments}X DE ${formatCurrencyBrl(monthlyAmount)}/MÊS`
 }
 
+function resolvePaymentPlanOptionLabel(item: CatalogPriceItem) {
+  const normalizedApiLabel = normalizePriceLabel(item.paymentPlanName || '')
+  if (normalizedApiLabel) return normalizedApiLabel
+  return formatInstallmentPriceLabel(item.amountCents, item.installmentsMax)
+}
+
 function findExistingPaymentPlanGroupKey(
   groupMap: Map<string, PaymentPlanGroup>,
   label: string,
@@ -367,7 +373,7 @@ function buildPaymentPlanGroups(
     ) {
       nextGroup.options.push({
         value: String(item.id),
-        label: formatInstallmentPriceLabel(item.amountCents, item.installmentsMax),
+        label: resolvePaymentPlanOptionLabel(item),
         pricingId: item.id,
         amountCents: item.amountCents,
         installmentsMax: item.installmentsMax,
