@@ -464,6 +464,9 @@ export function CourseSection({
       <div className="lp-lead__inner">
         <div className="lp-lead__title-wrap">
           <h2 className="lp-lead__title">{formLeadTitle}</h2>
+          {step === 1 && (
+            <img src="/landing/arrow-encontre-seu-curso.svg" alt="" className="lp-lead__title-arrow" aria-hidden="true" />
+          )}
         </div>
 
         <form

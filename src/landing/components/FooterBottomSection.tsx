@@ -34,7 +34,9 @@ export function FooterBottomSection() {
             </p>
 
             <div className="lp-footer-brand__emec">
-              <img src="/landing/e-mec-qrcod.webp" alt="e-MEC" loading="lazy" decoding="async" />
+              <a href="https://emec.mec.gov.br/emec/consulta-cadastro/detalhamento/d96957f455f6405d14c6542552b0f6eb/MjE3NTc=" target="_blank" rel="noreferrer">
+                <img src="/landing/e-mec-qrcod.webp" alt="e-MEC" loading="lazy" decoding="async" />
+              </a>
             </div>
           </section>
 
@@ -55,18 +57,22 @@ export function FooterBottomSection() {
             <div className="lp-footer-contact-block__reclame-aqui">
               <h3>Reclame Aqui</h3>
               <div className="lp-footer-contact-block__reclame-aqui-badges">
-                <img
-                  src="/landing/verificada-reclame-aqui.webp"
-                  alt="Verificada Reclame Aqui"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <img
-                  src="/landing/otimo-reclame-aqui.webp"
-                  alt="Ótimo Reclame Aqui"
-                  loading="lazy"
-                  decoding="async"
-                />
+                <a href="https://www.reclameaqui.com.br/empresa/fasulmg-faculdade-sulmineira/" target="_blank" rel="noreferrer">
+                  <img
+                    src="/landing/verificada-reclame-aqui.webp"
+                    alt="Verificada Reclame Aqui"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
+                <a href="https://www.reclameaqui.com.br/empresa/fasulmg-faculdade-sulmineira/" target="_blank" rel="noreferrer">
+                  <img
+                    src="/landing/otimo-reclame-aqui.webp"
+                    alt="Ótimo Reclame Aqui"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
               </div>
             </div>
           </section>
@@ -167,6 +173,11 @@ export function FooterBottomSection() {
       </div>
     </footer>
     <FaleConoscoSection />
+    <a href={siteConfig.whatsappHref} className="floating-whatsapp" target="_blank" rel="noreferrer" aria-label="Fale conosco pelo WhatsApp">
+      <div className="floating-whatsapp__icon">
+        <img src="/landing/icone-whatsapp-flutuante.svg" alt="WhatsApp" loading="lazy" decoding="async" style={{ width: '34px', height: '34px', display: 'block' }} />
+      </div>
+    </a>
     </>
   )
 }
