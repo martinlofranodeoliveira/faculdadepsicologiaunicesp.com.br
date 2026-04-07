@@ -1,59 +1,40 @@
-const GROUP_LOGOS = [
-  {
-    src: '/landing/logo-rodape-fasul.webp',
-    alt: 'FASUL Educacional',
-  },
-  {
-    src: '/landing/logo-rodape-unicesp.webp',
-    alt: 'UNICESP',
-  },
-  {
-    src: '/landing/logo-rodape-faculdade-paulista.webp',
-    alt: 'Faculdade Paulista',
-  },
-  {
-    src: '/landing/logo-rodape-enfermagem.webp',
-    alt: 'Faculdade de Enfermagem',
-  },
-]
+import { siteConfig } from '@/site/config'
+import { FaleConoscoSection } from './FaleConoscoSection'
 
 export function FooterBottomSection() {
   return (
-    <footer id="rodape" className="lp-footer-bottom">
+    <>
+      <footer id="rodape" className="lp-footer-bottom">
       <div className="lp-footer-bottom__inner">
         <div className="lp-footer-bottom__top">
           <section className="lp-footer-brand">
-            <img
-              className="lp-footer-brand__logo"
-              src="/landing/faculdade-de-psicologia-logo-rodape.webp"
-              alt="Faculdade de Psicologia"
-              loading="lazy"
-              decoding="async"
-            />
-
-            <p className="lp-footer-brand__description">
-              Excelência no ensino superior com foco na inovação e na empregabilidade dos nossos alunos.
-            </p>
-
-            <div className="lp-footer-brand__social">
-              <a href="#" aria-label="Facebook">
-                <img src="/landing/footer-social-1.svg" alt="" aria-hidden="true" loading="lazy" decoding="async" />
-              </a>
-              <a href="#" aria-label="Instagram">
-                <img src="/landing/footer-social-instagram.png" alt="" aria-hidden="true" loading="lazy" decoding="async" />
-              </a>
+            <div className="lp-footer-brand__logos">
+              <img
+                className="lp-footer-brand__logo"
+                src="/landing/logo-rodape-faculdade-de-psicologia.webp"
+                alt="Faculdade de Psicologia"
+                loading="lazy"
+                decoding="async"
+              />
+              <div className="lp-footer-brand__logos-divider" />
+              <img
+                className="lp-footer-brand__logo lp-footer-brand__logo--unicesp"
+                src="/landing/logo-rodape-faculdade-fasul.webp"
+                alt="Faculdade Fasul"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
 
-            <div className="lp-footer-brand__group">
-              <p className="lp-footer-brand__group-title">Grupo FASUL Educacional</p>
+            <p className="lp-footer-brand__description">
+              A Faculdade de Psicologia UNICESP é uma Instituição de Ensino Superior que atualmente
+              pertence ao Grupo Fasul Educacional. Está credenciada pelas Portarias MEC n.º 73, de 14
+              de Janeiro de 2019, MEC n.º 499, de 8 de Julho de 2021 e MEC n.º 888, de 27 de Outubro
+              de 2020.
+            </p>
 
-              <div className="lp-footer-brand__group-logos">
-                {GROUP_LOGOS.map((logo) => (
-                  <div key={logo.src} className="lp-footer-brand__group-logo-card">
-                    <img src={logo.src} alt={logo.alt} loading="lazy" decoding="async" />
-                  </div>
-                ))}
-              </div>
+            <div className="lp-footer-brand__emec">
+              <img src="/landing/e-mec-qrcod.webp" alt="e-MEC" loading="lazy" decoding="async" />
             </div>
           </section>
 
@@ -62,28 +43,47 @@ export function FooterBottomSection() {
 
             <ul>
               <li>
-                <img src="/landing/footer-icon-location.svg" alt="" aria-hidden="true" />
-                <span>
-                  Rua Dr. Diogo de Faria, 66 - Vila Mariana
-                  <br />
-                  São Paulo - SP, CEP: 04037-000
-                </span>
-              </li>
-              <li>
                 <img src="/landing/footer-icon-phone.svg" alt="" aria-hidden="true" />
-                <a href="tel:+553598060604">(35) 9806-0604</a>
+                <a href={siteConfig.phoneHref}>{siteConfig.phoneLabel}</a>
               </li>
               <li>
                 <img src="/landing/footer-icon-mail.svg" alt="" aria-hidden="true" />
-                <a href="mailto:contato@faculdadepsicologiaunicesp.com.br">
-                  contato@faculdadepsicologiaunicesp.com.br
-                </a>
+                <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
               </li>
             </ul>
+
+            <div className="lp-footer-contact-block__reclame-aqui">
+              <h3>Reclame Aqui</h3>
+              <div className="lp-footer-contact-block__reclame-aqui-badges">
+                <img
+                  src="/landing/verificada-reclame-aqui.webp"
+                  alt="Verificada Reclame Aqui"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <img
+                  src="/landing/otimo-reclame-aqui.webp"
+                  alt="Ótimo Reclame Aqui"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
           </section>
 
           <section className="lp-footer-map-block">
             <h3>Localização</h3>
+
+            <ul>
+              <li>
+                <img src="/landing/footer-icon-location.svg" alt="" aria-hidden="true" />
+                <span>
+                  Local: {siteConfig.addressLines[0]}
+                  <br />
+                  {siteConfig.addressLines[1]}
+                </span>
+              </li>
+            </ul>
 
             <div className="lp-footer-map-block__card">
               <img
@@ -93,11 +93,7 @@ export function FooterBottomSection() {
                 decoding="async"
                 fetchPriority="low"
               />
-              <a
-                href="https://maps.google.com/?q=Rua+Dr.+Diogo+de+Faria,+66+-+Vila+Mariana,+S%C3%A3o+Paulo+-+SP,+04037-000"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href={siteConfig.mapsHref} target="_blank" rel="noreferrer">
                 <img src="/landing/footer-icon-maps.svg" alt="" aria-hidden="true" />
                 Ver no Maps
               </a>
@@ -105,8 +101,63 @@ export function FooterBottomSection() {
           </section>
         </div>
 
+        <div className="lp-footer-bottom__banner">
+          {/* Desktop Banner (escondido no mobile) */}
+          <img
+            src="/landing/banner-rodape-grupo-fasul.webp"
+            alt="Grupo Fasul Educacional"
+            className="lp-footer-bottom__banner-desktop"
+            loading="lazy"
+            decoding="async"
+          />
+
+          {/* Mobile Banner (escondido no desktop) */}
+          <div className="lp-footer-bottom__banner-mobile">
+            <img 
+              src="/landing/banner-grupo-fasul-mobile.svg" 
+              alt="" 
+              className="lp-footer-bottom__banner-mobile-bg"
+              loading="lazy" 
+              decoding="async" 
+            />
+            <div className="lp-footer-bottom__banner-mobile-content">
+              <img 
+                src="/landing/logo-grupo-fasul-mobile.svg" 
+                alt="Grupo Fasul Educacional" 
+                className="lp-footer-bottom__banner-mobile-logo" 
+                loading="lazy" 
+                decoding="async" 
+              />
+              
+              <div className="lp-footer-bottom__banner-mobile-divider" />
+              
+              <p className="lp-footer-bottom__banner-mobile-text">
+                SOMOS 20 INSTITUIÇÕES EDUCACIONAIS E MAIS DE 400 POLOS NO BRASIL, USA E PORTUGAL!
+              </p>
+
+              <div className="lp-footer-bottom__banner-mobile-grid">
+                <div className="lp-footer-bottom__banner-mobile-card">
+                  <img src="/landing/logo-rodape-fasul-mobile.svg" alt="Fasul" loading="lazy" decoding="async" />
+                </div>
+                <div className="lp-footer-bottom__banner-mobile-card">
+                  <img src="/landing/logo-rodape-unicesp.svg" alt="Unicesp" loading="lazy" decoding="async" />
+                </div>
+                <div className="lp-footer-bottom__banner-mobile-card">
+                  <img src="/landing/logo-rodape-paulista-mobile.svg" alt="Faculdade Paulista" loading="lazy" decoding="async" />
+                </div>
+                <div className="lp-footer-bottom__banner-mobile-card">
+                  <img src="/landing/logo-rodape-psicologia-mobile.svg" alt="Faculdade de Psicologia" loading="lazy" decoding="async" />
+                </div>
+                <div className="lp-footer-bottom__banner-mobile-card">
+                  <img src="/landing/logo-rodape-enfermagem-mobile.svg" alt="Faculdade de Enfermagem" loading="lazy" decoding="async" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="lp-footer-bottom__bar">
-          <small>(c) 2026 Faculdade de Psicologia UNICESP. Todos os direitos reservados.</small>
+          <small>© 2026 {siteConfig.name}. Todos os direitos reservados.</small>
 
           <div className="lp-footer-bottom__links">
             <a href="/politica-de-privacidade">Política de Privacidade</a>
@@ -115,5 +166,7 @@ export function FooterBottomSection() {
         </div>
       </div>
     </footer>
+    <FaleConoscoSection />
+    </>
   )
 }
