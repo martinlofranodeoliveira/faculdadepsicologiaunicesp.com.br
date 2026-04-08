@@ -343,30 +343,6 @@ function formatOldInstallmentPriceLabel(amountCents: number, installmentsMax: nu
   return `${installments}X ${formatCurrencyBrl(oldAmountCents)}/MÊS`
 }
 
-function calculatePixAmountCents(totalAmountCents: number) {
-  if (!totalAmountCents) return 0
-
-  return Math.floor((totalAmountCents * 0.9) / 100) * 100
-}
-
-function parseCurrencyTextToCents(value: string) {
-  const normalized = value.replace(/[^\d,.-]+/g, '').replace(/\./g, '').replace(',', '.')
-  if (!normalized) return 0
-
-  const amount = Number.parseFloat(normalized)
-  return Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0
-}
-
-function extractPixAmountCentsFromPaymentPlanName(value?: string) {
-  const normalized = value?.trim() ?? ''
-  if (!normalized) return 0
-
-  const pixMatch = normalized.match(/R\$\s*([\d.]+,\d{2})\s+[àá]\s+vista\s+no\s+pix/iu)
-  if (!pixMatch) return 0
-
-  return parseCurrencyTextToCents(pixMatch[1])
-}
-
 function normalizeMarketingPriceLabel(value?: string) {
   const normalized = normalizePriceLabel(value || '')
   if (!normalized) return ''
@@ -425,24 +401,22 @@ function formatPixText(amountCents: number) {
   return amountCents > 0 ? `*À vista no PIX: ${formatCurrencyBrl(amountCents)}` : ''
 }
 
-function resolvePaymentGroupPixText(items: CatalogPriceItem[], fallbackPixText?: string) {
-  const normalizedFallbackPixText = fallbackPixText?.trim() ?? ''
-  if (normalizedFallbackPixText) {
-    return normalizedFallbackPixText
-  }
-
-  for (const item of items) {
-    const pixAmountCents = extractPixAmountCentsFromPaymentPlanName(item.paymentPlanName)
-    if (pixAmountCents > 0) {
-      return formatPixText(pixAmountCents)
-    }
-  }
-
-  const singleInstallmentItem = items.find(
-    (item) => item.installmentsMax === 1 && item.amountCents > 0,
+function resolvePaymentGroupPixText(items: CatalogPriceItem[]) {
+  const singleInstallmentPixItem = items.find(
+    (item) => item.installmentsMax === 1 && (item.pixAmountCents ?? 0) > 0,
   )
-  if (singleInstallmentItem?.amountCents) {
-    return formatPixText(calculatePixAmountCents(singleInstallmentItem.amountCents))
+  if ((singleInstallmentPixItem?.pixAmountCents ?? 0) > 0) {
+    return formatPixText(singleInstallmentPixItem?.pixAmountCents ?? 0)
+  }
+
+  const preferredPricingItem = getPreferredPaymentGroupPricingItem(items)
+  if ((preferredPricingItem?.pixAmountCents ?? 0) > 0) {
+    return formatPixText(preferredPricingItem?.pixAmountCents ?? 0)
+  }
+
+  const firstPixItem = items.find((item) => (item.pixAmountCents ?? 0) > 0)
+  if ((firstPixItem?.pixAmountCents ?? 0) > 0) {
+    return formatPixText(firstPixItem?.pixAmountCents ?? 0)
   }
 
   return ''
@@ -475,7 +449,6 @@ function buildPaymentPlanGroups(
   workloadOptions: string[] = [],
   priceItems: CatalogPriceItem[] = [],
   fallbackPriceLabel?: string,
-  fallbackPixText?: string,
 ) {
   const groupMap = new Map<string, PaymentPlanGroup & { items: CatalogPriceItem[] }>()
   const shouldCreateFallbackWorkloadGroups = priceItems.length === 0
@@ -599,7 +572,7 @@ function buildPaymentPlanGroups(
           fallbackPriceLabel,
         ),
         oldInstallmentText: resolvePaymentGroupOldInstallmentText(sortedItems),
-        pixText: resolvePaymentGroupPixText(sortedItems, fallbackPixText),
+        pixText: resolvePaymentGroupPixText(sortedItems),
         options: sortedOptions,
       }
     })
@@ -636,8 +609,7 @@ function resolveCoverImage(image?: string) {
 }
 
 function resolvePixMessage(pixText?: string) {
-  const normalizedPixText = pixText?.trim() ?? ''
-  return normalizedPixText || '*À vista no PIX: consulte o atendimento.'
+  return pixText?.trim() ?? ''
 }
 
 function normalizeCpf(value: string) {
@@ -865,7 +837,9 @@ function PostPriceCard({
             <span>Por: </span>
             <span className="font-bold">{priceLabel}</span>
           </p>
-          <p className="mt-[2px] text-[14px] font-medium leading-[1.14] text-black/50">{pixMessage}</p>
+          {pixMessage ? (
+            <p className="mt-[2px] text-[14px] font-medium leading-[1.14] text-black/50">{pixMessage}</p>
+          ) : null}
         </div>
       </div>
     </div>
@@ -876,7 +850,7 @@ export function CourseLeadForm({
   institutionSlug,
   dark: _dark = false,
   image,
-  pixText,
+  pixText: _pixText,
   workloadOptions = [],
   priceItems = [],
   oldInstallmentPrice,
@@ -890,7 +864,6 @@ export function CourseLeadForm({
     workloadOptions,
     priceItems,
     selection.priceLabel,
-    pixText,
   )
   const workloadSelectOptions = paymentPlanGroups.map((group) => ({ value: group.value, label: group.label }))
   const initialWorkloadValue = paymentPlanGroups[0]?.value ?? ''
@@ -943,7 +916,7 @@ export function CourseLeadForm({
     selectedWorkloadGroup?.currentInstallmentText || normalizeMarketingPriceLabel(selection.priceLabel)
   const visibleOldInstallmentPrice =
     selectedWorkloadGroup?.oldInstallmentText || oldInstallmentPrice?.trim() || ''
-  const visiblePixMessage = resolvePixMessage(selectedWorkloadGroup?.pixText || pixText)
+  const visiblePixMessage = resolvePixMessage(selectedWorkloadGroup?.pixText)
   const internshipRegulatoryBodyLabel = resolveRegulatoryBodyDisplayLabel(
     regulatoryBodyName,
     regulatoryBodyComplement,

@@ -13,6 +13,7 @@ export type CatalogPriceItem = {
   id: number
   amountCents: number
   installmentsMax: number
+  pixAmountCents?: number | null
   workloadVariantId: number | null
   workloadProfileId?: number | null
   workloadName: string
@@ -253,6 +254,7 @@ type ApiPricingItem = {
   payment_plan_name?: string | null
   billing_type?: string | null
   amount_cents?: number | null
+  pix_amount_cents?: number | string | null
   installments_max?: number | null
   workload_profile_id?: number | null
   workload_variant_id?: number | null
@@ -716,6 +718,7 @@ function normalizePricingItems(items: ApiPricingItem[] | null | undefined): Cata
       paymentPlanName: normalizeText(item.payment_plan_name),
       billingType: normalizeText(item.billing_type),
       amountCents: normalizeAmountCents(item.amount_cents),
+      pixAmountCents: normalizeAmountCents(item.pix_amount_cents) || null,
       installmentsMax: Number(item.installments_max ?? 0),
       workloadProfileId:
         item.workload_profile_id === null || item.workload_profile_id === undefined
