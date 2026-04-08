@@ -1016,47 +1016,51 @@
 
 .lp-grade-curriculum {
   background: #ffffff;
-  padding: 42px 0 60px;
+  padding: 32px 0;
 }
 
 .lp-grade-curriculum__inner {
-  width: min(1240px, calc(100% - 2rem));
+  width: min(1244px, calc(100% - 2rem));
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
 }
 
 .lp-grade-curriculum__title {
   margin: 0;
   text-align: center;
-  color: #070707;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
+  color: #00163b;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
   font-weight: 800;
   line-height: 40px;
-  letter-spacing: -0.9px;
   text-transform: uppercase;
 }
 
 .lp-grade-curriculum__list {
-  margin: 31px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 16px;
+  width: 100%;
 }
 
 .lp-grade-curriculum__item {
-  border-radius: 20px;
-  background: #031f4e;
+  border-radius: 24px;
+  background: #00163b;
   overflow: hidden;
 }
 
 .lp-grade-curriculum__row {
   min-height: 100px;
-  padding: 20px 30px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  padding: 30px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
 }
 
@@ -1064,33 +1068,34 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 18px;
 }
 
 .lp-grade-curriculum__semester {
-  color: #37d4ff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 24px;
-  font-weight: 700;
+  color: #6ec9f0;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 26px;
+  font-weight: 500;
   line-height: 30px;
 }
 
 .lp-grade-curriculum__name {
   min-width: 0;
   color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 26px;
   font-weight: 500;
   line-height: 30px;
+  display: none; /* Removed based on Figma layout */
 }
 
 .lp-grade-curriculum__hours {
   color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 24px;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+  display: none; /* Removed based on Figma layout */
 }
 
 .lp-grade-curriculum__toggle {
@@ -1098,25 +1103,24 @@
   height: 51px;
   border: 0;
   border-radius: 60px;
-  background: #031f4e;
+  background: #00163b;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 4.2px 9px;
   flex-shrink: 0;
   cursor: pointer;
 }
 
-.lp-grade-curriculum__toggle img {
+.lp-grade-curriculum__toggle svg {
   width: 22.629px;
   height: 22.629px;
   display: block;
-  transform: rotate(-90deg);
   transition: transform 0.2s ease;
 }
 
-.lp-grade-curriculum__item.is-open .lp-grade-curriculum__toggle img {
-  transform: rotate(90deg);
+.lp-grade-curriculum__item.is-open .lp-grade-curriculum__toggle svg {
+  transform: rotate(-180deg);
 }
 
 .lp-grade-curriculum__panel {
@@ -1126,8 +1130,8 @@
 
 .lp-grade-curriculum__panel-title {
   margin: 14px 0 0;
-  color: #37d4ff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  color: #6ec9f0;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 26px;
   font-weight: 700;
   line-height: 30px;
@@ -1142,7 +1146,7 @@
 
 .lp-grade-curriculum__panel li {
   color: rgba(255, 255, 255, 0.92);
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
   font-weight: 400;
   line-height: 1.35;
@@ -1151,20 +1155,21 @@
 .lp-grade-curriculum__cta {
   width: 175px;
   min-height: 50px;
-  margin: 24px auto 0;
+  margin: 16px auto 0;
   border: 0;
-  border-radius: 12px;
-  background: #6EC9F0;
-  color: #011D2E;
+  border-radius: 8px;
+  background: #0b66fd;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 31.115px;
   cursor: pointer;
-  text-transform: none;
+  text-transform: uppercase;
+  padding: 10px 32px;
 }
 
 .lp-health-ead {
@@ -1250,43 +1255,100 @@
   box-sizing: border-box;
 }
 
-.lp-health-ead__nav {
-  width: 60px;
+.lp-health-ead__pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.lp-health-ead__dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lp-health-ead__dot {
+  background: transparent;
   border: 0;
   padding: 0;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: 3;
-  background: linear-gradient(90deg, #00163b 0%, rgba(0, 22, 59, 0) 100%);
-  display: inline-flex;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.lp-health-ead__dot img {
+  width: 13px;
+  height: 13px;
+}
+
+.lp-health-ead__controls {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.lp-health-ead__nav-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  transition: opacity 0.2s;
 }
 
-.lp-health-ead__nav img {
-  width: 26px;
-  height: 26px;
-  display: block;
+.lp-health-ead__nav-btn img {
+  width: 50px;
+  height: 50px;
 }
 
-.lp-health-ead__nav--prev {
-  left: 0;
-}
-
-.lp-health-ead__nav--next {
-  right: 0;
-  background: linear-gradient(270deg, #00163b 0%, rgba(0, 22, 59, 0) 100%);
-}
-
-.lp-health-ead__nav--next img {
+.lp-health-ead__nav-btn--prev img[src*="on.svg"] {
   transform: rotate(180deg);
 }
 
-.lp-health-ead__nav:disabled {
-  opacity: 0.35;
+.lp-health-ead__nav-btn--next img[src*="off.svg"] {
+  transform: rotate(180deg);
+}
+
+.lp-health-ead__nav-btn:disabled {
   cursor: not-allowed;
+}
+
+.lp-health-ead__see-all-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.lp-health-ead__see-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0b66fd;
+  color: #ffffff;
+  font-weight: 700;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  line-height: 1.7;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  min-width: 257px;
+  min-height: 50px;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.lp-health-ead__see-all:hover {
+  background-color: #0952cc;
+  transform: translateY(-2px);
 }
 
 .lp-health-ead__viewport {
@@ -1308,21 +1370,22 @@
   width: 306px;
   border-radius: 16px;
   background: #ffffff;
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   flex-shrink: 0;
-  justify-content: space-between;
   box-sizing: border-box;
+  overflow: clip;
+  height: auto;
+  align-self: stretch;
 }
 
 .lp-health-ead-card__image-wrap {
   width: 100%;
-  height: 132px;
-  border-radius: 12px;
-  overflow: hidden;
+  height: 127px;
   position: relative;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .lp-health-ead-card__image {
@@ -1332,82 +1395,103 @@
   display: block;
 }
 
-.lp-health-ead-card__badges {
+.lp-health-ead-card__content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 16px;
+  padding: 16px;
+  justify-content: flex-start;
+}
+
+.lp-health-ead-card__promo-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+  height: 23px;
+  background: linear-gradient(117.19deg, #073588 13.43%, #041c46 131.41%);
+  border-bottom-left-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 8px;
+  z-index: 2;
 }
 
-.lp-health-ead-card__tag {
-  min-height: 18px;
-  border-radius: 4.317px;
-  border: 1px solid #1e5ec8;
-  padding: 0 8px;
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 10.119px;
-  font-weight: 700;
-  line-height: 16px;
-  letter-spacing: -0.2024px;
-  text-transform: uppercase;
+.lp-health-ead-card__promo-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  object-fit: contain;
 }
 
-.lp-health-ead-card__mec {
-  min-height: 18px;
-  border-radius: 4.317px;
-  border: 1px solid #1e5ec8;
-  background: #ffffff;
-  padding: 0 7px;
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 10.119px;
-  font-weight: 700;
-  line-height: 16px;
-  letter-spacing: -0.2024px;
-  text-transform: uppercase;
-}
-
-.lp-health-ead-card__hours {
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 10.119px;
+.lp-health-ead-card__promo-badge span {
+  color: #ffffff;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.13;
-  letter-spacing: -0.2024px;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .lp-health-ead-card__title {
   margin: 0;
   color: #010101;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
   font-weight: 700;
   line-height: 1.2;
+  text-transform: uppercase;
+  min-height: 44px;
+}
+
+.lp-health-ead-card__title--long {
+  font-size: 14.5px;
+  line-height: 1.3;
+}
+
+.lp-health-ead-card__badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.lp-health-ead-card__badge-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.lp-health-ead-card__tag {
+  background-color: #1b63de;
+  color: #ffffff;
+  border-radius: 4.32px;
+  padding: 3px 8px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.13;
+  letter-spacing: -0.24px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .lp-health-ead-card__prices {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.lp-health-ead-card__price-prefix {
-  margin: 0;
-  color: rgba(1, 1, 1, 0.75);
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.1;
+  gap: 7px;
+  flex-grow: 1;
+  justify-content: flex-end;
 }
 
 .lp-health-ead-card__old-price {
   margin: 0;
   color: rgba(1, 1, 1, 0.2);
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 16px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.1;
 }
@@ -1416,16 +1500,10 @@
   text-decoration: line-through;
 }
 
-.lp-health-ead-card__price-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .lp-health-ead-card__price {
   margin: 0;
   color: #010101;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 16px;
   font-weight: 700;
   line-height: 1.1;
@@ -1433,17 +1511,125 @@
 
 .lp-health-ead-card__cta {
   width: 100%;
-  min-height: 47px;
+  height: 47px;
   border: 0;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #2556a9 0%, #2d67c5 100%);
+  border-radius: 8px;
+  background: linear-gradient(106.89deg, #073588 3.82%, #041c46 105.69%);
   color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 24px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.33;
   text-transform: uppercase;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  margin-top: auto;
+}
+
+.lp-health-ead-card__cta:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1300px) {
+  .lp-health-ead-card {
+    width: min(306px, calc(100vw - 32px));
+    min-width: min(306px, calc(100vw - 32px));
+    border-radius: 16px;
+    padding: 10px;
+    gap: 0;
+  }
+
+  .lp-health-ead-card__image-wrap {
+    height: 132px;
+    border-radius: 12px;
+  }
+
+  .lp-health-ead-card__promo-badge {
+    width: 129px;
+    height: 23px;
+    padding: 3px 8px;
+    border-bottom-left-radius: 12px;
+  }
+
+  .lp-health-ead-card__promo-badge span {
+    font-size: 12px;
+  }
+
+  .lp-health-ead-card__content {
+    padding: 0;
+    gap: 0;
+  }
+
+  .lp-health-ead-card__title {
+    font-size: 18px;
+    min-height: 44px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+
+  .lp-health-ead-card__title--long {
+    font-size: 14.5px;
+    min-height: 38px;
+  }
+
+  .lp-health-ead-card__tag {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4.32px;
+  }
+
+  .lp-health-ead-card__badges {
+    margin-bottom: 16px;
+  }
+
+  .lp-health-ead-card__prices {
+    margin-bottom: 0;
+  }
+
+  .lp-health-ead-card__old-price {
+    font-size: 14px;
+  }
+
+  .lp-health-ead-card__price {
+    font-size: 16px;
+  }
+
+  .lp-health-ead-card__cta {
+    height: 47px;
+    font-size: 14px;
+    border-radius: 12px;
+    margin-top: 16px;
+  }
+
+  .lp-health-ead__notice {
+    padding: 12px 14px;
+    border-radius: 12px;
+    gap: 12px;
+  }
+
+  .lp-health-ead__notice-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .lp-health-ead__notice p {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .lp-health-ead__nav-btn {
+    width: 41px;
+    height: 41px;
+  }
+
+  .lp-health-ead__nav-btn img {
+    width: 41px;
+    height: 41px;
+  }
 }
 
 .lp-health-ead__notice {
@@ -1470,8 +1656,8 @@
   justify-content: center;
   flex-shrink: 0;
   color: #6eb5f0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
 }
@@ -1479,10 +1665,10 @@
 .lp-health-ead__notice p {
   margin: 0;
   color: #6eb5f0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
   font-weight: 500;
-  line-height: 28px;
+  line-height: 1.25;
 }
 
 .lp-faq-cta {
@@ -3358,7 +3544,7 @@
   }
 
   .lp-grade-curriculum {
-    padding: 36px 0 42px;
+    padding: 36px 0 36px;
   }
 
   .lp-grade-curriculum__title {
@@ -3374,36 +3560,27 @@
 
   .lp-grade-curriculum__row {
     min-height: 76px;
-    padding: 14px 14px 14px 16px;
+    padding: 14px 14px 14px 20px;
     gap: 10px;
   }
 
   .lp-grade-curriculum__summary {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2px;
+    display: flex;
+    align-items: center;
   }
 
   .lp-grade-curriculum__semester {
-    font-size: 16px;
+    font-size: 20px;
     line-height: 1.2;
-  }
-
-  .lp-grade-curriculum__name {
-    font-size: 18px;
-    line-height: 1.2;
-  }
-
-  .lp-grade-curriculum__hours {
-    font-size: 18px;
   }
 
   .lp-grade-curriculum__toggle {
     width: 44px;
     height: 44px;
+    padding: 0;
   }
 
-  .lp-grade-curriculum__toggle img {
+  .lp-grade-curriculum__toggle svg {
     width: 19px;
     height: 19px;
   }
@@ -3413,7 +3590,7 @@
   }
 
   .lp-grade-curriculum__panel {
-    padding: 0 14px 14px 16px;
+    padding: 0 14px 14px 20px;
   }
 
   .lp-grade-curriculum__panel-title {
@@ -3431,15 +3608,16 @@
     font-size: 15px;
     line-height: 1.35;
   }
-
   .lp-grade-curriculum__cta {
-    width: 100%;
-    max-width: 220px;
-    min-height: 44px;
-    margin-top: 18px;
-    font-size: 18px;
-    line-height: 1.2;
-  }
+        width: 100%;
+        max-width: none;
+        min-height: 60px;
+        height: 40px;
+        margin-top: 0px;
+        font-size: 19px;
+        padding: 7px 22px;
+        border-radius: 14px;
+    }
 
   .lp-health-ead {
     padding: 25px 0 25px;
@@ -3526,65 +3704,7 @@
   }
 
   .lp-health-ead-card {
-    width: min(251.437px, calc(100vw - 56px));
-    min-width: min(251.437px, calc(100vw - 56px));
-    border-radius: 13.147px;
-    padding: 9.86px;
-    gap: 13.147px;
     scroll-snap-align: start;
-  }
-
-  .lp-health-ead-card__image-wrap {
-    height: 108.463px;
-    border-radius: 9.86px;
-  }
-
-  .lp-health-ead-card__tag {
-    min-height: 14.79px;
-    border-width: 0.822px;
-    border-radius: 3.547px;
-    padding: 0 6px;
-    font-size: 8.315px;
-    line-height: 1.13;
-    letter-spacing: -0.1663px;
-  }
-
-  .lp-health-ead-card__mec {
-    min-height: 14.79px;
-    border-width: 0.822px;
-    border-radius: 3.547px;
-    padding: 0 6px;
-    font-size: 8.315px;
-    line-height: 1.13;
-    letter-spacing: -0.1663px;
-  }
-
-  .lp-health-ead-card__hours {
-    font-size: 8.315px;
-    line-height: 1.13;
-    letter-spacing: -0.1663px;
-  }
-
-  .lp-health-ead-card__title {
-    font-size: 14.79px;
-    line-height: 1.2;
-  }
-
-  .lp-health-ead-card__prices {
-    gap: 3.287px;
-  }
-
-  .lp-health-ead-card__price-prefix,
-  .lp-health-ead-card__price {
-    font-size: 13.147px;
-    line-height: 1.1;
-  }
-
-  .lp-health-ead-card__cta {
-    min-height: 38.619px;
-    border-radius: 9.86px;
-    font-size: 13.147px;
-    line-height: 19.721px;
   }
 
   .lp-health-ead__notice {
