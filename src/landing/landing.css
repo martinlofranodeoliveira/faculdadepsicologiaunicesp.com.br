@@ -608,25 +608,43 @@
 
 .lp-graduation {
   background: #ffffff;
-  padding: 20px 0;
+  padding: 32px 0;
 }
 
 .lp-graduation__inner {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 42px;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.lp-graduation__title {
+  margin: 0;
+  text-align: center;
+  color: #00163b;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
+  font-weight: 800;
+  line-height: 65px;
+  text-transform: uppercase;
+}
+
+.lp-graduation__content-wrap {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  width: 100%;
 }
 
 .lp-graduation__media {
-  width: 736px;
-  height: 403px;
+  width: 556px;
+  height: 281px;
   border-radius: 65px 65px 0 65px;
   overflow: hidden;
   flex-shrink: 0;
-  background: #011b45;
+  position: relative;
 }
 
 .lp-graduation__media img {
@@ -637,172 +655,112 @@
 }
 
 .lp-graduation__content {
-  width: 462px;
-  max-width: 100%;
-  color: #070707;
-  min-height: 401px;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  height: 281px;
   justify-content: space-between;
+  align-items: flex-start;
 }
 
 .lp-graduation__location {
-  width: 452px;
-  max-width: 100%;
+  width: 100%;
   min-height: 62px;
-  display: inline-flex;
+  border: 1px solid #1e5ec8;
+  border-radius: 38px;
+  padding: 10px 18px;
+  display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-start;
-  border-radius: 38px;
-  border: 1px solid rgba(30, 94, 200, 0.46);
-  padding: 7px 15px;
-  color: #06090d;
+  box-sizing: border-box;
 }
 
 .lp-graduation__location-icon {
   width: 24px;
   height: 24px;
-  display: block;
   flex-shrink: 0;
 }
 
 .lp-graduation__location-text {
-  display: block;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  color: #001b2d;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
-  font-weight: 300;
-  line-height: 24px;
-  color: #06090d;
-}
-
-.lp-graduation__location-text strong {
   font-weight: 600;
+  line-height: 22px;
 }
 
-.lp-graduation__heading {
-  margin-top: 24px;
-}
-
-.lp-graduation__title {
-  margin: 0;
-  max-width: 462px;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 37px;
-  letter-spacing: -0.9px;
-  text-transform: uppercase;
+.lp-graduation__location-text span {
+  font-weight: 300;
 }
 
 .lp-graduation__subtitle {
-  margin: 12px 0 0;
-  font-family: 'Liberation Sans', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 1.35;
+  margin: 0;
+  color: #070707;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 22px;
 }
 
 .lp-graduation__meta {
-  margin-top: 24px;
   display: flex;
   align-items: center;
-  gap: 14px;
-}
-
-.lp-graduation__cta {
-  width: 175px;
-  min-height: 50px;
-  border: 0;
-  border-radius: 12px;
-  background: #0b66fd;
-  color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 31.115px;
-  cursor: pointer;
+  gap: 12px;
 }
 
 .lp-graduation__meta-icon-wrap {
   width: 51px;
   height: 51px;
-  border-radius: 60px;
   background: #1e5ec8;
-  display: inline-flex;
+  border-radius: 60px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .lp-graduation__meta-icon {
-  width: 22.629px;
-  height: 22.629px;
-  display: block;
+  width: 23px;
+  height: 23px;
 }
 
 .lp-graduation__meta-text {
   display: flex;
   flex-direction: column;
-  color: #001230;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  line-height: 28px;
+  gap: 2px;
 }
 
 .lp-graduation__meta-text strong {
-  font-weight: 700;
+  color: #001230;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .lp-graduation__meta-text span {
-  font-weight: 400;
-}
-
-.lp-graduation__knowledge {
-  margin-top: 24px;
-}
-
-.lp-graduation__knowledge strong {
-  display: block;
   color: #001230;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28.272px;
+  opacity: 0.75;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
 }
 
-.lp-graduation__tags {
-  margin-top: 12px;
+.lp-graduation__cta {
+  width: 175px;
+  height: 50px;
+  background: #0b66fd;
+  color: #ffffff;
+  border: 0;
+  border-radius: 8px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.lp-graduation__tag {
-  border-radius: 15px;
-  padding: 7px 15px;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 30px;
-  background: #1e5ec8;
-  color: #ffffff;
-}
-
-.lp-graduation__tag--one {
-  background: #1e5ec8;
-  color: #ffffff;
-}
-
-.lp-graduation__tag--two {
-  background: #1e5ec8;
-  color: #ffffff;
-}
-
-.lp-graduation__tag--three {
-  background: #1e5ec8;
-  color: #ffffff;
+  justify-content: center;
 }
 
 .lp-about-course {
@@ -833,15 +791,21 @@
   pointer-events: none;
 }
 
-.lp-about-course__inner {
+.lp-about-course__container {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+.lp-about-course__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 37px;
-  position: relative;
-  z-index: 1;
+  width: 100%;
 }
 
 .lp-about-course__content {
@@ -857,11 +821,11 @@
   font-family: 'Kumbh Sans', sans-serif;
   font-size: 55px;
   font-weight: 800;
-  line-height: 40px;
+  line-height: 1.2;
   text-align: center;
   text-transform: uppercase;
+  color: #ffffff;
 }
-
 .lp-about-course__description {
   margin: 0;
   max-width: 656px;
@@ -2908,57 +2872,59 @@
 
   .lp-graduation {
     overflow-x: clip;
+    padding: 32px 0;
   }
 
   .lp-graduation__inner {
     width: calc(100% - 28px);
     max-width: 720px;
     flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .lp-graduation__title {
+    font-size: 36px;
+    line-height: 42px;
+    text-align: center;
+  }
+
+  .lp-graduation__content-wrap {
+    flex-direction: column;
     gap: 24px;
+    align-items: center;
   }
 
   .lp-graduation__media {
     width: 100%;
-    max-width: 100%;
+    max-width: 556px;
     height: auto;
-    aspect-ratio: 736 / 403;
+    aspect-ratio: 556 / 281;
     border-radius: 36px 36px 0 36px;
   }
 
   .lp-graduation__content {
     width: 100%;
-    max-width: 100%;
+    max-width: 648px;
+    height: auto;
     min-height: 0;
-    gap: 18px;
+    gap: 24px;
+    align-items: center;
+    text-align: center;
   }
 
   .lp-graduation__location {
     width: 100%;
-    display: flex;
-    align-items: flex-start;
-    padding: 8px 14px;
-    gap: 8px;
+    justify-content: center;
   }
 
   .lp-graduation__location-text {
     min-width: 0;
-    overflow-wrap: anywhere;
+    text-align: left;
   }
 
-  .lp-graduation__title {
-    max-width: 100%;
-    overflow-wrap: anywhere;
-  }
-
-  .lp-graduation__meta {
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .lp-graduation__meta-text {
-    min-width: 0;
-    overflow-wrap: anywhere;
+  .lp-graduation__subtitle {
+    text-align: center;
   }
 
   .lp-portaria {
@@ -2995,11 +2961,15 @@
     overflow-x: clip;
   }
 
+  .lp-about-course__container {
+    align-items: center;
+  }
+
   .lp-about-course__inner {
     width: calc(100% - 30px);
     max-width: 720px;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 24px;
   }
 
@@ -3007,6 +2977,8 @@
     width: 100%;
     max-width: 100%;
     order: 2;
+    align-items: center;
+    text-align: center;
   }
 
   .lp-about-course__media {
@@ -3020,6 +2992,7 @@
 
   .lp-about-course__description {
     max-width: 100%;
+    text-align: center;
   }
 
   .lp-about-course__profile-list {
@@ -3331,87 +3304,84 @@
   }
 
   .lp-graduation {
-    padding: 20px 0;
     overflow-x: clip;
+    padding: 32px 0;
   }
 
   .lp-graduation__inner {
     width: calc(100% - 28px);
-    max-width: 620px;
+    max-width: 480px;
     flex-direction: column;
-    gap: 24px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .lp-graduation__title {
+    font-size: 25px;
+    line-height: 30px;
+    text-align: left;
+    width: 100%;
+    order: 2;
+  }
+
+  .lp-graduation__content-wrap {
+    display: contents;
   }
 
   .lp-graduation__media {
     width: 100%;
-    max-width: 100%;
-    height: auto;
-    aspect-ratio: 736 / 403;
-    border-radius: 36px 36px 0 36px;
+    max-width: 480px;
+    height: 198px;
+    border-radius: 20px;
+    order: 1;
   }
 
   .lp-graduation__content {
     width: 100%;
-    max-width: 100%;
+    max-width: 480px;
+    height: auto;
     min-height: 0;
-    gap: 18px;
+    gap: 16px;
+    align-items: flex-start;
+    text-align: left;
+    order: 3;
   }
 
   .lp-graduation__location {
     width: 100%;
-    padding: 12px 12px;
-    gap: 8px;
-    display: flex;
-    align-items: flex-start;
-  }
-
-  .lp-graduation__location-icon {
-    width: 20px;
-    height: 20px;
+    padding: 10px;
+    min-height: 55px;
+    order: 1; /* location bar is above title in figma mobile? wait checking node 385:4 */
   }
 
   .lp-graduation__location-text {
-    min-width: 0;
     font-size: 14px;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-  }
-
-  .lp-graduation__heading {
-    margin-top: 0;
-  }
-
-  .lp-graduation__title {
-    max-width: 100%;
-    font-size: 30px;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
+    line-height: 18px;
   }
 
   .lp-graduation__subtitle {
-    font-size: 18px;
-    line-height: 1.35;
+    font-size: 14px;
+    line-height: 23px;
+    text-align: left;
+    margin-top: 71px; /* following figma gap logic if possible */
+    margin-top: 0;
   }
 
   .lp-graduation__meta {
-    margin-top: 0;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: flex-start;
+    gap: 12px;
   }
 
-  .lp-graduation__meta-text {
-    min-width: 0;
-    font-size: 18px;
-    line-height: 1.25;
-    overflow-wrap: anywhere;
+  .lp-graduation__meta-text strong,
+  .lp-graduation__meta-text span {
+    font-size: 14px;
+    line-height: 28px;
   }
 
   .lp-graduation__cta {
     width: 100%;
-    min-height: 46px;
-    font-size: 18px;
-    line-height: 1.2;
+    height: 42px;
+    font-size: 14px;
+    border-radius: 12px;
   }
 
   .lp-graduation__knowledge {
@@ -3432,30 +3402,37 @@
     padding: 32px 0;
   }
 
+  .lp-about-course__container {
+    width: min(480px, calc(100% - 28px));
+    gap: 0;
+  }
+
   .lp-about-course__inner {
-    width: min(361px, calc(100% - 28px));
+    width: 100%;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
+    display: contents;
   }
 
   .lp-about-course__content {
     width: 100%;
-    max-width: 361px;
-    order: 2;
+    max-width: 480px;
+    order: 3;
   }
 
   .lp-about-course__media {
     order: 1;
     width: 100%;
-    max-width: 361px;
+    max-width: 480px;
     height: 297px;
     border-radius: 15px 15px 15px 0;
     margin-top: 0;
   }
 
   .lp-about-course__title {
-    margin: 16px 0 0 0;
+    order: 2;
+    margin: 32px 0 0 0;
     font-size: 25px;
     line-height: 30px;
     letter-spacing: 0;
@@ -3463,8 +3440,8 @@
   }
 
   .lp-about-course__description {
-    margin: 16px 0 0 0;
-    max-width: 356px;
+    margin: 14px 0 0 0;
+    max-width: 480px;
     font-size: 14px;
     line-height: 18px;
   }
@@ -3638,7 +3615,7 @@
 
   .lp-health-ead__inner {
     width: calc(100% - 28px);
-    max-width: 362px;
+    max-width: 480px;
     overflow: visible;
   }
 
@@ -3653,7 +3630,7 @@
   }
 
   .lp-health-ead__title {
-    max-width: 362px;
+    max-width: 480px;
     font-size: 24.651px;
     line-height: 29px;
     letter-spacing: 0;
