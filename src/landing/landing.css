@@ -807,7 +807,7 @@
 
 .lp-about-course {
   background: #02173c;
-  padding: 42px 0;
+  padding: 64px 0;
   position: relative;
   overflow: hidden;
 }
@@ -839,39 +839,41 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 60px;
+  gap: 37px;
   position: relative;
   z-index: 1;
 }
 
 .lp-about-course__content {
-  width: 638px;
+  width: 656px;
   max-width: 100%;
   color: #ffffff;
+  display: flex;
+  flex-direction: column;
 }
 
 .lp-about-course__title {
-  margin: 0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
+  margin: 0 0 45px 0;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
   font-weight: 800;
   line-height: 40px;
-  letter-spacing: -0.4px;
+  text-align: center;
   text-transform: uppercase;
 }
 
 .lp-about-course__description {
-  margin: 14px 0 0;
-  max-width: 638px;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  max-width: 656px;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
   font-weight: 400;
-  line-height: 28px;
+  line-height: 24px;
 }
 
 .lp-about-course__profile-title {
-  margin: 29px 0 0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  margin: 45px 0 16px 0;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 24px;
   font-weight: 500;
   line-height: 30px;
@@ -879,8 +881,8 @@
 }
 
 .lp-about-course__profile-list {
-  margin: 16px 0 0;
-  padding: 15px 25px;
+  margin: 0;
+  padding: 24px 20px;
   list-style: none;
   border-radius: 15px;
   background: #e8f0fd;
@@ -888,20 +890,20 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, auto));
   grid-auto-flow: column;
-  column-gap: 25px;
-  row-gap: 12px;
+  column-gap: 24px;
+  row-gap: 20px;
+  align-items: flex-start;
 }
 
 .lp-about-course__profile-item {
-  min-height: 34px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   color: #000000;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 16px;
   font-weight: 500;
-  line-height: 1.28;
+  line-height: 18px;
 }
 
 .lp-about-course__profile-item img {
@@ -912,11 +914,12 @@
 }
 
 .lp-about-course__media {
-  width: 537px;
-  height: 465px;
-  border-radius: 65px 65px 65px 0;
+  width: 547px;
+  height: 407px;
+  border-radius: 64px 64px 64px 0;
   overflow: hidden;
   flex-shrink: 0;
+  margin-top: 85px; /* offset for title */
 }
 
 .lp-about-course__media img {
@@ -928,43 +931,48 @@
 
 .lp-market-areas {
   background: #ffffff;
-  padding: 45px 0 40px;
+  padding: 32px 0;
 }
 
 .lp-market-areas__inner {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
 }
 
 .lp-market-areas__title {
   margin: 0;
   text-align: center;
-  color: #070707;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
+  color: #00163b;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
   font-weight: 800;
   line-height: 40px;
-  letter-spacing: -0.9px;
   text-transform: uppercase;
 }
 
 .lp-market-areas__grid {
-  margin-top: 16px;
+  margin-top: 0;
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 33px;
+  gap: 32px;
 }
 
 .lp-market-areas__card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: flex-start;
 }
 
 .lp-market-areas__card img {
   width: 100%;
   height: 240px;
-  border-radius: 20px;
+  border-radius: 24px;
   object-fit: cover;
   display: block;
 }
@@ -987,9 +995,9 @@
 }
 
 .lp-market-areas__salary span {
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 15.176px;
+  color: rgba(0, 0, 0, 0.75);
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.45;
   text-transform: uppercase;
@@ -999,7 +1007,7 @@
 .lp-market-areas__card h3 {
   margin: 0;
   color: #082628;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 22px;
   font-weight: 500;
   line-height: 30px;
@@ -1008,10 +1016,10 @@
 .lp-market-areas__card p {
   margin: 0;
   color: #070707;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 16px;
   font-weight: 400;
-  line-height: 24px;
+  line-height: 22px;
 }
 
 .lp-grade-curriculum {
@@ -3421,14 +3429,14 @@
   }
 
   .lp-about-course {
-    padding: 34px 0 32px;
+    padding: 32px 0;
   }
 
   .lp-about-course__inner {
-    width: min(361px, calc(100% - 30px));
+    width: min(361px, calc(100% - 28px));
     flex-direction: column;
     align-items: stretch;
-    gap: 26px;
+    gap: 0;
   }
 
   .lp-about-course__content {
@@ -3441,46 +3449,48 @@
     order: 1;
     width: 100%;
     max-width: 361px;
-    height: auto;
-    aspect-ratio: 361 / 297;
+    height: 297px;
     border-radius: 15px 15px 15px 0;
+    margin-top: 0;
   }
 
   .lp-about-course__title {
+    margin: 16px 0 0 0;
     font-size: 25px;
     line-height: 30px;
     letter-spacing: 0;
+    text-align: left;
   }
 
   .lp-about-course__description {
-    margin-top: 12px;
+    margin: 16px 0 0 0;
     max-width: 356px;
     font-size: 14px;
     line-height: 18px;
   }
 
   .lp-about-course__profile-title {
-    margin-top: 22px;
+    margin-top: 44px;
+    margin-bottom: 14px;
     font-size: 20px;
     line-height: 30px;
   }
 
   .lp-about-course__profile-list {
-    margin-top: 10px;
+    margin-top: 0;
     padding: 15px;
     grid-template-columns: 1fr;
     grid-template-rows: none;
     grid-auto-flow: row;
     column-gap: 0;
-    row-gap: 10px;
+    row-gap: 14px;
     border-radius: 15px;
   }
 
   .lp-about-course__profile-item {
-    min-height: 36px;
-    align-items: center;
     font-size: 14px;
     line-height: 15px;
+    min-height: auto;
   }
 
   .lp-about-course__profile-item img {
@@ -3489,58 +3499,60 @@
   }
 
   .lp-market-areas {
-    padding: 36px 0 28px;
+    padding: 32px 0;
   }
 
   .lp-market-areas__title {
-    font-size: 30px;
-    line-height: 1.2;
-    letter-spacing: -0.4px;
+    font-size: 36px;
+    line-height: 40px;
+    letter-spacing: 0;
   }
 
   .lp-market-areas__grid {
-    margin-top: 12px;
+    margin-top: 0;
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 32px;
   }
 
   .lp-market-areas__card {
-    gap: 10px;
+    gap: 16px;
   }
 
   .lp-market-areas__card img {
-    height: auto;
-    aspect-ratio: 392 / 240;
+    height: 240px;
+    border-radius: 24px;
+    aspect-ratio: auto;
   }
 
   .lp-market-areas__salary {
-    width: 100%;
-    justify-content: center;
-    border-radius: 22px;
-    padding: 4px 8px;
-    gap: 6px;
+    width: auto;
+    align-self: flex-start;
+    justify-content: flex-start;
+    border-radius: 29px;
+    padding: 4px 10px;
+    gap: 8px;
   }
 
   .lp-market-areas__salary img {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
   }
 
   .lp-market-areas__salary span {
-    font-size: 12px;
-    line-height: 1.35;
+    font-size: 13.5px;
+    line-height: 1.45;
     white-space: normal;
-    text-align: center;
+    text-align: left;
   }
 
   .lp-market-areas__card h3 {
-    font-size: 20px;
-    line-height: 1.3;
+    font-size: 22px;
+    line-height: 30px;
   }
 
   .lp-market-areas__card p {
-    font-size: 15px;
-    line-height: 1.45;
+    font-size: 16px;
+    line-height: 22px;
   }
 
   .lp-grade-curriculum {
