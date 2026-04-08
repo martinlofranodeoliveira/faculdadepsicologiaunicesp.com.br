@@ -230,7 +230,7 @@
     top: 61px;
     left: 0;
     width: 100%;
-    z-index: 2000;
+    z-index: 1040;
     visibility: hidden;
     pointer-events: none;
     transition: visibility 0.3s;
@@ -2282,6 +2282,10 @@
   .lp-header__menu-toggle {
     flex-shrink: 0;
     padding: 4px;
+  }
+
+  .lp-mobile-menu {
+    top: 73px;
   }
 }
 
