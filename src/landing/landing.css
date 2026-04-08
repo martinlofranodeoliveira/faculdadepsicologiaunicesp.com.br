@@ -2741,6 +2741,16 @@
   line-height: 16px;
 }
 
+
+.lp-footer-bottom__god {
+  color: #7e7f82;
+  font-family: 'Alkatra', 'Kumbh Sans', cursive, sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  font-style: italic;
+  text-align: center;
+}
+
 .lp-footer-bottom__links {
   display: flex;
   align-items: center;
@@ -3321,7 +3331,8 @@
     line-height: 30px;
     text-align: left;
     width: 100%;
-    order: 2;
+    order: 3;
+    margin: 0;
   }
 
   .lp-graduation__content-wrap {
@@ -3337,21 +3348,14 @@
   }
 
   .lp-graduation__content {
-    width: 100%;
-    max-width: 480px;
-    height: auto;
-    min-height: 0;
-    gap: 16px;
-    align-items: flex-start;
-    text-align: left;
-    order: 3;
+    display: contents;
   }
 
   .lp-graduation__location {
     width: 100%;
     padding: 10px;
     min-height: 55px;
-    order: 1; /* location bar is above title in figma mobile? wait checking node 385:4 */
+    order: 2;
   }
 
   .lp-graduation__location-text {
@@ -3360,15 +3364,18 @@
   }
 
   .lp-graduation__subtitle {
+    order: 4;
     font-size: 14px;
     line-height: 23px;
     text-align: left;
-    margin-top: 71px; /* following figma gap logic if possible */
-    margin-top: 0;
+    margin: 0;
+    width: 100%;
   }
 
   .lp-graduation__meta {
+    order: 5;
     gap: 12px;
+    width: 100%;
   }
 
   .lp-graduation__meta-text strong,
@@ -3378,6 +3385,7 @@
   }
 
   .lp-graduation__cta {
+    order: 6;
     width: 100%;
     height: 42px;
     font-size: 14px;
