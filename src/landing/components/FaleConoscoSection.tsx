@@ -13,7 +13,7 @@ export function FaleConoscoSection() {
     'https://wa.me/5531984088941?text=Ol%C3%A1,%20estou%20no%20site%20da%20Faculdade%20de%20Psicologia%20e%20preciso%20falar%20sobre%20boletos%20e%20acordos.'
 
   return (
-    <section id="fale-conosco" className="lp-fale-conosco">
+    <section className="lp-fale-conosco">
       <div className="lp-fale-conosco__bg">
         <picture>
           <source srcSet="/landing/background-fale-conosco-mobile.webp" media="(max-width: 768px)" />
