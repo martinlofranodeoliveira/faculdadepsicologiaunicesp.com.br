@@ -173,7 +173,13 @@ export function FooterBottomSection() {
       </div>
     </footer>
     <FaleConoscoSection />
-    <a href={siteConfig.whatsappHref} className="floating-whatsapp" target="_blank" rel="noreferrer" aria-label="Fale conosco pelo WhatsApp">
+    <a
+      href="https://wa.me/5511947966982?text=Ol%C3%A1,%20estou%20no%20site%20da%20Faculdade%20de%20Psicologia%20e%20quero%20atendimento%20pelo%20WhatsApp."
+      className="floating-whatsapp"
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Fale conosco pelo WhatsApp"
+    >
       <div className="floating-whatsapp__icon">
         <img src="/landing/icone-whatsapp-flutuante.svg" alt="WhatsApp" loading="lazy" decoding="async" style={{ width: '34px', height: '34px', display: 'block' }} />
       </div>
