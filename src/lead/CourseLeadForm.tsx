@@ -973,6 +973,26 @@ export function CourseLeadForm({
       setEmail(matchesCurrentDraft.email)
       setPhone(matchesCurrentDraft.phone)
       setResumeEmail(matchesCurrentDraft.email)
+      if (matchesCurrentDraft.leadSubmitted) {
+        setCrmLeadSubmitted(true)
+      }
+
+      if (!isGraduation && matchesCurrentDraft.openStep === 2) {
+        const matchedGroup =
+          (matchesCurrentDraft.workloadValue
+            ? paymentPlanGroups.find((group) => group.value === matchesCurrentDraft.workloadValue)
+            : null) ??
+          findMatchingPaymentPlanGroup(paymentPlanGroups, {
+            workloadLabel: matchesCurrentDraft.workloadLabel,
+          })
+
+        if (matchedGroup) {
+          setSelectedWorkloadValue(matchedGroup.value)
+          setSelectedPaymentPlanValue(matchedGroup.options[0]?.value ?? '')
+          setAcceptedTerms(true)
+          setStep(2)
+        }
+      }
     } else if (matchesCurrentJourney?.email) {
       setResumeEmail(matchesCurrentJourney.email)
     }
@@ -991,7 +1011,13 @@ export function CourseLeadForm({
 
     hydrateResumeIntoCurrentCourse(matchesCurrentJourney)
     window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
-  }, [isGraduation, selection.courseId, selection.courseLabel, selection.courseType, selection.courseValue])
+  }, [
+    isGraduation,
+    selection.courseId,
+    selection.courseLabel,
+    selection.courseType,
+    selection.courseValue,
+  ])
 
   function hydrateResumeIntoCurrentCourse(progress: StoredJourneyProgress) {
     if (progress.fullName) setFullName(progress.fullName)
@@ -1199,6 +1225,10 @@ export function CourseLeadForm({
         courseValue: selection.courseValue,
         courseLabel: selection.courseLabel,
         courseId: selection.courseId,
+        workloadValue: selectedWorkloadGroup?.value,
+        workloadLabel: selectedWorkloadGroup?.label,
+        openStep: 2,
+        leadSubmitted: true,
         fullName: fullName.trim(),
         email: email.trim(),
         phone,
@@ -1285,6 +1315,9 @@ export function CourseLeadForm({
         courseValue: refreshedOption.courseValue,
         courseLabel: refreshedOption.courseLabel,
         courseId: refreshedOption.courseId,
+        workloadLabel: refreshedOption.workloadLabel,
+        openStep: normalizeCurrentStep(refreshedOption.currentStep) >= 2 ? 2 : 1,
+        leadSubmitted: true,
         fullName: refreshedOption.fullName,
         email: refreshedOption.email,
         phone: formatPhoneMask(refreshedOption.phone),

@@ -72,7 +72,11 @@ export function LandingPage({
     <main className="lp-page">
       <Header onOpenPopup={openHeroPopup} />
       <HeroSection onOpenPopup={openHeroPopup} />
-      <CourseSection graduationSelection={heroSelection} postCourses={postCourses} />
+      <CourseSection
+        graduationSelection={heroSelection}
+        postCourses={postCourses}
+        onOpenPopup={openCoursePopup}
+      />
       <PortariaSection />
       <FaqSection onOpenPopup={openHeroPopup} />
       <DeferredSection minHeight={760}>
