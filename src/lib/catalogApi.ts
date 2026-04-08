@@ -188,6 +188,13 @@ type ApiCourseListItem = {
 
 type ApiCourseDetail = ApiCourseListItem
 
+type ApiCourseFullPayload = {
+  pricing_by_workload?: {
+    pos_price_cents?: number | string | null
+    items?: ApiPricingItem[] | null
+  } | null
+}
+
 type ApiSeoBundle = {
   generic?: ApiSeoFields | null
   institution?: ApiSeoFields | null
@@ -716,7 +723,9 @@ function normalizePricingItems(items: ApiPricingItem[] | null | undefined): Cata
           : Number(item.workload_profile_id),
       workloadVariantId:
         item.workload_variant_id === null || item.workload_variant_id === undefined
-          ? null
+          ? item.workload_profile_id === null || item.workload_profile_id === undefined
+            ? null
+            : Number(item.workload_profile_id)
           : Number(item.workload_variant_id),
       workloadName: normalizeText(item.workload_name || item.workload_variant_name),
       totalHours: Number(item.total_hours ?? 0),
@@ -932,11 +941,10 @@ function getFallbackPostMonthlyAmount() {
   return 8600
 }
 
-const DEFAULT_POST_OLD_INSTALLMENT_AMOUNT_CENTS = 32900
-const POST_OLD_INSTALLMENT_INCREASE_MULTIPLIER = 1.738
+const POST_PUNCTUALITY_DISCOUNT_RATE = 0.738
 
 function getFallbackOldInstallmentPrice(courseType: CourseType, modality: CourseModality, monthlyGraduationAmount: number) {
-  if (courseType === 'pos') return '18X R$ 329,00/MÊS'
+  if (courseType === 'pos') return buildPostOldInstallmentPriceLabel(null, getFallbackPostMonthlyAmount())
   if (modality === 'presencial') return 'De R$ 1.890,00'
   return `De ${formatCurrency(Math.round(monthlyGraduationAmount * 1.4)).toUpperCase()}`
 }
@@ -944,6 +952,12 @@ function getFallbackOldInstallmentPrice(courseType: CourseType, modality: Course
 function buildPixText(courseType: CourseType, totalPriceCents: number): string {
   if (courseType !== 'pos' || !totalPriceCents) return ''
   return `*À vista no PIX: ${normalizeCurrencyText(formatCurrency(totalPriceCents))}`
+}
+
+function calculatePixAmountCentsFromTotal(totalAmountCents: number): number {
+  if (!totalAmountCents) return 0
+
+  return Math.floor((totalAmountCents * 0.9) / 100) * 100
 }
 
 function resolveGraduationMonthlyAmount(course: ApiCourseListItem, priceItems: CatalogPriceItem[], title: string, modality: CourseModality) {
@@ -984,20 +998,85 @@ function resolvePostTotalPriceCents(course: ApiCourseListItem, priceItems: Catal
   const pixPriceFromPlan = resolvePixPriceFromPaymentPlans(priceItems)
   if (pixPriceFromPlan) return pixPriceFromPlan
 
+  const singleInstallmentItem = priceItems.find(
+    (item) => item.installmentsMax === 1 && item.amountCents > 0,
+  )
+  if (singleInstallmentItem?.amountCents) {
+    return calculatePixAmountCentsFromTotal(singleInstallmentItem.amountCents)
+  }
+
   const directPrice = priceItems[0]?.amountCents || normalizeAmountCents(course.min_amount_cents)
-  if (!directPrice) return getFallbackPostMonthlyAmount() * 18
-  return directPrice > 40000 ? directPrice : directPrice * 18
+  if (!directPrice) return calculatePixAmountCentsFromTotal(getFallbackPostMonthlyAmount() * 18)
+
+  const estimatedTotalPriceCents = directPrice > 40000 ? directPrice : directPrice * 18
+  return calculatePixAmountCentsFromTotal(estimatedTotalPriceCents)
+}
+
+function getPostOldInstallmentMonthlyAmountCents(currentMonthlyAmountCents: number): number {
+  if (!currentMonthlyAmountCents) return 0
+
+  return Math.ceil(currentMonthlyAmountCents / (1 - POST_PUNCTUALITY_DISCOUNT_RATE) / 100) * 100
+}
+
+export function formatPostOldInstallmentLabelFromCurrentMonthlyCents(
+  currentMonthlyAmountCents: number,
+): string {
+  const oldMonthlyAmountCents = getPostOldInstallmentMonthlyAmountCents(currentMonthlyAmountCents)
+  if (!oldMonthlyAmountCents) return ''
+
+  return `18X ${formatCurrency(oldMonthlyAmountCents)}`.toUpperCase()
 }
 
 function getPreferredPostPriceItem(priceItems: CatalogPriceItem[]): CatalogPriceItem | null {
   if (!priceItems.length) return null
 
-  const recurringPlans = priceItems.filter((item) => item.installmentsMax > 1)
-  const candidates = recurringPlans.length ? recurringPlans : priceItems
+  const itemsByWorkload = new Map<string, CatalogPriceItem[]>()
+
+  for (const item of priceItems) {
+    const key =
+      item.workloadVariantId && item.workloadVariantId > 0
+        ? `variant:${item.workloadVariantId}`
+        : item.totalHours > 0
+          ? `hours:${item.totalHours}`
+          : `label:${normalizeComparableText(item.workloadName)}`
+    const currentItems = itemsByWorkload.get(key) ?? []
+    currentItems.push(item)
+    itemsByWorkload.set(key, currentItems)
+  }
+
+  const sortedWorkloadGroups = [...itemsByWorkload.values()].sort((left, right) => {
+    const leftReference = left[0]
+    const rightReference = right[0]
+    const leftHours = leftReference?.totalHours || parseHoursFromLabel(leftReference?.workloadName || '')
+    const rightHours = rightReference?.totalHours || parseHoursFromLabel(rightReference?.workloadName || '')
+
+    if (leftHours !== rightHours) return leftHours - rightHours
+
+    const leftLabel = leftReference?.workloadName || ''
+    const rightLabel = rightReference?.workloadName || ''
+    return leftLabel.localeCompare(rightLabel, 'pt-BR')
+  })
+
+  const defaultWorkloadItems = sortedWorkloadGroups[0] ?? []
+  const recurringPlans = defaultWorkloadItems.filter((item) => item.installmentsMax > 1)
+  const candidates = recurringPlans.length ? recurringPlans : defaultWorkloadItems
 
   return [...candidates].sort((left, right) => {
-    if (left.amountCents !== right.amountCents) return left.amountCents - right.amountCents
-    if (left.installmentsMax !== right.installmentsMax) return right.installmentsMax - left.installmentsMax
+    const leftIsPreferredInstallment = left.installmentsMax === 18 ? 1 : 0
+    const rightIsPreferredInstallment = right.installmentsMax === 18 ? 1 : 0
+
+    if (leftIsPreferredInstallment !== rightIsPreferredInstallment) {
+      return rightIsPreferredInstallment - leftIsPreferredInstallment
+    }
+
+    if (left.installmentsMax !== right.installmentsMax) {
+      return right.installmentsMax - left.installmentsMax
+    }
+
+    if (left.amountCents !== right.amountCents) {
+      return left.amountCents - right.amountCents
+    }
+
     return left.id - right.id
   })[0] ?? null
 }
@@ -1043,14 +1122,8 @@ function buildPostOldInstallmentPriceLabel(
     getFallbackPostMonthlyAmount()
   const installments =
     priceItem?.installmentsMax && priceItem.installmentsMax > 1 ? priceItem.installmentsMax : 18
-  const calculatedAmountCents = Math.max(
-    currentAmountCents + 1,
-    Math.round(currentAmountCents * POST_OLD_INSTALLMENT_INCREASE_MULTIPLIER),
-  )
-  const oldAmountCents =
-    DEFAULT_POST_OLD_INSTALLMENT_AMOUNT_CENTS > currentAmountCents
-      ? DEFAULT_POST_OLD_INSTALLMENT_AMOUNT_CENTS
-      : calculatedAmountCents
+  const oldAmountCents = getPostOldInstallmentMonthlyAmountCents(currentAmountCents)
+  if (!oldAmountCents) return ''
 
   return `${installments}X ${normalizeCurrencyText(formatCurrency(oldAmountCents))}/MÊS`.toUpperCase()
 }
@@ -1133,6 +1206,9 @@ function buildCourseFromApi(
     name: string
     complement: string
   },
+  options?: {
+    pricingByWorkloadPosPriceCents?: number
+  },
 ): CatalogCourse {
   const seo = pickSeoFields(
     mergeSeoBundle(detail?.seo ?? listItem.seo, detail?.course_seo_json ?? listItem.course_seo_json),
@@ -1187,8 +1263,13 @@ function buildCourseFromApi(
 
   const monthlyGraduationAmount = resolveGraduationMonthlyAmount(listItem, pricingItems, title, modality)
   const preferredPostPriceItem = getPreferredPostPriceItem(pricingItems)
-  const fallbackPostMonthlyAmount = normalizeAmountCents(listItem.min_amount_cents) || getFallbackPostMonthlyAmount()
-  const postTotalPriceCents = resolvePostTotalPriceCents(listItem, pricingItems)
+  const fallbackPostMonthlyAmount =
+    normalizeAmountCents(detail?.min_amount_cents ?? listItem.min_amount_cents) ||
+    getFallbackPostMonthlyAmount()
+  const postTotalPriceCents =
+    normalizeAmountCents(options?.pricingByWorkloadPosPriceCents) ||
+    normalizeAmountCents(detail?.pos_price_cents ?? listItem.pos_price_cents) ||
+    resolvePostTotalPriceCents(listItem, pricingItems)
 
   const currentInstallmentPrice =
     courseType === 'pos'
@@ -1365,6 +1446,7 @@ async function getCourseBundle(courseId: number, force = false) {
         detail: null,
         media: null,
         pricingItems: [] as CatalogPriceItem[],
+        pricingByWorkloadPosPriceCents: 0,
         curriculumVariants: [] as CatalogCurriculumVariant[],
         texts: null as ApiCourseTexts | null,
         regulatoryBodyId: null as number | null,
@@ -1373,18 +1455,24 @@ async function getCourseBundle(courseId: number, force = false) {
       }
     }
 
-    const [detailEnvelope, mediaEnvelope, pricingEnvelope, curriculumEnvelope, textsEnvelope] = await Promise.all([
+    const [detailEnvelope, mediaEnvelope, pricingEnvelope, curriculumEnvelope, textsEnvelope, fullEnvelope] = await Promise.all([
       optionalApiFetch<ApiCourseDetail>(`courses/${courseId}`),
       optionalApiFetch<ApiCourseMedia>(`courses/${courseId}/media`),
       optionalApiFetch<{ items?: ApiPricingItem[] }>(`courses/${courseId}/pricing-by-workload`),
       optionalApiFetch<ApiCurriculumPayload>(`courses/${courseId}/curriculum`),
       optionalApiFetch<{ texts?: ApiCourseTexts | null }>(`courses/${courseId}/texts`),
+      optionalApiFetch<ApiCourseFullPayload>(`courses/${courseId}/full`),
     ])
 
     return {
       detail: detailEnvelope?.data ?? null,
       media: mediaEnvelope?.data ?? null,
-      pricingItems: normalizePricingItems(pricingEnvelope?.data?.items),
+      pricingItems: normalizePricingItems(
+        fullEnvelope?.data?.pricing_by_workload?.items ?? pricingEnvelope?.data?.items,
+      ),
+      pricingByWorkloadPosPriceCents: normalizeAmountCents(
+        fullEnvelope?.data?.pricing_by_workload?.pos_price_cents,
+      ),
       curriculumVariants: normalizeCurriculumVariants(curriculumEnvelope?.data?.variants),
       texts: textsEnvelope?.data?.texts ?? null,
       regulatoryBodyId: parseOptionalId(curriculumEnvelope?.data?.regulatory_body_id),
@@ -1412,6 +1500,9 @@ async function getCatalogCourses(courseType: CourseType, force = false): Promise
           id: bundle.regulatoryBodyId,
           name: bundle.regulatoryBodyName,
           complement: bundle.regulatoryBodyComplement,
+        },
+        {
+          pricingByWorkloadPosPriceCents: bundle.pricingByWorkloadPosPriceCents,
         },
       )
     })
@@ -1453,6 +1544,9 @@ async function getCatalogCourseBySlug(
         name: bundle.regulatoryBodyName,
         complement: bundle.regulatoryBodyComplement,
       },
+      {
+        pricingByWorkloadPosPriceCents: bundle.pricingByWorkloadPosPriceCents,
+      },
     )
   }, force)
 }
@@ -1482,6 +1576,9 @@ async function getCatalogCourseById(
         id: bundle.regulatoryBodyId,
         name: bundle.regulatoryBodyName,
         complement: bundle.regulatoryBodyComplement,
+      },
+      {
+        pricingByWorkloadPosPriceCents: bundle.pricingByWorkloadPosPriceCents,
       },
     )
   }, force)
@@ -1527,5 +1624,3 @@ export function splitDifferentials(text: string): string[] {
 
   return parsed.length ? parsed : [normalizeText(text)].filter(Boolean)
 }
-
-

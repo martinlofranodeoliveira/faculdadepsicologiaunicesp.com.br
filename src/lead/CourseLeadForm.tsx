@@ -40,6 +40,10 @@ import {
   validatePhone,
   type CourseLeadSelection,
 } from '@/lib/crmLead'
+import {
+  resolveRegulatoryBodyDisplayLabel,
+  resolveRegulatoryBodySupportingText,
+} from '@/lib/regulatoryBody'
 import { storePostThankYouLead } from '@/thankyou/postThankYouState'
 import { storeGraduationVestibularLead } from '@/vestibular/graduationVestibularState'
 
@@ -95,6 +99,10 @@ type PaymentPlanGroup = {
   label: string
   workloadVariantId?: number
   totalHours: number
+  pricingId?: number | null
+  currentInstallmentText: string
+  oldInstallmentText: string
+  pixText: string
   options: PaymentPlanOption[]
 }
 
@@ -303,10 +311,141 @@ function formatCurrencyBrl(amountCents: number) {
   }).format(amountCents / 100).toUpperCase()
 }
 
-function formatInstallmentPriceLabel(amountCents: number, installmentsMax: number) {
+function formatPaymentPlanAmountLabel(amountCents: number, installmentsMax: number) {
   const installments = installmentsMax > 0 ? installmentsMax : 18
-  const monthlyAmount = amountCents > 40000 ? Math.round(amountCents / installments) : amountCents
-  return `${installments}X DE ${formatCurrencyBrl(monthlyAmount)}/MÊS`
+
+  if (installments <= 1) {
+    return `${installments}X ${formatCurrencyBrl(amountCents)}`
+  }
+
+  return `${installments}X ${formatCurrencyBrl(amountCents)}/MÊS`
+}
+
+function formatInstallmentPriceLabel(amountCents: number, installmentsMax: number) {
+  return formatPaymentPlanAmountLabel(amountCents, installmentsMax)
+}
+
+function formatMarketingInstallmentPriceLabel(amountCents: number, installmentsMax: number) {
+  return formatPaymentPlanAmountLabel(amountCents, installmentsMax)
+}
+
+function getPostOldInstallmentAmountCents(currentMonthlyAmountCents: number) {
+  if (!currentMonthlyAmountCents) return 0
+
+  return Math.ceil(currentMonthlyAmountCents / (1 - 0.738) / 100) * 100
+}
+
+function formatOldInstallmentPriceLabel(amountCents: number, installmentsMax: number) {
+  const oldAmountCents = getPostOldInstallmentAmountCents(amountCents)
+  if (!oldAmountCents) return ''
+
+  const installments = installmentsMax > 0 ? installmentsMax : 18
+  return `${installments}X ${formatCurrencyBrl(oldAmountCents)}/MÊS`
+}
+
+function calculatePixAmountCents(totalAmountCents: number) {
+  if (!totalAmountCents) return 0
+
+  return Math.floor((totalAmountCents * 0.9) / 100) * 100
+}
+
+function parseCurrencyTextToCents(value: string) {
+  const normalized = value.replace(/[^\d,.-]+/g, '').replace(/\./g, '').replace(',', '.')
+  if (!normalized) return 0
+
+  const amount = Number.parseFloat(normalized)
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0
+}
+
+function extractPixAmountCentsFromPaymentPlanName(value?: string) {
+  const normalized = value?.trim() ?? ''
+  if (!normalized) return 0
+
+  const pixMatch = normalized.match(/R\$\s*([\d.]+,\d{2})\s+[àá]\s+vista\s+no\s+pix/iu)
+  if (!pixMatch) return 0
+
+  return parseCurrencyTextToCents(pixMatch[1])
+}
+
+function normalizeMarketingPriceLabel(value?: string) {
+  const normalized = normalizePriceLabel(value || '')
+  if (!normalized) return ''
+  if (/\/M[ÊE]S\b/i.test(normalized)) return normalized
+  return /^\d+\s*X\b/i.test(normalized) ? `${normalized}/MÊS` : normalized
+}
+
+function getPreferredPaymentGroupPricingItem(items: CatalogPriceItem[]) {
+  const recurringItems = items.filter((item) => item.installmentsMax > 1 && item.amountCents > 0)
+
+  if (!recurringItems.length) {
+    return items.find((item) => item.amountCents > 0) ?? null
+  }
+
+  const exactPreferredItem = recurringItems.find((item) => item.installmentsMax === 18)
+  if (exactPreferredItem) return exactPreferredItem
+
+  return [...recurringItems].sort((left, right) => {
+    if (left.installmentsMax !== right.installmentsMax) {
+      return right.installmentsMax - left.installmentsMax
+    }
+
+    if (left.amountCents !== right.amountCents) {
+      return left.amountCents - right.amountCents
+    }
+
+    return left.id - right.id
+  })[0] ?? null
+}
+
+function resolvePaymentGroupCurrentInstallmentText(
+  items: CatalogPriceItem[],
+  fallbackPriceLabel?: string,
+) {
+  const preferredItem = getPreferredPaymentGroupPricingItem(items)
+
+  if (preferredItem?.amountCents) {
+    return formatMarketingInstallmentPriceLabel(
+      preferredItem.amountCents,
+      preferredItem.installmentsMax,
+    )
+  }
+
+  return normalizeMarketingPriceLabel(fallbackPriceLabel)
+}
+
+function resolvePaymentGroupOldInstallmentText(items: CatalogPriceItem[]) {
+  const preferredItem = getPreferredPaymentGroupPricingItem(items)
+
+  if (!preferredItem?.amountCents) return ''
+
+  return formatOldInstallmentPriceLabel(preferredItem.amountCents, preferredItem.installmentsMax)
+}
+
+function formatPixText(amountCents: number) {
+  return amountCents > 0 ? `*À vista no PIX: ${formatCurrencyBrl(amountCents)}` : ''
+}
+
+function resolvePaymentGroupPixText(items: CatalogPriceItem[], fallbackPixText?: string) {
+  const normalizedFallbackPixText = fallbackPixText?.trim() ?? ''
+  if (normalizedFallbackPixText) {
+    return normalizedFallbackPixText
+  }
+
+  for (const item of items) {
+    const pixAmountCents = extractPixAmountCentsFromPaymentPlanName(item.paymentPlanName)
+    if (pixAmountCents > 0) {
+      return formatPixText(pixAmountCents)
+    }
+  }
+
+  const singleInstallmentItem = items.find(
+    (item) => item.installmentsMax === 1 && item.amountCents > 0,
+  )
+  if (singleInstallmentItem?.amountCents) {
+    return formatPixText(calculatePixAmountCents(singleInstallmentItem.amountCents))
+  }
+
+  return ''
 }
 
 function resolvePaymentPlanOptionLabel(item: CatalogPriceItem) {
@@ -336,8 +475,10 @@ function buildPaymentPlanGroups(
   workloadOptions: string[] = [],
   priceItems: CatalogPriceItem[] = [],
   fallbackPriceLabel?: string,
+  fallbackPixText?: string,
 ) {
-  const groupMap = new Map<string, PaymentPlanGroup>()
+  const groupMap = new Map<string, PaymentPlanGroup & { items: CatalogPriceItem[] }>()
+  const shouldCreateFallbackWorkloadGroups = priceItems.length === 0
 
   for (const item of priceItems) {
     const label = item.workloadName.trim() || (item.totalHours ? `${item.totalHours} Horas` : '')
@@ -352,16 +493,33 @@ function buildPaymentPlanGroups(
     )
     const key = existingKey || (item.workloadVariantId ? String(item.workloadVariantId) : normalizeWorkloadKey(label))
     const currentGroup = groupMap.get(key)
-    const nextGroup: PaymentPlanGroup = currentGroup ?? {
+    const nextGroup: PaymentPlanGroup & { items: CatalogPriceItem[] } = currentGroup ?? {
       value: key,
       label,
       workloadVariantId: item.workloadVariantId ?? undefined,
       totalHours,
+      pricingId: null,
+      currentInstallmentText: '',
+      oldInstallmentText: '',
+      pixText: '',
       options: [],
+      items: [],
     }
 
     if (!currentGroup) {
       groupMap.set(key, nextGroup)
+    }
+
+    if (
+      !nextGroup.items.some(
+        (existingItem) =>
+          existingItem.id === item.id &&
+          existingItem.workloadVariantId === item.workloadVariantId &&
+          existingItem.installmentsMax === item.installmentsMax &&
+          existingItem.amountCents === item.amountCents,
+      )
+    ) {
+      nextGroup.items.push(item)
     }
 
     if (
@@ -381,41 +539,70 @@ function buildPaymentPlanGroups(
     }
   }
 
-  for (const option of workloadOptions) {
-    const label = option.trim()
-    if (!label) continue
+  if (shouldCreateFallbackWorkloadGroups) {
+    for (const option of workloadOptions) {
+      const label = option.trim()
+      if (!label) continue
 
-    const totalHours = parseHours(label)
-    const existingKey = findExistingPaymentPlanGroupKey(groupMap, label, totalHours)
-    if (existingKey) continue
+      const totalHours = parseHours(label)
+      const existingKey = findExistingPaymentPlanGroupKey(groupMap, label, totalHours)
+      if (existingKey) continue
 
-    const key = normalizeWorkloadKey(label)
-    if (!groupMap.has(key)) {
-      groupMap.set(key, {
-        value: key,
-        label,
-        totalHours,
-        options: fallbackPriceLabel
-          ? [
-              {
-                value: `${key}-fallback`,
-                label: normalizePriceLabel(fallbackPriceLabel, { includeDeAfterInstallments: true }),
-                amountCents: 0,
-                installmentsMax: 18,
-              },
-            ]
-          : [],
-      })
+      const key = normalizeWorkloadKey(label)
+      if (!groupMap.has(key)) {
+        groupMap.set(key, {
+          value: key,
+          label,
+          totalHours,
+          pricingId: null,
+          currentInstallmentText: '',
+          oldInstallmentText: '',
+          pixText: '',
+          options: fallbackPriceLabel
+            ? [
+                {
+                  value: `${key}-fallback`,
+                  label: normalizePriceLabel(fallbackPriceLabel, { includeDeAfterInstallments: true }),
+                  amountCents: 0,
+                  installmentsMax: 18,
+                },
+              ]
+            : [],
+          items: [],
+        })
+      }
     }
   }
 
   return [...groupMap.values()]
-    .map((group) => ({
-      ...group,
-      options: [...group.options].sort(
+    .map((group) => {
+      const sortedItems = [...group.items].sort((left, right) => {
+        if (left.installmentsMax !== right.installmentsMax) {
+          return left.installmentsMax - right.installmentsMax
+        }
+
+        return left.amountCents - right.amountCents
+      })
+      const sortedOptions = [...group.options].sort(
         (left, right) => left.amountCents - right.amountCents || left.installmentsMax - right.installmentsMax,
-      ),
-    }))
+      )
+      const preferredPricingItem = getPreferredPaymentGroupPricingItem(sortedItems)
+
+      return {
+        value: group.value,
+        label: group.label,
+        workloadVariantId: group.workloadVariantId,
+        totalHours: group.totalHours,
+        pricingId: preferredPricingItem?.id ?? sortedOptions[0]?.pricingId ?? null,
+        currentInstallmentText: resolvePaymentGroupCurrentInstallmentText(
+          sortedItems,
+          fallbackPriceLabel,
+        ),
+        oldInstallmentText: resolvePaymentGroupOldInstallmentText(sortedItems),
+        pixText: resolvePaymentGroupPixText(sortedItems, fallbackPixText),
+        options: sortedOptions,
+      }
+    })
     .sort((left, right) => left.totalHours - right.totalHours || left.label.localeCompare(right.label))
 }
 
@@ -693,17 +880,21 @@ export function CourseLeadForm({
   workloadOptions = [],
   priceItems = [],
   oldInstallmentPrice,
-  regulatoryBodyId = null,
   regulatoryBodyName = '',
   regulatoryBodyComplement = '',
 }: Props) {
   const isGraduation = selection.courseType === 'graduacao'
   const currentCoursePath = selection.coursePath || (typeof window !== 'undefined' ? window.location.pathname : '')
   const courseCoverImage = resolveCoverImage(image)
-  const pixMessage = resolvePixMessage(pixText)
-
-  const paymentPlanGroups = buildPaymentPlanGroups(workloadOptions, priceItems, selection.priceLabel)
+  const paymentPlanGroups = buildPaymentPlanGroups(
+    workloadOptions,
+    priceItems,
+    selection.priceLabel,
+    pixText,
+  )
   const workloadSelectOptions = paymentPlanGroups.map((group) => ({ value: group.value, label: group.label }))
+  const initialWorkloadValue = paymentPlanGroups[0]?.value ?? ''
+  const initialPaymentPlanValue = paymentPlanGroups[0]?.options[0]?.value ?? ''
 
   const [step, setStep] = useState<1 | 2>(1)
   const [fullName, setFullName] = useState('')
@@ -711,8 +902,8 @@ export function CourseLeadForm({
   const [phone, setPhone] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [cpf, setCpf] = useState('')
-  const [selectedWorkloadValue, setSelectedWorkloadValue] = useState('')
-  const [selectedPaymentPlanValue, setSelectedPaymentPlanValue] = useState('')
+  const [selectedWorkloadValue, setSelectedWorkloadValue] = useState(initialWorkloadValue)
+  const [selectedPaymentPlanValue, setSelectedPaymentPlanValue] = useState(initialPaymentPlanValue)
   const [voucherOpen, setVoucherOpen] = useState(false)
   const [voucherCode, setVoucherCode] = useState('')
   const [errors, setErrors] = useState<FieldErrors>({})
@@ -744,13 +935,25 @@ export function CourseLeadForm({
   const paymentPlanSelectOptions = (selectedWorkloadGroup?.options ?? []).map((option) => ({ value: option.value, label: option.label }))
   const selectedPaymentPlan = selectedWorkloadGroup?.options.find((option) => option.value === selectedPaymentPlanValue) ?? null
   const contractType: InstitutionContractType = isGraduation ? 'graduation' : 'pos'
-  const currentPriceLabel =
+  const selectedPaymentPlanLabel =
     selectedPaymentPlan?.label ||
     selectedWorkloadGroup?.options[0]?.label ||
     normalizePriceLabel(selection.priceLabel || '', { includeDeAfterInstallments: true })
-  const internshipRegulatoryBodyLabel = regulatoryBodyName.trim()
-  const internshipRegulatoryBodyComplement = regulatoryBodyComplement.trim()
-  const showInternshipInfoLink = !isGraduation && Boolean(regulatoryBodyId || internshipRegulatoryBodyLabel)
+  const visiblePriceLabel =
+    selectedWorkloadGroup?.currentInstallmentText || normalizeMarketingPriceLabel(selection.priceLabel)
+  const visibleOldInstallmentPrice =
+    selectedWorkloadGroup?.oldInstallmentText || oldInstallmentPrice?.trim() || ''
+  const visiblePixMessage = resolvePixMessage(selectedWorkloadGroup?.pixText || pixText)
+  const internshipRegulatoryBodyLabel = resolveRegulatoryBodyDisplayLabel(
+    regulatoryBodyName,
+    regulatoryBodyComplement,
+  )
+  const internshipRegulatoryBodySupportingText = resolveRegulatoryBodySupportingText(
+    regulatoryBodyName,
+    regulatoryBodyComplement,
+    internshipRegulatoryBodyLabel,
+  )
+  const showInternshipInfoLink = !isGraduation && Boolean(internshipRegulatoryBodyLabel)
   const internshipWorkloadLabel =
     selectedWorkloadGroup?.label?.trim() ||
     workloadOptions[0]?.trim() ||
@@ -910,8 +1113,8 @@ export function CourseLeadForm({
           ...selection,
           workloadLabel: selectedWorkloadGroup?.label || selection.workloadLabel,
           priceLabel: stage === 'inscrito'
-            ? selectedPaymentPlan?.label || currentPriceLabel || selection.priceLabel
-            : currentPriceLabel || selection.priceLabel,
+            ? selectedPaymentPlan?.label || selectedPaymentPlanLabel || selection.priceLabel
+            : visiblePriceLabel || selection.priceLabel,
         }
 
     await sendLeadToCrm({
@@ -1508,8 +1711,8 @@ export function CourseLeadForm({
               <p>
                 {`Este curso possui chancela do conselho de classe do ${internshipRegulatoryBodyLabel}. Alguns componentes práticos, estágios e exigências acadêmicas podem variar conforme a carga horária escolhida e a matriz curricular vigente.`}
               </p>
-              {internshipRegulatoryBodyComplement ? (
-                <p className="font-semibold text-[#0f2e62]">{internshipRegulatoryBodyComplement}</p>
+              {internshipRegulatoryBodySupportingText ? (
+                <p className="font-semibold text-[#0f2e62]">{internshipRegulatoryBodySupportingText}</p>
               ) : null}
               <p>{`Carga horária selecionada: ${internshipWorkloadLabel}.`}</p>
               <p>
@@ -1638,7 +1841,11 @@ export function CourseLeadForm({
                 {advanceLoading ? <SpinnerIcon className="h-6 w-6 animate-spin" /> : <span>Continuar</span>}
               </button>
 
-              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} oldPriceLabel={oldInstallmentPrice} />
+              <PostPriceCard
+                priceLabel={visiblePriceLabel}
+                pixMessage={visiblePixMessage}
+                oldPriceLabel={visibleOldInstallmentPrice}
+              />
 
               <div className="mt-1">
                 <button type="button" className="inline-flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.02em] text-[#1e5ec8]" onClick={() => setVoucherOpen((current) => !current)}>
@@ -1683,7 +1890,11 @@ export function CourseLeadForm({
                 </button>
               </div>
 
-              <PostPriceCard priceLabel={currentPriceLabel} pixMessage={pixMessage} oldPriceLabel={oldInstallmentPrice} />
+              <PostPriceCard
+                priceLabel={visiblePriceLabel}
+                pixMessage={visiblePixMessage}
+                oldPriceLabel={visibleOldInstallmentPrice}
+              />
 
               <div className="mt-1">
                 <button type="button" className="inline-flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.02em] text-[#1e5ec8]" onClick={() => setVoucherOpen((current) => !current)}>

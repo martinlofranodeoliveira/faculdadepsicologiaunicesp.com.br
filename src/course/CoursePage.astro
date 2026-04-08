@@ -8,6 +8,7 @@ import { FooterBottomSection } from '@/landing/components/FooterBottomSection'
 import { FaqCtaSection } from '@/landing/components/FaqCtaSection'
 import { Header } from '@/landing/components/Header'
 import { CourseLeadForm } from '@/lead/CourseLeadForm'
+import { resolveRegulatoryBodyDisplayLabel } from '@/lib/regulatoryBody'
 import { siteConfig } from '@/site/config'
 import '@/landing/landing.css'
 
@@ -109,9 +110,13 @@ const curriculumDownloadHref = course.teachingPlanUrl || ''
 const curriculumDownloadFilename = course.teachingPlanUrl
   ? course.teachingPlanUrl.split('/').pop() || `${course.slug}-matriz-curricular`
   : undefined
-const hasRegulatoryBody = Boolean(course.regulatoryBodyId || course.regulatoryBodyName.trim())
+const regulatoryBodyDisplayLabel = resolveRegulatoryBodyDisplayLabel(
+  course.regulatoryBodyName,
+  course.regulatoryBodyComplement,
+)
+const hasRegulatoryBody = Boolean(regulatoryBodyDisplayLabel)
 const regulatoryBodyFlagText = hasRegulatoryBody
-  ? `CURSO COM CHANCELA DO CONSELHO DE CLASSE DO ${course.regulatoryBodyName.trim().toUpperCase()}`
+  ? `CURSO COM CHANCELA DO CONSELHO DE CLASSE DO ${regulatoryBodyDisplayLabel.toUpperCase()}`
   : ''
 ---
 
