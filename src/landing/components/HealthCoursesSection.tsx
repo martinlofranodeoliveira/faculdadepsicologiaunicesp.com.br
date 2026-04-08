@@ -19,11 +19,13 @@ function resolveCourseImage(imageSrc: string) {
   return normalized || '/course/image_fx_19_1.webp'
 }
 
-function resolvePriceLabel(course: LandingPostCourse) {
-  const normalized = normalizeText(
-    course.currentInstallmentPriceDisplay || course.currentInstallmentPrice,
-  )
+function resolveCardCurrentPrice(course: LandingPostCourse) {
+  const normalized = normalizeText(course.currentInstallmentPrice || course.currentInstallmentPriceDisplay)
   return normalized || 'Consulte as condições'
+}
+
+function resolveCardOldPrice(course: LandingPostCourse) {
+  return normalizeText(course.oldInstallmentPrice)
 }
 
 export function HealthCoursesSection({
@@ -74,6 +76,17 @@ export function HealthCoursesSection({
       const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth)
       setMobileCanPrev(viewport.scrollLeft > 2)
       setMobileCanNext(viewport.scrollLeft < maxScrollLeft - 2)
+
+      const track = viewport.querySelector('.lp-health-ead__track') as HTMLElement | null
+      const firstCard = track?.querySelector('.lp-health-ead-card') as HTMLElement | null
+      if (track && firstCard) {
+        const trackStyles = window.getComputedStyle(track)
+        const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || '0') || 0
+        const step = firstCard.getBoundingClientRect().width + gap
+        if (step > 0) {
+          setCurrentIndex(Math.round(viewport.scrollLeft / step))
+        }
+      }
     }
 
     updateMobileScrollState()
@@ -190,26 +203,53 @@ export function HealthCoursesSection({
                           decoding="async"
                           fetchPriority="low"
                         />
+                        <div className="lp-health-ead-card__promo-badge">
+                          <img
+                            src="/landing/presente-icon-card.webp"
+                            alt=""
+                            className="lp-health-ead-card__promo-icon"
+                            aria-hidden="true"
+                          />
+                          <span>GANHE +3 PÓS!</span>
+                        </div>
                       </div>
 
-                      <div className="lp-health-ead-card__badges">
-                        <span className="lp-health-ead-card__mec">RECONHECIDO MEC</span>
-                        <span className="lp-health-ead-card__hours">{course.hoursLabel}</span>
-                      </div>
-                      <h3 className="lp-health-ead-card__title">{course.title}</h3>
+                      <div className="lp-health-ead-card__content">
+                        <h3
+                          className={`lp-health-ead-card__title ${
+                            course.title.length > 35 ? 'lp-health-ead-card__title--long' : ''
+                          }`}
+                        >
+                          {course.title}
+                        </h3>
 
-                      <div className="lp-health-ead-card__prices">
-                        <p className="lp-health-ead-card__price-prefix">A partir de</p>
-                        <p className="lp-health-ead-card__price">{resolvePriceLabel(course)}</p>
-                      </div>
+                        <div className="lp-health-ead-card__badges">
+                          <div className="lp-health-ead-card__badge-row">
+                            <span className="lp-health-ead-card__tag">{course.hoursLabel}</span>
+                            <span className="lp-health-ead-card__tag">3 a 12 meses</span>
+                          </div>
+                          <div className="lp-health-ead-card__badge-row">
+                            <span className="lp-health-ead-card__tag">LATO SENSU</span>
+                          </div>
+                        </div>
 
-                      <button
-                        type="button"
-                        className="lp-health-ead-card__cta"
-                        onClick={() => onOpenCoursePopup(course.selection)}
-                      >
-                        INSCREVA-SE
-                      </button>
+                        <div className="lp-health-ead-card__prices">
+                          {resolveCardOldPrice(course) ? (
+                            <p className="lp-health-ead-card__old-price">{resolveCardOldPrice(course)}</p>
+                          ) : null}
+                          <p className="lp-health-ead-card__price">
+                            Por: {resolveCardCurrentPrice(course)}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="lp-health-ead-card__cta"
+                          onClick={() => onOpenCoursePopup(course.selection)}
+                        >
+                          SAIBA MAIS
+                        </button>
+                      </div>
                     </article>
                   ))
                 ) : (
@@ -224,26 +264,87 @@ export function HealthCoursesSection({
                 )}
               </div>
             </div>
+          </div>
 
-            <button
-              type="button"
-              className="lp-health-ead__nav lp-health-ead__nav--prev"
-              aria-label="Cursos anteriores"
-              onClick={handlePrev}
-              disabled={!canPrev}
-            >
-              <img src="/landing/pos-carousel-prev.svg" alt="" aria-hidden="true" />
-            </button>
+          <div className="lp-health-ead__pagination-bar">
+            <div className="lp-health-ead__dots">
+              {Array.from({ length: Math.max(1, maxIndex + 1) }).map((_, idx) => {
+                const isActive = isMobileCarousel
+                  ? idx === Math.round(currentIndex)
+                  : idx === clampedIndex
 
-            <button
-              type="button"
-              className="lp-health-ead__nav lp-health-ead__nav--next"
-              aria-label="Próximos cursos"
-              onClick={handleNext}
-              disabled={!canNext}
-            >
-              <img src="/landing/pos-carousel-next.svg" alt="" aria-hidden="true" />
-            </button>
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    aria-label={`Página ${idx + 1}`}
+                    onClick={() => {
+                      if (isMobileCarousel && viewportRef.current) {
+                        const targetLeft = idx * getMobileStep()
+                        viewportRef.current.scrollTo({ left: targetLeft, behavior: 'smooth' })
+                      } else {
+                        setCurrentIndex(idx)
+                      }
+                    }}
+                    className={`lp-health-ead__dot ${isActive ? 'lp-health-ead__dot--active' : ''}`}
+                  >
+                    <img
+                      src={
+                        isActive
+                          ? '/landing/icone-carrosel-ball-on.svg'
+                          : '/landing/icone-carrosel-ball-off.svg'
+                      }
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="lp-health-ead__controls">
+              <button
+                type="button"
+                className="lp-health-ead__nav-btn lp-health-ead__nav-btn--prev"
+                aria-label="Cursos anteriores"
+                onClick={handlePrev}
+                disabled={!canPrev}
+              >
+                <img
+                  src={
+                    canPrev
+                      ? '/landing/arrow-carrosel-cursos-on.svg'
+                      : '/landing/arrow-carrosel-cursos-off.svg'
+                  }
+                  alt=""
+                  aria-hidden="true"
+                />
+              </button>
+
+              <button
+                type="button"
+                className="lp-health-ead__nav-btn lp-health-ead__nav-btn--next"
+                aria-label="Próximos cursos"
+                onClick={handleNext}
+                disabled={!canNext}
+              >
+                <img
+                  src={
+                    canNext
+                      ? '/landing/arrow-carrosel-cursos-on.svg'
+                      : '/landing/arrow-carrosel-cursos-off.svg'
+                  }
+                  alt=""
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="lp-health-ead__see-all-wrapper">
+            <a href="/pos-graduacao" className="lp-health-ead__see-all">
+              VER TODOS OS CURSOS
+            </a>
           </div>
         </div>
       </div>

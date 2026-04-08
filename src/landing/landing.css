@@ -19,6 +19,9 @@
   background: #ffffff;
   border-bottom: 1px solid #d5d5d5;
   backdrop-filter: blur(6px);
+  position: sticky;
+  top: 0;
+  z-index: 1050;
 }
 
 .lp-section__inner {
@@ -152,56 +155,174 @@
 
 @media (max-width: 1024px) {
   .lp-header__inner {
-    min-height: auto;
+    width: min(980px, calc(100% - 1.5rem));
     padding: 12px 0;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    row-gap: 14px;
+    justify-content: space-between;
+    gap: 14px;
   }
 
   .lp-header__logos {
-    order: 1;
-    width: 100%;
-    justify-content: center;
-    gap: 10px;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    gap: 16px;
   }
 
   .lp-header__brand {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .lp-header__partner-logos {
-    width: auto;
-    flex: none;
-    justify-content: center;
-    flex-wrap: nowrap;
-    gap: 10px;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    gap: 16px;
   }
 
   .lp-header__divider {
-    height: 22px;
+    height: 28px;
   }
 
   .lp-logo__image--psychology {
-    height: 40px;
+    height: 36px;
   }
 
   .lp-logo__image--partner {
-    max-height: 20px;
+    max-height: 24px;
   }
 
   .lp-logo__image--fasul-group {
-    max-height: 18px;
+    max-height: 24px;
+  }
+
+  .lp-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 0 0 auto;
+    justify-content: flex-end;
   }
 
   .lp-header__cta {
-    order: 2;
-    margin: 0 auto;
+    margin: 0;
     width: auto;
     min-height: 42px;
-    padding: 10px 16px;
+    padding: 10px 20px;
     font-size: 14px;
+    border-radius: 50px;
+  }
+
+  .lp-header__menu-toggle {
+    background: transparent;
+    border: 0;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #000;
+  }
+
+  /* Mobile Menu Styles - Dropdown Top to Bottom */
+  .lp-mobile-menu {
+    position: fixed;
+    top: 61px;
+    left: 0;
+    width: 100%;
+    z-index: 1040;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0.3s;
+  }
+
+  .lp-mobile-menu.is-open {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .lp-mobile-menu__backdrop {
+    display: none;
+  }
+
+  .lp-mobile-menu__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px 20px;
+    box-sizing: border-box;
+    border-bottom: 2px solid #eee;
+  }
+
+  .lp-mobile-menu.is-open .lp-mobile-menu__content {
+    transform: translateY(0);
+  }
+
+  .lp-mobile-menu__close {
+    display: none;
+  }
+
+  .lp-mobile-menu__nav {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0;
+    flex: none;
+  }
+
+  .lp-mobile-menu__nav a {
+    padding: 15px 0;
+    text-decoration: none;
+    color: #333;
+    font-family: 'Kumbh Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    text-align: left;
+  }
+
+  .lp-mobile-menu__nav hr {
+    border: 0;
+    border-top: 1px solid #f5f5f5;
+    margin: 0;
+    width: 100%;
+  }
+
+  .lp-mobile-menu__footer {
+    padding: 15px 0 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+  }
+
+  .lp-mobile-menu__brand-unicesp {
+    display: flex;
+    align-items: center;
+  }
+
+  .lp-mobile-menu__brand-unicesp img {
+    height: 20px;
+    width: auto;
+  }
+
+  .lp-mobile-menu__brand-fasul {
+    display: flex;
+    align-items: center;
+  }
+
+  .lp-mobile-menu__brand-fasul img {
+    height: 24px;
+    width: auto;
   }
 }
 
@@ -487,25 +608,43 @@
 
 .lp-graduation {
   background: #ffffff;
-  padding: 20px 0;
+  padding: 32px 0;
 }
 
 .lp-graduation__inner {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 42px;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.lp-graduation__title {
+  margin: 0;
+  text-align: center;
+  color: #00163b;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
+  font-weight: 800;
+  line-height: 65px;
+  text-transform: uppercase;
+}
+
+.lp-graduation__content-wrap {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  width: 100%;
 }
 
 .lp-graduation__media {
-  width: 736px;
-  height: 403px;
+  width: 556px;
+  height: 281px;
   border-radius: 65px 65px 0 65px;
   overflow: hidden;
   flex-shrink: 0;
-  background: #011b45;
+  position: relative;
 }
 
 .lp-graduation__media img {
@@ -516,177 +655,117 @@
 }
 
 .lp-graduation__content {
-  width: 462px;
-  max-width: 100%;
-  color: #070707;
-  min-height: 401px;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  height: 281px;
   justify-content: space-between;
+  align-items: flex-start;
 }
 
 .lp-graduation__location {
-  width: 452px;
-  max-width: 100%;
+  width: 100%;
   min-height: 62px;
-  display: inline-flex;
+  border: 1px solid #1e5ec8;
+  border-radius: 38px;
+  padding: 10px 18px;
+  display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-start;
-  border-radius: 38px;
-  border: 1px solid rgba(30, 94, 200, 0.46);
-  padding: 7px 15px;
-  color: #06090d;
+  box-sizing: border-box;
 }
 
 .lp-graduation__location-icon {
   width: 24px;
   height: 24px;
-  display: block;
   flex-shrink: 0;
 }
 
 .lp-graduation__location-text {
-  display: block;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  color: #001b2d;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
-  font-weight: 300;
-  line-height: 24px;
-  color: #06090d;
-}
-
-.lp-graduation__location-text strong {
   font-weight: 600;
+  line-height: 22px;
 }
 
-.lp-graduation__heading {
-  margin-top: 24px;
-}
-
-.lp-graduation__title {
-  margin: 0;
-  max-width: 462px;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 37px;
-  letter-spacing: -0.9px;
-  text-transform: uppercase;
+.lp-graduation__location-text span {
+  font-weight: 300;
 }
 
 .lp-graduation__subtitle {
-  margin: 12px 0 0;
-  font-family: 'Liberation Sans', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 1.35;
+  margin: 0;
+  color: #070707;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 22px;
 }
 
 .lp-graduation__meta {
-  margin-top: 24px;
   display: flex;
   align-items: center;
-  gap: 14px;
-}
-
-.lp-graduation__cta {
-  width: 175px;
-  min-height: 50px;
-  border: 0;
-  border-radius: 12px;
-  background: #0b66fd;
-  color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 31.115px;
-  cursor: pointer;
+  gap: 12px;
 }
 
 .lp-graduation__meta-icon-wrap {
   width: 51px;
   height: 51px;
-  border-radius: 60px;
   background: #1e5ec8;
-  display: inline-flex;
+  border-radius: 60px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .lp-graduation__meta-icon {
-  width: 22.629px;
-  height: 22.629px;
-  display: block;
+  width: 23px;
+  height: 23px;
 }
 
 .lp-graduation__meta-text {
   display: flex;
   flex-direction: column;
-  color: #001230;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  line-height: 28px;
+  gap: 2px;
 }
 
 .lp-graduation__meta-text strong {
-  font-weight: 700;
+  color: #001230;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .lp-graduation__meta-text span {
-  font-weight: 400;
-}
-
-.lp-graduation__knowledge {
-  margin-top: 24px;
-}
-
-.lp-graduation__knowledge strong {
-  display: block;
   color: #001230;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28.272px;
+  opacity: 0.75;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
 }
 
-.lp-graduation__tags {
-  margin-top: 12px;
+.lp-graduation__cta {
+  width: 175px;
+  height: 50px;
+  background: #0b66fd;
+  color: #ffffff;
+  border: 0;
+  border-radius: 8px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.lp-graduation__tag {
-  border-radius: 15px;
-  padding: 7px 15px;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 30px;
-  background: #1e5ec8;
-  color: #ffffff;
-}
-
-.lp-graduation__tag--one {
-  background: #1e5ec8;
-  color: #ffffff;
-}
-
-.lp-graduation__tag--two {
-  background: #1e5ec8;
-  color: #ffffff;
-}
-
-.lp-graduation__tag--three {
-  background: #1e5ec8;
-  color: #ffffff;
+  justify-content: center;
 }
 
 .lp-about-course {
   background: #02173c;
-  padding: 42px 0;
+  padding: 64px 0;
   position: relative;
   overflow: hidden;
 }
@@ -712,45 +791,53 @@
   pointer-events: none;
 }
 
-.lp-about-course__inner {
+.lp-about-course__container {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 60px;
+  flex-direction: column;
   position: relative;
   z-index: 1;
 }
 
+.lp-about-course__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 37px;
+  width: 100%;
+}
+
 .lp-about-course__content {
-  width: 638px;
+  width: 656px;
   max-width: 100%;
   color: #ffffff;
+  display: flex;
+  flex-direction: column;
 }
 
 .lp-about-course__title {
-  margin: 0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
+  margin: 0 0 45px 0;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
   font-weight: 800;
-  line-height: 40px;
-  letter-spacing: -0.4px;
+  line-height: 1.2;
+  text-align: center;
   text-transform: uppercase;
+  color: #ffffff;
 }
-
 .lp-about-course__description {
-  margin: 14px 0 0;
-  max-width: 638px;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  max-width: 656px;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
   font-weight: 400;
-  line-height: 28px;
+  line-height: 24px;
 }
 
 .lp-about-course__profile-title {
-  margin: 29px 0 0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  margin: 45px 0 16px 0;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 24px;
   font-weight: 500;
   line-height: 30px;
@@ -758,8 +845,8 @@
 }
 
 .lp-about-course__profile-list {
-  margin: 16px 0 0;
-  padding: 15px 25px;
+  margin: 0;
+  padding: 24px 20px;
   list-style: none;
   border-radius: 15px;
   background: #e8f0fd;
@@ -767,20 +854,20 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, auto));
   grid-auto-flow: column;
-  column-gap: 25px;
-  row-gap: 12px;
+  column-gap: 24px;
+  row-gap: 20px;
+  align-items: flex-start;
 }
 
 .lp-about-course__profile-item {
-  min-height: 34px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   color: #000000;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 16px;
   font-weight: 500;
-  line-height: 1.28;
+  line-height: 18px;
 }
 
 .lp-about-course__profile-item img {
@@ -791,11 +878,12 @@
 }
 
 .lp-about-course__media {
-  width: 537px;
-  height: 465px;
-  border-radius: 65px 65px 65px 0;
+  width: 547px;
+  height: 407px;
+  border-radius: 64px 64px 64px 0;
   overflow: hidden;
   flex-shrink: 0;
+  margin-top: 85px; /* offset for title */
 }
 
 .lp-about-course__media img {
@@ -807,43 +895,48 @@
 
 .lp-market-areas {
   background: #ffffff;
-  padding: 45px 0 40px;
+  padding: 32px 0;
 }
 
 .lp-market-areas__inner {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
 }
 
 .lp-market-areas__title {
   margin: 0;
   text-align: center;
-  color: #070707;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
+  color: #00163b;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
   font-weight: 800;
   line-height: 40px;
-  letter-spacing: -0.9px;
   text-transform: uppercase;
 }
 
 .lp-market-areas__grid {
-  margin-top: 16px;
+  margin-top: 0;
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 33px;
+  gap: 32px;
 }
 
 .lp-market-areas__card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: flex-start;
 }
 
 .lp-market-areas__card img {
   width: 100%;
   height: 240px;
-  border-radius: 20px;
+  border-radius: 24px;
   object-fit: cover;
   display: block;
 }
@@ -866,9 +959,9 @@
 }
 
 .lp-market-areas__salary span {
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 15.176px;
+  color: rgba(0, 0, 0, 0.75);
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.45;
   text-transform: uppercase;
@@ -878,7 +971,7 @@
 .lp-market-areas__card h3 {
   margin: 0;
   color: #082628;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 22px;
   font-weight: 500;
   line-height: 30px;
@@ -887,55 +980,59 @@
 .lp-market-areas__card p {
   margin: 0;
   color: #070707;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 16px;
   font-weight: 400;
-  line-height: 24px;
+  line-height: 22px;
 }
 
 .lp-grade-curriculum {
   background: #ffffff;
-  padding: 42px 0 60px;
+  padding: 32px 0;
 }
 
 .lp-grade-curriculum__inner {
-  width: min(1240px, calc(100% - 2rem));
+  width: min(1244px, calc(100% - 2rem));
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
 }
 
 .lp-grade-curriculum__title {
   margin: 0;
   text-align: center;
-  color: #070707;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 30px;
+  color: #00163b;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 55px;
   font-weight: 800;
   line-height: 40px;
-  letter-spacing: -0.9px;
   text-transform: uppercase;
 }
 
 .lp-grade-curriculum__list {
-  margin: 31px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 16px;
+  width: 100%;
 }
 
 .lp-grade-curriculum__item {
-  border-radius: 20px;
-  background: #031f4e;
+  border-radius: 24px;
+  background: #00163b;
   overflow: hidden;
 }
 
 .lp-grade-curriculum__row {
   min-height: 100px;
-  padding: 20px 30px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  padding: 30px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
 }
 
@@ -943,33 +1040,34 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 18px;
 }
 
 .lp-grade-curriculum__semester {
-  color: #37d4ff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 24px;
-  font-weight: 700;
+  color: #6ec9f0;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 26px;
+  font-weight: 500;
   line-height: 30px;
 }
 
 .lp-grade-curriculum__name {
   min-width: 0;
   color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 26px;
   font-weight: 500;
   line-height: 30px;
+  display: none; /* Removed based on Figma layout */
 }
 
 .lp-grade-curriculum__hours {
   color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 24px;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+  display: none; /* Removed based on Figma layout */
 }
 
 .lp-grade-curriculum__toggle {
@@ -977,25 +1075,24 @@
   height: 51px;
   border: 0;
   border-radius: 60px;
-  background: #031f4e;
+  background: #00163b;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 4.2px 9px;
   flex-shrink: 0;
   cursor: pointer;
 }
 
-.lp-grade-curriculum__toggle img {
+.lp-grade-curriculum__toggle svg {
   width: 22.629px;
   height: 22.629px;
   display: block;
-  transform: rotate(-90deg);
   transition: transform 0.2s ease;
 }
 
-.lp-grade-curriculum__item.is-open .lp-grade-curriculum__toggle img {
-  transform: rotate(90deg);
+.lp-grade-curriculum__item.is-open .lp-grade-curriculum__toggle svg {
+  transform: rotate(-180deg);
 }
 
 .lp-grade-curriculum__panel {
@@ -1005,8 +1102,8 @@
 
 .lp-grade-curriculum__panel-title {
   margin: 14px 0 0;
-  color: #37d4ff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  color: #6ec9f0;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 26px;
   font-weight: 700;
   line-height: 30px;
@@ -1021,7 +1118,7 @@
 
 .lp-grade-curriculum__panel li {
   color: rgba(255, 255, 255, 0.92);
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
   font-weight: 400;
   line-height: 1.35;
@@ -1030,20 +1127,21 @@
 .lp-grade-curriculum__cta {
   width: 175px;
   min-height: 50px;
-  margin: 24px auto 0;
+  margin: 16px auto 0;
   border: 0;
-  border-radius: 12px;
-  background: #6EC9F0;
-  color: #011D2E;
+  border-radius: 8px;
+  background: #0b66fd;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 31.115px;
   cursor: pointer;
-  text-transform: none;
+  text-transform: uppercase;
+  padding: 10px 32px;
 }
 
 .lp-health-ead {
@@ -1129,43 +1227,100 @@
   box-sizing: border-box;
 }
 
-.lp-health-ead__nav {
-  width: 60px;
+.lp-health-ead__pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.lp-health-ead__dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lp-health-ead__dot {
+  background: transparent;
   border: 0;
   padding: 0;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: 3;
-  background: linear-gradient(90deg, #00163b 0%, rgba(0, 22, 59, 0) 100%);
-  display: inline-flex;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.lp-health-ead__dot img {
+  width: 13px;
+  height: 13px;
+}
+
+.lp-health-ead__controls {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.lp-health-ead__nav-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  transition: opacity 0.2s;
 }
 
-.lp-health-ead__nav img {
-  width: 26px;
-  height: 26px;
-  display: block;
+.lp-health-ead__nav-btn img {
+  width: 50px;
+  height: 50px;
 }
 
-.lp-health-ead__nav--prev {
-  left: 0;
-}
-
-.lp-health-ead__nav--next {
-  right: 0;
-  background: linear-gradient(270deg, #00163b 0%, rgba(0, 22, 59, 0) 100%);
-}
-
-.lp-health-ead__nav--next img {
+.lp-health-ead__nav-btn--prev img[src*="on.svg"] {
   transform: rotate(180deg);
 }
 
-.lp-health-ead__nav:disabled {
-  opacity: 0.35;
+.lp-health-ead__nav-btn--next img[src*="off.svg"] {
+  transform: rotate(180deg);
+}
+
+.lp-health-ead__nav-btn:disabled {
   cursor: not-allowed;
+}
+
+.lp-health-ead__see-all-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.lp-health-ead__see-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0b66fd;
+  color: #ffffff;
+  font-weight: 700;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  line-height: 1.7;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  min-width: 257px;
+  min-height: 50px;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.lp-health-ead__see-all:hover {
+  background-color: #0952cc;
+  transform: translateY(-2px);
 }
 
 .lp-health-ead__viewport {
@@ -1187,21 +1342,22 @@
   width: 306px;
   border-radius: 16px;
   background: #ffffff;
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   flex-shrink: 0;
-  justify-content: space-between;
   box-sizing: border-box;
+  overflow: clip;
+  height: auto;
+  align-self: stretch;
 }
 
 .lp-health-ead-card__image-wrap {
   width: 100%;
-  height: 132px;
-  border-radius: 12px;
-  overflow: hidden;
+  height: 127px;
   position: relative;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .lp-health-ead-card__image {
@@ -1211,82 +1367,103 @@
   display: block;
 }
 
-.lp-health-ead-card__badges {
+.lp-health-ead-card__content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 16px;
+  padding: 16px;
+  justify-content: flex-start;
+}
+
+.lp-health-ead-card__promo-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+  height: 23px;
+  background: linear-gradient(117.19deg, #073588 13.43%, #041c46 131.41%);
+  border-bottom-left-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 8px;
+  z-index: 2;
 }
 
-.lp-health-ead-card__tag {
-  min-height: 18px;
-  border-radius: 4.317px;
-  border: 1px solid #1e5ec8;
-  padding: 0 8px;
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 10.119px;
-  font-weight: 700;
-  line-height: 16px;
-  letter-spacing: -0.2024px;
-  text-transform: uppercase;
+.lp-health-ead-card__promo-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  object-fit: contain;
 }
 
-.lp-health-ead-card__mec {
-  min-height: 18px;
-  border-radius: 4.317px;
-  border: 1px solid #1e5ec8;
-  background: #ffffff;
-  padding: 0 7px;
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 10.119px;
-  font-weight: 700;
-  line-height: 16px;
-  letter-spacing: -0.2024px;
-  text-transform: uppercase;
-}
-
-.lp-health-ead-card__hours {
-  color: #1e5ec8;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 10.119px;
+.lp-health-ead-card__promo-badge span {
+  color: #ffffff;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.13;
-  letter-spacing: -0.2024px;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .lp-health-ead-card__title {
   margin: 0;
   color: #010101;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 18px;
   font-weight: 700;
   line-height: 1.2;
+  text-transform: uppercase;
+  min-height: 44px;
+}
+
+.lp-health-ead-card__title--long {
+  font-size: 14.5px;
+  line-height: 1.3;
+}
+
+.lp-health-ead-card__badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.lp-health-ead-card__badge-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.lp-health-ead-card__tag {
+  background-color: #1b63de;
+  color: #ffffff;
+  border-radius: 4.32px;
+  padding: 3px 8px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.13;
+  letter-spacing: -0.24px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .lp-health-ead-card__prices {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.lp-health-ead-card__price-prefix {
-  margin: 0;
-  color: rgba(1, 1, 1, 0.75);
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.1;
+  gap: 7px;
+  flex-grow: 1;
+  justify-content: flex-end;
 }
 
 .lp-health-ead-card__old-price {
   margin: 0;
   color: rgba(1, 1, 1, 0.2);
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 16px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.1;
 }
@@ -1295,16 +1472,10 @@
   text-decoration: line-through;
 }
 
-.lp-health-ead-card__price-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .lp-health-ead-card__price {
   margin: 0;
   color: #010101;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
+  font-family: 'Kumbh Sans', sans-serif;
   font-size: 16px;
   font-weight: 700;
   line-height: 1.1;
@@ -1312,17 +1483,125 @@
 
 .lp-health-ead-card__cta {
   width: 100%;
-  min-height: 47px;
+  height: 47px;
   border: 0;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #2556a9 0%, #2d67c5 100%);
+  border-radius: 8px;
+  background: linear-gradient(106.89deg, #073588 3.82%, #041c46 105.69%);
   color: #ffffff;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 24px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.33;
   text-transform: uppercase;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  margin-top: auto;
+}
+
+.lp-health-ead-card__cta:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1300px) {
+  .lp-health-ead-card {
+    width: min(306px, calc(100vw - 32px));
+    min-width: min(306px, calc(100vw - 32px));
+    border-radius: 16px;
+    padding: 10px;
+    gap: 0;
+  }
+
+  .lp-health-ead-card__image-wrap {
+    height: 132px;
+    border-radius: 12px;
+  }
+
+  .lp-health-ead-card__promo-badge {
+    width: 129px;
+    height: 23px;
+    padding: 3px 8px;
+    border-bottom-left-radius: 12px;
+  }
+
+  .lp-health-ead-card__promo-badge span {
+    font-size: 12px;
+  }
+
+  .lp-health-ead-card__content {
+    padding: 0;
+    gap: 0;
+  }
+
+  .lp-health-ead-card__title {
+    font-size: 18px;
+    min-height: 44px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+
+  .lp-health-ead-card__title--long {
+    font-size: 14.5px;
+    min-height: 38px;
+  }
+
+  .lp-health-ead-card__tag {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4.32px;
+  }
+
+  .lp-health-ead-card__badges {
+    margin-bottom: 16px;
+  }
+
+  .lp-health-ead-card__prices {
+    margin-bottom: 0;
+  }
+
+  .lp-health-ead-card__old-price {
+    font-size: 14px;
+  }
+
+  .lp-health-ead-card__price {
+    font-size: 16px;
+  }
+
+  .lp-health-ead-card__cta {
+    height: 47px;
+    font-size: 14px;
+    border-radius: 12px;
+    margin-top: 16px;
+  }
+
+  .lp-health-ead__notice {
+    padding: 12px 14px;
+    border-radius: 12px;
+    gap: 12px;
+  }
+
+  .lp-health-ead__notice-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .lp-health-ead__notice p {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .lp-health-ead__nav-btn {
+    width: 41px;
+    height: 41px;
+  }
+
+  .lp-health-ead__nav-btn img {
+    width: 41px;
+    height: 41px;
+  }
 }
 
 .lp-health-ead__notice {
@@ -1349,8 +1628,8 @@
   justify-content: center;
   flex-shrink: 0;
   color: #6eb5f0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
 }
@@ -1358,10 +1637,10 @@
 .lp-health-ead__notice p {
   margin: 0;
   color: #6eb5f0;
-  font-family: 'Kumbh Sans', 'Segoe UI', Arial, sans-serif;
-  font-size: 20px;
+  font-family: 'Kumbh Sans', sans-serif;
+  font-size: 18px;
   font-weight: 500;
-  line-height: 28px;
+  line-height: 1.25;
 }
 
 .lp-faq-cta {
@@ -2094,6 +2373,82 @@
     width: 50px;
     height: 50px;
   }
+
+  .lp-header {
+    backdrop-filter: blur(3.896px);
+  }
+
+  .lp-header__inner {
+    width: calc(100% - 20px) !important;
+    padding: 14px 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .lp-header__logos {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+  }
+  .lp-header__brand {
+    width: auto;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .lp-header__partner-logos {
+    display: none;
+  }
+
+  .lp-header__divider {
+    display: none;
+  }
+
+  .lp-logo__image--psychology {
+    height: 28px;
+    width: auto !important;
+    max-width: none !important;
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .lp-header__actions {
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .lp-header__cta {
+    width: auto !important;
+    min-height: 36px !important;
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+    border-radius: 50px !important;
+    flex: 0 1 auto !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
+  }
+
+  .lp-header__menu-toggle {
+    flex-shrink: 0;
+    padding: 4px;
+  }
+
+  .lp-mobile-menu {
+    top: 73px;
+  }
 }
 
 .lp-footer-bottom {
@@ -2390,6 +2745,16 @@
   line-height: 16px;
 }
 
+
+.lp-footer-bottom__god {
+  color: #7e7f82;
+  font-family: 'Alkatra', 'Kumbh Sans', cursive, sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  font-style: italic;
+  text-align: center;
+}
+
 .lp-footer-bottom__links {
   display: flex;
   align-items: center;
@@ -2521,57 +2886,59 @@
 
   .lp-graduation {
     overflow-x: clip;
+    padding: 32px 0;
   }
 
   .lp-graduation__inner {
     width: calc(100% - 28px);
     max-width: 720px;
     flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .lp-graduation__title {
+    font-size: 36px;
+    line-height: 42px;
+    text-align: center;
+  }
+
+  .lp-graduation__content-wrap {
+    flex-direction: column;
     gap: 24px;
+    align-items: center;
   }
 
   .lp-graduation__media {
     width: 100%;
-    max-width: 100%;
+    max-width: 556px;
     height: auto;
-    aspect-ratio: 736 / 403;
+    aspect-ratio: 556 / 281;
     border-radius: 36px 36px 0 36px;
   }
 
   .lp-graduation__content {
     width: 100%;
-    max-width: 100%;
+    max-width: 648px;
+    height: auto;
     min-height: 0;
-    gap: 18px;
+    gap: 24px;
+    align-items: center;
+    text-align: center;
   }
 
   .lp-graduation__location {
     width: 100%;
-    display: flex;
-    align-items: flex-start;
-    padding: 8px 14px;
-    gap: 8px;
+    justify-content: center;
   }
 
   .lp-graduation__location-text {
     min-width: 0;
-    overflow-wrap: anywhere;
+    text-align: left;
   }
 
-  .lp-graduation__title {
-    max-width: 100%;
-    overflow-wrap: anywhere;
-  }
-
-  .lp-graduation__meta {
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .lp-graduation__meta-text {
-    min-width: 0;
-    overflow-wrap: anywhere;
+  .lp-graduation__subtitle {
+    text-align: center;
   }
 
   .lp-portaria {
@@ -2608,11 +2975,15 @@
     overflow-x: clip;
   }
 
+  .lp-about-course__container {
+    align-items: center;
+  }
+
   .lp-about-course__inner {
     width: calc(100% - 30px);
     max-width: 720px;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 24px;
   }
 
@@ -2620,6 +2991,8 @@
     width: 100%;
     max-width: 100%;
     order: 2;
+    align-items: center;
+    text-align: center;
   }
 
   .lp-about-course__media {
@@ -2633,6 +3006,7 @@
 
   .lp-about-course__description {
     max-width: 100%;
+    text-align: center;
   }
 
   .lp-about-course__profile-list {
@@ -2776,56 +3150,21 @@
     backdrop-filter: blur(3.896px);
   }
 
-  .lp-header__inner {
-    width: min(390px, 100%);
-    min-height: 118px;
-    padding: 11px 14px;
-    box-sizing: border-box;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 12px;
-  }
+  
 
-  .lp-header__logos {
-    width: 100%;
-    justify-content: center;
-    gap: 8px;
-  }
+  
 
-  .lp-header__partner-logos {
-    justify-content: center;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
+  
 
-  .lp-header__divider {
-    display: block;
-    height: 18px;
-  }
+  
 
-  .lp-logo__image--psychology {
-    height: 36px;
-    width: auto;
-  }
+  
 
-  .lp-logo__image--partner {
-    max-height: 18px;
-  }
+  
 
-  .lp-logo__image--fasul-group {
-    max-height: 16px;
-  }
+  
 
-  .lp-header__cta {
-    width: 100%;
-    min-height: 40px;
-    padding: 12px;
-    border-radius: 51px;
-    font-size: 12px;
-    line-height: 15.582px;
-    font-weight: 800;
-  }
+  
 
   .lp-enrollment-modal {
     padding: 0.75rem;
@@ -2979,87 +3318,82 @@
   }
 
   .lp-graduation {
-    padding: 20px 0;
     overflow-x: clip;
+    padding: 32px 0;
   }
 
   .lp-graduation__inner {
     width: calc(100% - 28px);
-    max-width: 620px;
+    max-width: 480px;
     flex-direction: column;
-    gap: 24px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .lp-graduation__title {
+    font-size: 25px;
+    line-height: 30px;
+    text-align: left;
+    width: 100%;
+    order: 3;
+    margin: 0;
+  }
+
+  .lp-graduation__content-wrap {
+    display: contents;
   }
 
   .lp-graduation__media {
     width: 100%;
-    max-width: 100%;
-    height: auto;
-    aspect-ratio: 736 / 403;
-    border-radius: 36px 36px 0 36px;
+    max-width: 480px;
+    height: 198px;
+    border-radius: 20px;
+    order: 1;
   }
 
   .lp-graduation__content {
-    width: 100%;
-    max-width: 100%;
-    min-height: 0;
-    gap: 18px;
+    display: contents;
   }
 
   .lp-graduation__location {
     width: 100%;
-    padding: 12px 12px;
-    gap: 8px;
-    display: flex;
-    align-items: flex-start;
-  }
-
-  .lp-graduation__location-icon {
-    width: 20px;
-    height: 20px;
+    padding: 10px;
+    min-height: 55px;
+    order: 2;
   }
 
   .lp-graduation__location-text {
-    min-width: 0;
     font-size: 14px;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-  }
-
-  .lp-graduation__heading {
-    margin-top: 0;
-  }
-
-  .lp-graduation__title {
-    max-width: 100%;
-    font-size: 30px;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
+    line-height: 18px;
   }
 
   .lp-graduation__subtitle {
-    font-size: 18px;
-    line-height: 1.35;
+    order: 4;
+    font-size: 14px;
+    line-height: 23px;
+    text-align: left;
+    margin: 0;
+    width: 100%;
   }
 
   .lp-graduation__meta {
-    margin-top: 0;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: flex-start;
+    order: 5;
+    gap: 12px;
+    width: 100%;
   }
 
-  .lp-graduation__meta-text {
-    min-width: 0;
-    font-size: 18px;
-    line-height: 1.25;
-    overflow-wrap: anywhere;
+  .lp-graduation__meta-text strong,
+  .lp-graduation__meta-text span {
+    font-size: 14px;
+    line-height: 28px;
   }
 
   .lp-graduation__cta {
+    order: 6;
     width: 100%;
-    min-height: 46px;
-    font-size: 18px;
-    line-height: 1.2;
+    height: 42px;
+    font-size: 14px;
+    border-radius: 12px;
   }
 
   .lp-graduation__knowledge {
@@ -3077,66 +3411,75 @@
   }
 
   .lp-about-course {
-    padding: 34px 0 32px;
+    padding: 32px 0;
+  }
+
+  .lp-about-course__container {
+    width: min(480px, calc(100% - 28px));
+    gap: 0;
   }
 
   .lp-about-course__inner {
-    width: min(361px, calc(100% - 30px));
+    width: 100%;
     flex-direction: column;
     align-items: stretch;
-    gap: 26px;
+    gap: 0;
+    display: contents;
   }
 
   .lp-about-course__content {
     width: 100%;
-    max-width: 361px;
-    order: 2;
+    max-width: 480px;
+    order: 3;
   }
 
   .lp-about-course__media {
     order: 1;
     width: 100%;
-    max-width: 361px;
-    height: auto;
-    aspect-ratio: 361 / 297;
+    max-width: 480px;
+    height: 297px;
     border-radius: 15px 15px 15px 0;
+    margin-top: 0;
   }
 
   .lp-about-course__title {
+    order: 2;
+    margin: 32px 0 0 0;
     font-size: 25px;
     line-height: 30px;
     letter-spacing: 0;
+    text-align: left;
   }
 
   .lp-about-course__description {
-    margin-top: 12px;
-    max-width: 356px;
+    margin: 14px 0 0 0;
+    max-width: 480px;
     font-size: 14px;
     line-height: 18px;
   }
 
   .lp-about-course__profile-title {
-    margin-top: 22px;
+    margin-top: 44px;
+    margin-bottom: 14px;
     font-size: 20px;
     line-height: 30px;
   }
 
   .lp-about-course__profile-list {
-    margin-top: 10px;
+    margin-top: 0;
     padding: 15px;
     grid-template-columns: 1fr;
     grid-template-rows: none;
     grid-auto-flow: row;
     column-gap: 0;
-    row-gap: 10px;
+    row-gap: 14px;
     border-radius: 15px;
   }
 
   .lp-about-course__profile-item {
-    min-height: 36px;
-    align-items: center;
     font-size: 14px;
     line-height: 15px;
+    min-height: auto;
   }
 
   .lp-about-course__profile-item img {
@@ -3145,62 +3488,64 @@
   }
 
   .lp-market-areas {
-    padding: 36px 0 28px;
+    padding: 32px 0;
   }
 
   .lp-market-areas__title {
-    font-size: 30px;
-    line-height: 1.2;
-    letter-spacing: -0.4px;
+    font-size: 36px;
+    line-height: 40px;
+    letter-spacing: 0;
   }
 
   .lp-market-areas__grid {
-    margin-top: 12px;
+    margin-top: 0;
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 32px;
   }
 
   .lp-market-areas__card {
-    gap: 10px;
+    gap: 16px;
   }
 
   .lp-market-areas__card img {
-    height: auto;
-    aspect-ratio: 392 / 240;
+    height: 240px;
+    border-radius: 24px;
+    aspect-ratio: auto;
   }
 
   .lp-market-areas__salary {
-    width: 100%;
-    justify-content: center;
-    border-radius: 22px;
-    padding: 4px 8px;
-    gap: 6px;
+    width: auto;
+    align-self: flex-start;
+    justify-content: flex-start;
+    border-radius: 29px;
+    padding: 4px 10px;
+    gap: 8px;
   }
 
   .lp-market-areas__salary img {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
   }
 
   .lp-market-areas__salary span {
-    font-size: 12px;
-    line-height: 1.35;
+    font-size: 13.5px;
+    line-height: 1.45;
     white-space: normal;
-    text-align: center;
+    text-align: left;
   }
 
   .lp-market-areas__card h3 {
-    font-size: 20px;
-    line-height: 1.3;
+    font-size: 22px;
+    line-height: 30px;
   }
 
   .lp-market-areas__card p {
-    font-size: 15px;
-    line-height: 1.45;
+    font-size: 16px;
+    line-height: 22px;
   }
 
   .lp-grade-curriculum {
-    padding: 36px 0 42px;
+    padding: 36px 0 36px;
   }
 
   .lp-grade-curriculum__title {
@@ -3216,36 +3561,27 @@
 
   .lp-grade-curriculum__row {
     min-height: 76px;
-    padding: 14px 14px 14px 16px;
+    padding: 14px 14px 14px 20px;
     gap: 10px;
   }
 
   .lp-grade-curriculum__summary {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2px;
+    display: flex;
+    align-items: center;
   }
 
   .lp-grade-curriculum__semester {
-    font-size: 16px;
+    font-size: 20px;
     line-height: 1.2;
-  }
-
-  .lp-grade-curriculum__name {
-    font-size: 18px;
-    line-height: 1.2;
-  }
-
-  .lp-grade-curriculum__hours {
-    font-size: 18px;
   }
 
   .lp-grade-curriculum__toggle {
     width: 44px;
     height: 44px;
+    padding: 0;
   }
 
-  .lp-grade-curriculum__toggle img {
+  .lp-grade-curriculum__toggle svg {
     width: 19px;
     height: 19px;
   }
@@ -3255,7 +3591,7 @@
   }
 
   .lp-grade-curriculum__panel {
-    padding: 0 14px 14px 16px;
+    padding: 0 14px 14px 20px;
   }
 
   .lp-grade-curriculum__panel-title {
@@ -3273,15 +3609,16 @@
     font-size: 15px;
     line-height: 1.35;
   }
-
   .lp-grade-curriculum__cta {
-    width: 100%;
-    max-width: 220px;
-    min-height: 44px;
-    margin-top: 18px;
-    font-size: 18px;
-    line-height: 1.2;
-  }
+        width: 100%;
+        max-width: none;
+        min-height: 60px;
+        height: 40px;
+        margin-top: 0px;
+        font-size: 19px;
+        padding: 7px 22px;
+        border-radius: 14px;
+    }
 
   .lp-health-ead {
     padding: 25px 0 25px;
@@ -3290,7 +3627,7 @@
 
   .lp-health-ead__inner {
     width: calc(100% - 28px);
-    max-width: 362px;
+    max-width: 480px;
     overflow: visible;
   }
 
@@ -3305,7 +3642,7 @@
   }
 
   .lp-health-ead__title {
-    max-width: 362px;
+    max-width: 480px;
     font-size: 24.651px;
     line-height: 29px;
     letter-spacing: 0;
@@ -3368,65 +3705,7 @@
   }
 
   .lp-health-ead-card {
-    width: min(251.437px, calc(100vw - 56px));
-    min-width: min(251.437px, calc(100vw - 56px));
-    border-radius: 13.147px;
-    padding: 9.86px;
-    gap: 13.147px;
     scroll-snap-align: start;
-  }
-
-  .lp-health-ead-card__image-wrap {
-    height: 108.463px;
-    border-radius: 9.86px;
-  }
-
-  .lp-health-ead-card__tag {
-    min-height: 14.79px;
-    border-width: 0.822px;
-    border-radius: 3.547px;
-    padding: 0 6px;
-    font-size: 8.315px;
-    line-height: 1.13;
-    letter-spacing: -0.1663px;
-  }
-
-  .lp-health-ead-card__mec {
-    min-height: 14.79px;
-    border-width: 0.822px;
-    border-radius: 3.547px;
-    padding: 0 6px;
-    font-size: 8.315px;
-    line-height: 1.13;
-    letter-spacing: -0.1663px;
-  }
-
-  .lp-health-ead-card__hours {
-    font-size: 8.315px;
-    line-height: 1.13;
-    letter-spacing: -0.1663px;
-  }
-
-  .lp-health-ead-card__title {
-    font-size: 14.79px;
-    line-height: 1.2;
-  }
-
-  .lp-health-ead-card__prices {
-    gap: 3.287px;
-  }
-
-  .lp-health-ead-card__price-prefix,
-  .lp-health-ead-card__price {
-    font-size: 13.147px;
-    line-height: 1.1;
-  }
-
-  .lp-health-ead-card__cta {
-    min-height: 38.619px;
-    border-radius: 9.86px;
-    font-size: 13.147px;
-    line-height: 19.721px;
   }
 
   .lp-health-ead__notice {
@@ -4796,4 +5075,14 @@
     width: 34px;
     height: 34px;
     display: block;
+}
+
+/* Desktop Reset */
+@media (min-width: 769px) {
+  .lp-header__menu-toggle {
+    display: none !important;
+  }
+  .lp-mobile-menu {
+    display: none !important;
+  }
 }
