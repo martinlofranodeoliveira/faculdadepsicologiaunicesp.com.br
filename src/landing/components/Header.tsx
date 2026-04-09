@@ -119,7 +119,7 @@ export function Header({ onOpenPopup }: HeaderProps) {
               <img src="/landing/logo-header-faculdade-unicesp.webp" alt="UNICESP" />
             </div>
             <div className="lp-mobile-menu__brand-fasul">
-              <img src="/landing/logo-header-grupo-fasul.webp" alt="Grupo FASUL Educacional" />
+              <img src="/landing/logo-grupo-fasul-educacional.webp" alt="Grupo FASUL Educacional" />
             </div>
           </div>
         </div>

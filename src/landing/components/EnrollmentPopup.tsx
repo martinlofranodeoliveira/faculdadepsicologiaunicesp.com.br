@@ -548,11 +548,22 @@ function PostEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupProp
     setSubmitMessage('Redirecionando para a página do curso...')
 
     try {
+      await sendLeadToCrm({
+        fullName,
+        email,
+        phone,
+        selection: postSelection,
+      })
+
       saveCourseLeadDraft({
         courseType: 'pos',
         courseValue: postSelection.courseValue,
         courseLabel: displayCourseLabel,
         courseId: postSelection.courseId ?? undefined,
+        workloadValue: postSelection.workloadValue,
+        workloadLabel: postSelection.workloadLabel,
+        openStep: postSelection.workloadLabel ? 2 : 1,
+        leadSubmitted: true,
         fullName: fullName.trim(),
         email: email.trim(),
         phone,
@@ -570,7 +581,7 @@ function PostEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPopupProp
     } catch (error) {
       console.error('Erro ao processar o formulário de inscrição:', error)
       setSubmitStatus('error')
-      setSubmitMessage('Não foi possível continuar agora. Tente novamente em instantes.')
+      setSubmitMessage('Não foi possível enviar agora. Tente novamente em instantes.')
     }
   }
 

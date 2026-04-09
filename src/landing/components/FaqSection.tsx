@@ -53,7 +53,7 @@ export function FaqSection({ onOpenPopup }: FaqSectionProps) {
                 />
               </div>
               <div className="lp-graduation__meta-text">
-                <strong>Data de início:</strong>
+                <strong>Início das aulas:</strong>
                 <span>01/07/26</span>
               </div>
             </div>
