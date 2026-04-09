@@ -1,5 +1,8 @@
 import { useState } from 'react'
 
+const FAQ_WHATSAPP_HREF =
+  'https://wa.me/5511947966982?text=Ol%C3%A1,%20estou%20no%20site%20da%20Faculdade%20de%20Psicologia%20e%20quero%20atendimento%20pelo%20WhatsApp.'
+
 type FaqItem = {
   id: string
   question: string
@@ -107,9 +110,15 @@ export function FaqCtaSection() {
             <p>Fale com nossas consultoras no WhatsApp</p>
           </div>
 
-          <button type="button" className="lp-faq-contact__button">
+          <a
+            href={FAQ_WHATSAPP_HREF}
+            target="_blank"
+            rel="noreferrer"
+            className="lp-faq-contact__button"
+            aria-label="Converse conosco pelo WhatsApp"
+          >
             CONVERSE CONOSCO
-          </button>
+          </a>
         </div>
       </div>
     </section>

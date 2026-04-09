@@ -1798,6 +1798,10 @@
   line-height: 24px;
   text-transform: uppercase;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 

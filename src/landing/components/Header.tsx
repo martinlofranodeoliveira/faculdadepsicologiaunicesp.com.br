@@ -32,7 +32,9 @@ export function Header({ onOpenPopup }: HeaderProps) {
     window.location.href = '/pos-graduacao'
   }
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  const toggleMenu = () => {
+    setIsMenuOpen((current) => !current)
+  }
 
   return (
     <>
@@ -77,8 +79,9 @@ export function Header({ onOpenPopup }: HeaderProps) {
             <button
               type="button"
               className="lp-header__menu-toggle"
-              onClick={toggleMenu}
               aria-label="Abrir menu"
+              aria-expanded={isMenuOpen}
+              onClick={toggleMenu}
             >
               <img src="/landing/menu-hamburger.svg" alt="" width={26} height={26} />
             </button>
@@ -90,19 +93,19 @@ export function Header({ onOpenPopup }: HeaderProps) {
       <div className={`lp-mobile-menu ${isMenuOpen ? 'is-open' : ''}`}>
         <div className="lp-mobile-menu__content">
           <nav className="lp-mobile-menu__nav">
-            <a href="https://faculdadepsicologiaunicesp.com.br" onClick={toggleMenu}>
+            <a href="/" onClick={toggleMenu}>
               Início
             </a>
             <hr />
-            <a href="https://faculdadepsicologiaunicesp.com.br/graduacao/psicologia" onClick={toggleMenu}>
+            <a href="/graduacao/psicologia" onClick={toggleMenu}>
               Graduação Presencial
             </a>
             <hr />
-            <a href="https://faculdadepsicologiaunicesp.com.br/graduacao/psicologia" onClick={toggleMenu}>
+            <a href="/graduacao/psicologia" onClick={toggleMenu}>
               Graduação Semipresencial / EAD
             </a>
             <hr />
-            <a href="https://faculdadepsicologiaunicesp.com.br/pos-graduacao" onClick={toggleMenu}>
+            <a href="/pos-graduacao" onClick={toggleMenu}>
               Pós-Graduação EAD
             </a>
             <hr />

@@ -5,6 +5,10 @@ export type StoredCourseLeadDraft = {
   courseValue?: string
   courseLabel: string
   courseId?: number
+  workloadValue?: string
+  workloadLabel?: string
+  openStep?: 1 | 2
+  leadSubmitted?: boolean
   fullName: string
   email: string
   phone: string

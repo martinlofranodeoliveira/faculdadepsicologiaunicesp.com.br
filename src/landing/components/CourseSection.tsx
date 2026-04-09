@@ -7,9 +7,19 @@ import {
   type UIEventHandler,
 } from 'react'
 
+import { saveCourseLeadDraft } from '@/course/courseLeadDraft'
+import { getCoursePath } from '@/lib/courseRoutes'
+import { PRIMARY_GRADUATION_JOURNEY_COURSE_ID } from '@/lib/graduation'
+import { createJourneyStep1 } from '@/lib/journeyClient'
+import {
+  readGraduationVestibularLead,
+  storeGraduationVestibularLead,
+} from '@/vestibular/graduationVestibularState'
+
 import {
   formatPhoneMask,
   normalizeName,
+  normalizePhone,
   sendLeadToCrm,
   validateEmail,
   validateFullName,
@@ -37,11 +47,19 @@ type CourseOption = {
 type CourseSectionProps = {
   graduationSelection: CourseLeadSelection
   postCourses: LandingPostCourse[]
+  onOpenPopup?: (selection: CourseLeadSelection) => void
 }
 
 type FieldName = 'courseType' | 'course' | 'workload' | 'fullName' | 'email' | 'phone'
 type FieldErrors = Partial<Record<FieldName, string>>
 type Touched = Record<FieldName, boolean>
+
+type ResolvedGraduationSelection = {
+  courseId?: number
+  journeyCourseId: number
+  courseLabel: string
+  coursePath?: string
+}
 
 const COURSE_TYPE_OPTIONS: Array<{ value: CourseType; label: string }> = [
   { value: 'graduacao', label: 'Graduação' },
@@ -130,9 +148,60 @@ function buildPostCourseOptions(courses: LandingPostCourse[]): CourseOption[] {
   }))
 }
 
+async function resolveGraduationSelection(
+  selection: CourseLeadSelection,
+): Promise<ResolvedGraduationSelection> {
+  const courseLabel = selection.courseLabel.trim() || DEFAULT_GRADUATION_SELECTION.courseLabel
+
+  if (typeof selection.courseId === 'number' && selection.courseId > 0) {
+    return {
+      courseId: selection.courseId,
+      journeyCourseId: PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
+      courseLabel,
+      coursePath: selection.coursePath,
+    }
+  }
+
+  const response = await fetch('/api/graduation-primary-course', {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+  const payload = (await response.json().catch(() => null)) as
+    | {
+        data?: {
+          courseId?: number
+          journeyCourseId?: number
+          courseLabel?: string
+          coursePath?: string
+        }
+        message?: string
+      }
+    | null
+
+  if (!response.ok) {
+    throw new Error(payload?.message || 'Não foi possível localizar o curso principal da graduação.')
+  }
+
+  return {
+    courseId:
+      typeof payload?.data?.courseId === 'number' && payload.data.courseId > 0
+        ? payload.data.courseId
+        : undefined,
+    journeyCourseId:
+      typeof payload?.data?.journeyCourseId === 'number' && payload.data.journeyCourseId > 0
+        ? payload.data.journeyCourseId
+        : PRIMARY_GRADUATION_JOURNEY_COURSE_ID,
+    courseLabel: payload?.data?.courseLabel?.trim() || courseLabel,
+    coursePath: payload?.data?.coursePath?.trim() || selection.coursePath,
+  }
+}
+
 export function CourseSection({
   graduationSelection = DEFAULT_GRADUATION_SELECTION,
   postCourses = [],
+  onOpenPopup,
 }: CourseSectionProps) {
   const graduationOption = useMemo(
     () => buildGraduationOption(graduationSelection),
@@ -426,29 +495,99 @@ export function CourseSection({
       const selectedCourseOption = courseOptionsLookup.get(course)
       const courseLabel = (selectedCourseOption?.label ?? courseSearch.trim()) || course
       const resolvedCourseType = (courseType || inferCourseTypeFromValue(course)) as CourseType
+      const workloadLabel =
+        resolvedCourseType === 'pos'
+          ? selectedPostCourseWorkloads.find((item) => item.value === workload)?.label
+          : undefined
+      const nextSelection: CourseLeadSelection = {
+        courseType: resolvedCourseType,
+        courseValue: course,
+        courseLabel,
+        courseId: selectedCourseOption?.courseId,
+        coursePath: selectedCourseOption?.coursePath,
+        priceLabel: selectedCourseOption?.priceLabel,
+        workloadValue: resolvedCourseType === 'pos' ? workload : undefined,
+        workloadLabel,
+      }
 
       await sendLeadToCrm({
         fullName,
         email,
         phone,
-        selection: {
-          courseType: resolvedCourseType,
-          courseValue: course,
-          courseLabel,
-          courseId: selectedCourseOption?.courseId,
-          coursePath: selectedCourseOption?.coursePath,
-          priceLabel: selectedCourseOption?.priceLabel,
-          workloadValue: resolvedCourseType === 'pos' ? workload : undefined,
-          workloadLabel:
-            resolvedCourseType === 'pos'
-              ? selectedPostCourseWorkloads.find((item) => item.value === workload)?.label
-              : undefined,
-        },
+        selection: nextSelection,
+      })
+
+      if (resolvedCourseType === 'graduacao') {
+        const resolvedGraduationSelection = await resolveGraduationSelection(nextSelection)
+        const savedLead = readGraduationVestibularLead()
+        const canReuseSavedJourney =
+          Boolean(savedLead?.journeyId) &&
+          ((savedLead?.journeyCourseId ?? savedLead?.courseId) ===
+            resolvedGraduationSelection.journeyCourseId ||
+            (savedLead?.courseId ?? 0) === (resolvedGraduationSelection.courseId ?? 0)) &&
+          savedLead?.fullName.trim().toLowerCase() === fullName.trim().toLowerCase() &&
+          savedLead?.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+          normalizePhone(savedLead?.phone ?? '') === normalizePhone(phone)
+
+        const journeyId = canReuseSavedJourney
+          ? savedLead?.journeyId ?? null
+          : (
+              await createJourneyStep1({
+                course_id: resolvedGraduationSelection.journeyCourseId,
+                full_name: fullName.trim(),
+                email: email.trim(),
+                phone: normalizePhone(phone),
+              })
+            ).journey_id
+
+        storeGraduationVestibularLead({
+          fullName: fullName.trim(),
+          email: email.trim(),
+          phone: normalizePhone(phone),
+          journeyId: journeyId ?? undefined,
+          courseId: resolvedGraduationSelection.courseId,
+          journeyCourseId: resolvedGraduationSelection.journeyCourseId,
+          courseLabel: resolvedGraduationSelection.courseLabel,
+          courseValue: nextSelection.courseValue,
+          currentStep: 1,
+        })
+
+        setSubmitStatus('idle')
+        setSubmitMessage('')
+        onOpenPopup?.({
+          ...nextSelection,
+          courseId: resolvedGraduationSelection.courseId,
+          courseLabel: resolvedGraduationSelection.courseLabel,
+          coursePath: resolvedGraduationSelection.coursePath,
+        })
+        return
+      }
+
+      const targetPath =
+        nextSelection.coursePath ||
+        getCoursePath({
+          courseType: nextSelection.courseType,
+          courseValue: nextSelection.courseValue,
+          courseLabel: nextSelection.courseLabel,
+        })
+
+      saveCourseLeadDraft({
+        courseType: nextSelection.courseType,
+        courseValue: nextSelection.courseValue,
+        courseLabel: nextSelection.courseLabel,
+        courseId: nextSelection.courseId,
+        workloadValue: nextSelection.workloadValue,
+        workloadLabel: nextSelection.workloadLabel,
+        openStep: nextSelection.workloadLabel ? 2 : 1,
+        leadSubmitted: true,
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone,
       })
 
       setSubmitStatus('success')
-      setSubmitMessage('Cadastro enviado com sucesso.')
-      window.location.assign('/obrigado')
+      setSubmitMessage('Redirecionando...')
+      window.location.assign(targetPath)
     } catch (error) {
       console.error('Erro ao enviar lead para o CRM:', error)
       setSubmitStatus('error')

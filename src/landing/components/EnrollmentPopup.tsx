@@ -668,9 +668,10 @@ function GraduationEnrollmentPopup({ isOpen, selection, onClose }: EnrollmentPop
     const storedLead = readGraduationVestibularLead()
     const matchingStoredLead = matchesStoredLead(storedLead, selection) ? storedLead : null
     const hasSavedStep2 = matchingStoredLead ? hasCompletedGraduationStep2(matchingStoredLead) : false
+    const canSkipFirstStep = hasSavedStep2 || Boolean(matchingStoredLead?.journeyId)
 
     setViewMode('default')
-    setCurrentStep(hasSavedStep2 ? 2 : 1)
+    setCurrentStep(canSkipFirstStep ? 2 : 1)
     setFullName(matchingStoredLead?.fullName ?? '')
     setEmail(matchingStoredLead?.email ?? '')
     setPhone(matchingStoredLead?.phone ? formatPhoneMask(matchingStoredLead.phone) : '')

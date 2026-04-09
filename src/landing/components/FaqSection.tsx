@@ -6,8 +6,8 @@ export function FaqSection({ onOpenPopup }: FaqSectionProps) {
   return (
     <section id="graduacao" className="lp-graduation" aria-label="Sobre o curso de graduação em psicologia">
       <div className="lp-graduation__inner">
-        <h2 className="lp-graduation__title">graduação presencial em PSICOLOGIA</h2>
-        
+        <h2 className="lp-graduation__title">GRADUAÇÃO PRESENCIAL EM PSICOLOGIA</h2>
+
         <div className="lp-graduation__content-wrap">
           <div className="lp-graduation__media">
             <picture>
@@ -33,11 +33,15 @@ export function FaqSection({ onOpenPopup }: FaqSectionProps) {
                 aria-hidden="true"
               />
               <span className="lp-graduation__location-text">
-                Local: <span>Rua Dr. Diogo de Faria, 66 - Vila Mariana, São Paulo - SP, CEP: 04037-000</span>
+                <strong>Local:</strong> R. Júlio de Castilhos, 777 - Metrô Belém,
+                <br />
+                São Paulo - SP, 03059-005
               </span>
             </div>
 
-            <p className="lp-graduation__subtitle">Prepare-se para o Mercado com vivências práticas e domínio das principais abordagens.</p>
+            <p className="lp-graduation__subtitle">
+              Prepare-se para o Mercado com vivências práticas e domínio das principais abordagens.
+            </p>
 
             <div className="lp-graduation__meta">
               <div className="lp-graduation__meta-icon-wrap">

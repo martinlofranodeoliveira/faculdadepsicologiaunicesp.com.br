@@ -19,11 +19,13 @@ function resolveCourseImage(imageSrc: string) {
   return normalized || '/course/image_fx_19_1.webp'
 }
 
-function resolvePriceLabel(course: LandingPostCourse) {
-  const normalized = normalizeText(
-    course.currentInstallmentPriceDisplay || course.currentInstallmentPrice,
-  )
+function resolveCardCurrentPrice(course: LandingPostCourse) {
+  const normalized = normalizeText(course.currentInstallmentPrice || course.currentInstallmentPriceDisplay)
   return normalized || 'Consulte as condições'
+}
+
+function resolveCardOldPrice(course: LandingPostCourse) {
+  return normalizeText(course.oldInstallmentPrice)
 }
 
 export function HealthCoursesSection({
@@ -202,10 +204,10 @@ export function HealthCoursesSection({
                           fetchPriority="low"
                         />
                         <div className="lp-health-ead-card__promo-badge">
-                          <img 
-                            src="/landing/presente-icon-card.webp" 
-                            alt="" 
-                            className="lp-health-ead-card__promo-icon" 
+                          <img
+                            src="/landing/presente-icon-card.webp"
+                            alt=""
+                            className="lp-health-ead-card__promo-icon"
                             aria-hidden="true"
                           />
                           <span>GANHE +3 PÓS!</span>
@@ -213,7 +215,11 @@ export function HealthCoursesSection({
                       </div>
 
                       <div className="lp-health-ead-card__content">
-                        <h3 className={`lp-health-ead-card__title ${course.title.length > 35 ? 'lp-health-ead-card__title--long' : ''}`}>
+                        <h3
+                          className={`lp-health-ead-card__title ${
+                            course.title.length > 35 ? 'lp-health-ead-card__title--long' : ''
+                          }`}
+                        >
                           {course.title}
                         </h3>
 
@@ -228,11 +234,11 @@ export function HealthCoursesSection({
                         </div>
 
                         <div className="lp-health-ead-card__prices">
-                          <p className="lp-health-ead-card__old-price">
-                            18x de <span>R$ 329,00/Mês</span>
-                          </p>
+                          {resolveCardOldPrice(course) ? (
+                            <p className="lp-health-ead-card__old-price">{resolveCardOldPrice(course)}</p>
+                          ) : null}
                           <p className="lp-health-ead-card__price">
-                            Por 18x de {resolvePriceLabel(course)}
+                            Por: {resolveCardCurrentPrice(course)}
                           </p>
                         </div>
 
