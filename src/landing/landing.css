@@ -5086,3 +5086,17 @@
     display: none !important;
   }
 }
+
+@media (max-width: 500px) {
+  .lp-about-course__container .lp-about-course__title,
+  .lp-about-course__container .lp-about-course__profile-title {
+    align-self: flex-start !important;
+    width: 100% !important;
+  }
+  .lp-about-course__container .lp-about-course__title,
+  .lp-about-course__container .lp-about-course__description,
+  .lp-about-course__container .lp-about-course__profile-title,
+  .lp-about-course__container .lp-about-course__profile-item {
+    text-align: left !important;
+  }
+}
