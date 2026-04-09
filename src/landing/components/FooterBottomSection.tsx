@@ -164,6 +164,7 @@ export function FooterBottomSection() {
 
         <div className="lp-footer-bottom__bar">
           <small>© 2026 {siteConfig.name}. Todos os direitos reservados.</small>
+          <span className="lp-footer-bottom__god">Nós Acreditamos em Deus</span>
 
           <div className="lp-footer-bottom__links">
             <a href="/politica-de-privacidade">Política de Privacidade</a>
